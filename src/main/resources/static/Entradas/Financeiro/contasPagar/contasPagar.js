@@ -80,21 +80,16 @@ async function carregarContasPagar() {
             );
         }
 
-		listaContasPagar =
-		    await response.json();
+        listaContasPagar =
+            await response.json();
 
-		console.log(
-		    "🔥 TITULOS RECEBIDOS DO BACKEND:",
-		    listaContasPagar
-		);
+        atualizarResumo(
+            listaContasPagar
+        );
 
-		atualizarResumo(
-		    listaContasPagar
-		);
-
-		montarArvore(
-		    listaContasPagar
-		);
+        montarArvore(
+            listaContasPagar
+        );
 
     } catch (erro) {
 
@@ -181,7 +176,26 @@ function montarArvore(lista) {
     }
 
 	const fornecedores = {};
-	
+
+	lista.forEach(conta => {
+
+	    const chaveFornecedor =
+	        `${conta.fornecedorId}|${conta.fornecedorNome}`;
+
+	    if (!fornecedores[chaveFornecedor]) {
+	        fornecedores[chaveFornecedor] = {};
+	    }
+
+	    const chaveNota =
+	        `${conta.numeroNotaFiscal}|${conta.serie}`;
+
+	    if (!fornecedores[chaveFornecedor][chaveNota]) {
+	        fornecedores[chaveFornecedor][chaveNota] = [];
+	    }
+
+	    fornecedores[chaveFornecedor][chaveNota]
+	        .push(conta);
+	});
     lista.forEach(conta => {
 
         const chaveFornecedor =
@@ -194,7 +208,7 @@ function montarArvore(lista) {
         const chaveNota =
             `${conta.numeroNotaFiscal}|${conta.serie}`;
 
-        if (!fornecedores[chaveFornecedor][chaveNota]) {
+        if (!fornecedors[chaveFornecedor][chaveNota]) {
             fornecedores[chaveFornecedor][chaveNota] = [];
         }
 

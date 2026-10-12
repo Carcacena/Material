@@ -13,13 +13,13 @@ window.abrirModalImpostos = function() {
                 const preco = Number(item.precoPraticado || 0);
                 return soma + (quantidade * preco);
             }, 0);
-            console.log("💰 Valor calculado direto da memória do carrinho: R\$ " + valorProdutosAtual);
+            console.log("💰 Valor calculado direto da memória do carrinho: R$ " + valorProdutosAtual);
         } else {
             const displayGeralVerde = document.querySelector("[style*='color: rgb(0, 255, 0)'], [style*='color: #00ff00'], .total-geral")
                 || document.getElementById("totalGeralPedidoDisplay");
 
             if (displayGeralVerde) {
-                const textoLimpo = displayGeralVerde.textContent.replace("R\$", "").replace(/\s/g, "").replace(".", "").replace(",", ".");
+                const textoLimpo = displayGeralVerde.textContent.replace("R$", "").replace(/\s/g, "").replace(".", "").replace(",", ".");
                 valorProdutosAtual = parseFloat(textoLimpo) || 0;
             }
         }
@@ -45,7 +45,8 @@ window.abrirModalImpostos = function() {
             if (selectUfSimulacao) {
                 ufCliente = selectUfSimulacao.value; // Pega o estado que o vendedor marcou para entrega na mesa
             } else if (window.clienteAtualPedido && window.clienteAtualPedido.uf) {
-                ufCliente = window.clienteAtualPedido.uf; // 🌟 CORRIGIDO: Removido o '[]' daqui
+                ufCliente = window.clienteAtualPedido.uf;
+                []
             } else if (selectClienteModal) {
                 const opcaoSelecionada = selectClienteModal.options[selectClienteModal.selectedIndex];
                 if (opcaoSelecionada && opcaoSelecionada.getAttribute("data-uf")) {
@@ -86,7 +87,9 @@ window.abrirModalImpostos = function() {
                         window.carregarTransportadorasPDV();
                     }
 
+
                     if (typeof window.configurarImpostosArrastavel === "function") window.configurarImpostosArrastavel();
+
                 }
             })
             .catch(erro => console.error("❌ Erro ao renderizar modal de encargos:", erro));
@@ -102,14 +105,14 @@ window.abrirModalImpostos = function() {
             window.carregarTransportadorasPDV();
         }
 
+
         if (typeof window.configurarImpostosArrastavel === "function") window.configurarImpostosArrastavel();
     }
-}; // 🌟 Fechamento corrigid
+}; // 🌟 Fechamen
+
 // =========================================================================
 // 🔄 FUNÇÃO: Sincroniza Cliente e Calcula Alíquota Dinâmica (12% / 19%)
 // =========================================================================
-
-
 window.vincularClienteEDefinirAliquota = function() {
     console.log("👉 [modulo-fechamento.js] Executando auditoria de alíquota...");
 
@@ -155,14 +158,12 @@ async function abrirPainelFechamento() {
         alert("O carrinho está vazio!");
         return;
     }
-    console.log("🔥 TESTE NOVO F10 - LINHA ALTERADA");
+	console.log("🔥 TESTE NOVO F10 - LINHA ALTERADA");
 
-    // 🌟 CORRIGIDO: Bloco do if fechado corretamente antes de prosseguir
-    if (typeof window.abrirModalImpostos === "function") {
-        window.abrirModalImpostos();
-        return;
-    }
-
+	if (typeof window.abrirModalImpostos === "function") {
+	    window.abrirModalImpostos();
+	    return;
+}
     // Ignora erros de elemento não encontrado no script de terceiros
     if (typeof carregarClientesPDV === "function") {
         try { await carregarClientesPDV(); } catch (e) {}
@@ -195,13 +196,6 @@ async function abrirPainelFechamento() {
 }
 window.abrirPainelFechamento = abrirPainelFechamento;
 
-
-
-
-
-// =========================================================================
-// 🏢 FUNÇÃO: Carregar UF de Origem do Sistema
-// =========================================================================
 
 async function confirmarFaturamentoDefinitivo() {
 
@@ -613,7 +607,6 @@ async function confirmarFaturamentoDefinitivo() {
 }
 window.confirmarFaturamentoDefinitivo = confirmarFaturamentoDefinitivo;
 
-
 async function carregarUfOrigemDoSistemaAtiva() {
     try {
         // Captura o token de segurança padrão do seu sistema de security
@@ -630,26 +623,32 @@ async function carregarUfOrigemDoSistemaAtiva() {
             }
         });
 
-        if (resposta.ok) {
-            const origem = await resposta.json();
+		if (resposta.ok) {
 
-            // Joga a UF da OrigemSistema ativa na memória
-            window.ufOrigemSistemaInstalado = origem.uf || "PR";
+		    const origem = await resposta.json();
 
-            console.log("🏢 Sucesso! UF de Origem identificada localmente: " + window.ufOrigemSistemaInstalado);
+		    // Joga a UF da OrigemSistema ativa na memória
+		    window.ufOrigemSistemaInstalado = origem.uf || "PR";
 
-            // ⚡ Exibe a Série Fiscal da OrigemSistema ativa
-            const painelSerie = document.getElementById("displaySerie");
+		    console.log(
+		        "🏢 Sucesso! UF de Origem identificada localmente: "
+		        + window.ufOrigemSistemaInstalado
+		    );
 
-            if (painelSerie) {
-                painelSerie.textContent = origem.serie || " ";
-            }
+		    // ⚡ Exibe a Série Fiscal da OrigemSistema ativa
+		    const painelSerie = document.getElementById("displaySerie");
 
-            // Mantém a série disponível para os demais módulos
-            window.serieFiscalAtual = origem.serie || "UN";
+		    if (painelSerie) {
+		        painelSerie.textContent = origem.serie || " ";
+		    }
 
-            console.log("📑 Série Fiscal ativa: " + window.serieFiscalAtual);
+		    // Mantém a série disponível para os demais módulos
+		    window.serieFiscalAtual = origem.serie || "UN";
 
+		    console.log("📑 Série Fiscal ativa: " + window.serieFiscalAtual);
+
+		    // ⚡ MÁGICA VISUAL: Captura o sequencial do banco,
+		    // soma +1 e projeta na caixa "PRÓX NF"
             // ⚡ MÁGICA VISUAL: Captura o sequencial do banco, soma +1 e projeta na caixa "PRÓX NF"
             const campoNota = origem.notafiscal || origem.nota_fiscal || "";
             if (campoNota) {
@@ -680,8 +679,6 @@ async function carregarUfOrigemDoSistemaAtiva() {
         window.ufOrigemSistemaInstalado = "PR"; // Backup de segurança caso o banco esteja offline
     }
 }
-// Expõe a função globalmente se necessário
-window.carregarUfOrigemDoSistemaAtiva = carregarUfOrigemDoSistemaAtiva;
 
 // Inicializa a varredura automática assim que a folha de lógicas do fechamento é carregada
 carregarUfOrigemDoSistemaAtiva();
@@ -689,7 +686,8 @@ carregarUfOrigemDoSistemaAtiva();
 window.fecharModalImpostos = function() {
     const modal = document.getElementById("modalImpostos");
     if (modal) modal.style.display = "none";
-};
+};;
+
 
 window.calcularImpostoPorAliquota = function() {
     const baseCalculo = parseFloat(document.getElementById("baseCalculoIcms")?.value) || 0;
@@ -699,6 +697,7 @@ window.calcularImpostoPorAliquota = function() {
     const campoValorIcms = document.getElementById("valorIcms");
     if (campoValorIcms) campoValorIcms.value = valorIcmsResult.toFixed(2);
 };
+
 
 window.calcularTotalNota = function() {
     const produtos = parseFloat(document.getElementById("valorTotalProdutos")?.value) || 0;
@@ -716,16 +715,20 @@ window.calcularTotalNota = function() {
 
 window.impostoFrete = window.abrirModalImpostos;
 
+
 window.carregarClientesNoModalImpostos = async function() {
     const select = document.getElementById("selectClienteModalImpostos");
+    const selectTransportadora = document.getElementById("selectTransportadoraModalImpostos");
     if (!select) return;
 
     try {
+        // Alinhamento de segurança com as variáveis do seu modulo-fechamento.js original
         const tokenSeguro = typeof token !== "undefined" ? token : (typeof window.obterTokenSeguro === "function" ? window.obterTokenSeguro() : "");
         const urlBase = typeof API_URL !== "undefined" ? API_URL : "";
 
         console.log("🔍 Buscando lista de clientes locais no Spring Boot...");
 
+        // 🌟 DICA DE OURO: Se a sua rota no Java for /api/clientes, mude abaixo para `${urlBase}/api/clientes`
         const resposta = await fetch(`${urlBase}/api/clientes`, {
             method: "GET",
             headers: {
@@ -738,13 +741,18 @@ window.carregarClientesNoModalImpostos = async function() {
             const clientes = await resposta.json();
             console.log(`👥 ${clientes.length} clientes encontrados no banco local.`);
 
+            // Mantém a opção padrão limpa
             select.innerHTML = '<option value="">-- Escolha um Cliente --</option>';
 
             clientes.forEach(cli => {
                 const option = document.createElement("option");
                 option.value = cli.id;
+
+                // Exibe o Nome e a UF no select para guiar o piá do balcão (Ex: "João Silva (SP)")
                 const ufLimpa = cli.uf || "PR";
                 option.textContent = `${cli.nome} (${ufLimpa})`;
+
+                // Guarda a UF guardada escondida no atributo 'data-uf' para o motor fiscal ler no ato do clique
                 option.setAttribute("data-uf", ufLimpa);
                 select.appendChild(option);
             });
@@ -755,6 +763,32 @@ window.carregarClientesNoModalImpostos = async function() {
         console.error("❌ Falha de comunicação ao carregar clientes do MySQL:", erro);
     }
 };
+
+
+window.calcularImpostoPorAliquota = function() {
+    const baseCalculo = parseFloat(document.getElementById("baseCalculoIcms")?.value) || 0;
+    const aliquota = parseFloat(document.getElementById("aliquotaIcms")?.value) || 0;
+    const valorIcmsResult = (baseCalculo * aliquota) / 100;
+
+    const campoValorIcms = document.getElementById("valorIcms");
+    if (campoValorIcms) campoValorIcms.value = valorIcmsResult.toFixed(2);
+};
+
+
+window.calcularTotalNota = function() {
+    const produtos = parseFloat(document.getElementById("valorTotalProdutos")?.value) || 0;
+    const frete = parseFloat(document.getElementById("valorFrete")?.value) || 0;
+    const seguro = parseFloat(document.getElementById("valorSeguro")?.value) || 0;
+    const desconto = parseFloat(document.getElementById("valorDesconto")?.value) || 0;
+    const acessorias = parseFloat(document.getElementById("outrasDespesasAcessorias")?.value) || 0;
+    const ipi = parseFloat(document.getElementById("valorIpi")?.value) || 0;
+
+    const totalNota = (produtos + frete + seguro + acessorias + ipi) - desconto;
+
+    const campoTotal = document.getElementById("valorTotalNota");
+    if (campoTotal) campoTotal.value = totalNota.toFixed(2);
+};
+window.impostoFrete = window.abrirModalImpostos;
 
 window.sincronizarClienteComFaturamento = function() {
     console.log("👉 [Função Nova] Sincronizando cliente selecionado...");
@@ -769,12 +803,14 @@ window.sincronizarClienteComFaturamento = function() {
 
     const opcaoSelecionada = selectClienteModal.options[selectClienteModal.selectedIndex];
     if (!opcaoSelecionada || selectClienteModal.value === "") {
-        return;
+        return; // Caso não tenha nenhum cliente selecionado ainda
     }
 
+    // 1. Captura os dados essenciais do Cliente selecionado
     const clienteId = selectClienteModal.value;
-    const nomeClienteCompleto = opcaoSelecionada.text;
+    const nomeClienteCompleto = opcaoSelecionada.text; // Ex: "jose gouvea paula (BA)"
 
+    // 2. Executa a sua lógica de leitura de UFs para a engrenagem fiscal continuar perfeita
     let ufCliente = "PR";
     if (selectUfSimulacao) {
         ufCliente = selectUfSimulacao.value;
@@ -784,19 +820,22 @@ window.sincronizarClienteComFaturamento = function() {
         ufCliente = opcaoSelecionada.getAttribute("data-uf");
     }
 
+    // 3. Salva na memória global para o Spring Boot usar na hora de salvar
     window.clienteAtualPedido = {
         id: Number(clienteId),
         uf: ufCliente,
         nome: nomeClienteCompleto
     };
 
+    // 4. 🎯 O SEGREDO DO PRINT 2: Substitui o texto "Identificar Cliente (Ih)" na tela
+    // Varre todas as tags span e divs da tela atrás da frase laranja antiga para trocá-la dinamicamente
     const todosElementos = document.querySelectorAll("span, div, h3, p");
     let alterouNaTela = false;
 
     todosElementos.forEach(el => {
         if (el.textContent.includes("Identificar Cliente")) {
-            el.textContent = nomeClienteCompleto;
-            el.style.color = "#00ff00";
+            el.textContent = nomeClienteCompleto; // Injeta "jose gouvea paula (BA)"
+            el.style.color = "#00ff00"; // Transforma de laranja para VERDE (Identificado!)
             el.style.fontWeight = "bold";
             alterouNaTela = true;
         }
@@ -806,11 +845,12 @@ window.sincronizarClienteComFaturamento = function() {
         console.log("✅ Sucesso! Texto laranja substituído pelo nome do cliente.");
     }
 
-    // 🌟 CORRIGIDO: Nome da função corrigido de 'abril' para 'abrir'
-    if (typeof window.abrirModalImpostos === "function") {
+    // 5. Força o modal de impostos a recalcular a alíquota para os 12,0% ou 19,0% certos
+    if (typeof window.abrilModalImpostos === "function") {
         window.abrirModalImpostos();
     }
 };
+
 
 async function carregarTransportadorasPDV() {
     console.log("🔍 [modulo-fechamento.js] Buscando lista de transportadoras locais...");
@@ -825,8 +865,8 @@ async function carregarTransportadorasPDV() {
         const urlBase = typeof API_URL !== "undefined" ? API_URL : "";
         const tokenSeguro = typeof token !== "undefined" ? token : (typeof window.obterTokenSeguro === "function" ? window.obterTokenSeguro() : "");
 
-        // 🌟 CORREÇÃO 1: Ajustado de /api/clientes para /api/transportadoras
-        const resposta = await fetch(`${urlBase}/api/transportadoras`, {
+        // Ajuste a URL abaixo para casar exatamente com o endpoint do seu Controller Java (ex: /transportadoras ou /api/transportadoras)
+        const resposta = await fetch(`${urlBase}/api/clientes`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${tokenSeguro}`,
@@ -838,29 +878,21 @@ async function carregarTransportadorasPDV() {
             throw new Error(`Erro HTTP ao ler transportadoras. Status: ${resposta.status}`);
         }
 
-        let transportadoras = await resposta.json();
-
-        // 🌟 CORREÇÃO 2: Se o Spring retornar um Pageable, extrai a lista de dentro de .content
-        if (transportadoras && transportadoras.content) {
-            transportadoras = transportadoras.content;
-        }
-
-        // Garante que é um array para não quebrar o .forEach
-        if (!Array.isArray(transportadoras)) {
-            transportadoras = [];
-        }
-
+        const transportadoras = await resposta.json();
         console.log(`👥 ${transportadoras.length} transportadoras localizadas no banco de dados.`);
 
-        // Limpa as opções antigas mantendo apenas o padrão
+        // Limpa as opções antigas mantendo apenas o padrão de retirada no balcão
         selectTransp.innerHTML = '<option value="">-- Sem Frete / Retirada no Balcão --</option>';
 
-        // Percorre a lista vinda do MySQL e monta as tags <option> 
+        // Percorre a lista vinda do MySQL e monta as tags <option>
         transportadoras.forEach(transp => {
             const opcao = document.createElement("option");
-            opcao.value = transp.id;
-            opcao.text = `${transp.nome || transp.razaoSocial || 'Transportadora Sem Nome'} (${transp.uf || 'BR'})`;
+            opcao.value = transp.id; // ID bigint da tabela
+            opcao.text = `${transp.nome || transp.razaoSocial} (${transp.uf || 'BR'})`; // Nome amigável na tela
+
+            // Se possuir CNPJ ou dados adicionais, pode embutir como atributo customizado
             opcao.setAttribute("data-uf-transp", transp.uf || "");
+
             selectTransp.appendChild(opcao);
         });
 
@@ -869,7 +901,7 @@ async function carregarTransportadorasPDV() {
     }
 }
 
+// Vincula ao escopo global da janela do navegador
 window.carregarTransportadorasPDV = carregarTransportadorasPDV;
-
 
 
