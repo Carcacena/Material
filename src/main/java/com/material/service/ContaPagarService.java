@@ -35,6 +35,7 @@ public class ContaPagarService {
         this.fornecedorRepository = fornecedorRepository;
     }
 
+    @Transactional
     public List<ContaPagarDTO> listar() {
 
         return repository

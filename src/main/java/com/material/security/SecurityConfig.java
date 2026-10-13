@@ -32,13 +32,12 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
 
     CorsConfiguration configuration = new CorsConfiguration();
-
-    configuration.setAllowedOrigins(List.of(
+        
+     configuration.setAllowedOrigins(List.of(
         "http://localhost:8080",
-         "https://material-construcao-production-dc9e.up.railway.app/"
-  //      "https://materialconstrucao-production.up.railway.app"
+        "https://material-construcao-production-dc9e.up.railway.app" // 👈 Coloque a URL cirúrgica aqui!
     ));
-
+    
     configuration.setAllowedMethods(List.of(
         "GET",
         "POST",
@@ -94,7 +93,7 @@ public class SecurityConfig {
                    
                ).permitAll() 
                
-            // 🌟 1. PRIMEIRO: Abre as exceções públicas (Tudo que NÃO precisa de login fica no topo)
+               // 🌟 1. PRIMEIRO: Abre as exceções públicas (Tudo que NÃO precisa de login fica no topo)
                .requestMatchers("/carrinho/public/pedido/**").permitAll() // Exceção do PDF
              	   .requestMatchers(
             				    "/menu/**", // 👈 Liberando a nova pasta com o HTML e o JS do menu juntos!
@@ -109,7 +108,6 @@ public class SecurityConfig {
             				    "/js/**",
             				    "/api/**"
             				).permitAll()   
-         
                // 🔒 2. DEPOIS: Bloqueia as rotas específicas do sistema (Exige autenticação)
                .requestMatchers("/admin/**", "/usuario/**").authenticated() 
                .requestMatchers("/imprimeCarrinho/imprimeCarrinho/**").authenticated() 

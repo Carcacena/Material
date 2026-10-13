@@ -285,16 +285,103 @@ async function salvarEntrada() {
 			    );
 			    return;
 			}
-
+		
 			const negociacao =
 			    window.dadosNegociacaoEntrada || {};
-
+				
+				
 			console.log(
 			    "NEGOCIACAO ENTRADA:",
 			    negociacao
 			);
+			
+			// ======================================================
+			// 6. GERAÇÃO AUTOMÁTICA DO CONTAS A PAGAR
+			// ======================================================
 
-        // 6. SOMENTE AGORA ENCERRA A OPERAÇÃO
+			if (!negociacao.parcelas ||
+			    negociacao.parcelas.length === 0) {
+
+			    throw new Error(
+			        "Dados financeiros da entrada não foram confirmados."
+			    );
+			}
+
+			const payloadContasPagar = {
+
+			    numeroEntrada:
+			        String(entradaSalva.id),
+
+			    fornecedorId:
+			        parseInt(fornecedorId),
+
+			    numeroNotaFiscal:
+			        parseInt(numeroNota),
+
+			    serie:
+			        serie,
+
+			    valorFinalCorrigido:
+			        Number(
+			            negociacao.valorFinalCorrigido ||
+			            impostos.valorTotalNota
+			        ),
+
+			    inpcAnualAplicado:
+			        Number(
+			            negociacao.inpcAnualAplicado || 0
+			        ),
+
+			    formaPagamento:
+			        negociacao.formaPagamento || "DINHEIRO",
+
+			    parcelas:
+			        negociacao.parcelas
+			};
+
+			console.log(
+			    "📤 CONTAS A PAGAR:",
+			    payloadContasPagar
+			);
+			const responseContasPagar =
+			    await fetch(
+			        "/contas-pagar/gerar",
+			        {
+			            method: "POST",
+			            headers: montarHeaders(),
+			            body: JSON.stringify(
+			                payloadContasPagar
+			            )
+			        }
+			    );
+
+				
+			if (!responseContasPagar.ok) {
+
+			    const erroFinanceiro =
+			        await responseContasPagar.text();
+
+			    throw new Error(
+			        "Entrada gravada, mas houve falha ao gerar Contas a Pagar: " +
+			        erroFinanceiro
+			    );
+			}
+
+			const titulosGerados =
+			    await responseContasPagar.json();
+
+			console.log(
+			    "✅ CONTAS A PAGAR GERADO:",
+			    titulosGerados
+			);
+
+			// 7. SOMENTE AGORA ENCERRA A OPERAÇÃO
+			alert(
+			    '✅ Sucesso Total!\n' +
+			    'Nota Fiscal, estoque, impostos e Contas a Pagar gravados no banco local.'
+			);
+				
+	       // 6. SOMENTE AGORA ENCERRA A OPERAÇÃO
         alert(
             '✅ Sucesso Total!\n' +
             'Nota Fiscal, estoque e impostos gravados no banco local.'

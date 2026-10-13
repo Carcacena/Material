@@ -73,8 +73,15 @@ function abrirModalImpostos() {
     if (modal) modal.style.display = "block";
 
     atualizarTotalProdutosDoModal();
+   
+   }
+   
+   
+   
+   
+   
 
-}
+
 
 
 
@@ -100,10 +107,11 @@ async function financeiro() {
     const container =
         document.getElementById("containerFinanceiro");
 
-    if (!container) {
-        console.error("containerFinanceiro não encontrado");
-        return;
-    }
+  
+      if (!container) {
+          console.error("containerFinanceiro não encontrado");
+          return;
+      }
 
     const resposta = await fetch(
         "/Entradas/Financeiro/financeiro.html"
@@ -112,6 +120,9 @@ async function financeiro() {
     const html = await resposta.text();
 
     container.innerHTML = html;
+	if (typeof window.abrirFormaPagamento === "function") {
+	    window.abrirFormaPagamento();
+	}
 
     const modal =
         document.getElementById("modalFecharPedido");
@@ -280,8 +291,25 @@ window.processarFluxoNegociacaoBalcao = function() {
         "Calculando negociação financeira da entrada..."
     );
 
-};
+    const campoTotalNota =
+        document.getElementById("valorTotalNota");
 
+    const totalModal =
+        document.getElementById("totalModalDisplay");
+
+    const valorTotal =
+        parseFloat(campoTotalNota?.value || 0);
+
+    if (totalModal) {
+        totalModal.textContent =
+            `R$ ${valorTotal.toFixed(2).replace(".", ",")}`;
+    }
+
+    console.log(
+        "💰 Total da Entrada enviado ao Financeiro:",
+        valorTotal
+    );
+};
 
 
 
