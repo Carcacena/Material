@@ -33,10 +33,11 @@ public class SecurityConfig {
 
     CorsConfiguration configuration = new CorsConfiguration();
         
-     configuration.setAllowedOrigins(List.of(
-        "http://localhost:8080",
-        "https://material-construcao-production-dc9e.up.railway.app" // 👈 Coloque a URL cirúrgica aqui!
-    ));
+    configuration.setAllowedOrigins(List.of(
+            "http://localhost:8080",
+                // 👈 Coloque a URL cirúrgica aqui!
+            "https://material-construcao-production.up.railway.app/"
+        ));
     
     configuration.setAllowedMethods(List.of(
         "GET",

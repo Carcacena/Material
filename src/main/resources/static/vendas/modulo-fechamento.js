@@ -813,63 +813,156 @@ window.sincronizarClienteComFaturamento = function() {
 };
 
 async function carregarTransportadorasPDV() {
-    console.log("🔍 [modulo-fechamento.js] Buscando lista de transportadoras locais...");
 
-    const selectTransp = document.getElementById("selectTransportadoraModalImpostos");
+    console.log("🔍 Buscando possíveis transportadores: clientes + fornecedores...");
+
+    const selectTransp =
+        document.getElementById("selectTransportadoraModalImpostos");
+
     if (!selectTransp) {
-        console.warn("Aviso: Elemento #selectTransportadoraModalImpostos não localizado na árvore DOM.");
+        console.warn("Aviso: #selectTransportadoraModalImpostos não localizado.");
         return;
     }
 
     try {
-        const urlBase = typeof API_URL !== "undefined" ? API_URL : "";
-        const tokenSeguro = typeof token !== "undefined" ? token : (typeof window.obterTokenSeguro === "function" ? window.obterTokenSeguro() : "");
 
-        // 🌟 CORREÇÃO 1: Ajustado de /api/clientes para /api/transportadoras
-        const resposta = await fetch(`${urlBase}/api/transportadoras`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${tokenSeguro}`,
-                "Content-Type": "application/json"
-            }
-        });
+        const urlBase =
+            typeof API_URL !== "undefined" ? API_URL : "";
 
-        if (!resposta.ok) {
-            throw new Error(`Erro HTTP ao ler transportadoras. Status: ${resposta.status}`);
+        const tokenSeguro =
+            typeof token !== "undefined"
+                ? token
+                : (
+                    typeof window.obterTokenSeguro === "function"
+                        ? window.obterTokenSeguro()
+                        : ""
+                  );
+
+        const headers = {
+            "Authorization": `Bearer ${tokenSeguro}`,
+            "Content-Type": "application/json"
+        };
+
+        selectTransp.innerHTML =
+            '<option value="">-- Escolha uma Transportadora --</option>';
+
+        const respostaClientes =
+            await fetch(`${urlBase}/api/clientes`, {
+                method: "GET",
+                headers: headers
+            });
+
+        if (respostaClientes.ok) {
+
+            const clientes =
+                await respostaClientes.json();
+
+            clientes.forEach(cli => {
+
+                const opcao =
+                    document.createElement("option");
+
+                opcao.value = `CLIENTE:${cli.id}`;
+
+                opcao.textContent =
+                    `${cli.nome} - Cliente (ID: ${cli.id})`;
+
+                selectTransp.appendChild(opcao);
+            });
         }
 
-        let transportadoras = await resposta.json();
+        const respostaFornecedores =
+            await fetch(`${urlBase}/api/fornecedores`, {
+                method: "GET",
+                headers: headers
+            });
 
-        // 🌟 CORREÇÃO 2: Se o Spring retornar um Pageable, extrai a lista de dentro de .content
-        if (transportadoras && transportadoras.content) {
-            transportadoras = transportadoras.content;
+        if (respostaFornecedores.ok) {
+
+            const fornecedores =
+                await respostaFornecedores.json();
+
+            fornecedores.forEach(forn => {
+
+                const opcao =
+                    document.createElement("option");
+
+                opcao.value = `FORNECEDOR:${forn.id}`;
+
+                opcao.textContent =
+                    `${forn.nome} - Fornecedor (ID: ${forn.id})`;
+
+                selectTransp.appendChild(opcao);
+            });
         }
-
-        // Garante que é um array para não quebrar o .forEach
-        if (!Array.isArray(transportadoras)) {
-            transportadoras = [];
-        }
-
-        console.log(`👥 ${transportadoras.length} transportadoras localizadas no banco de dados.`);
-
-        // Limpa as opções antigas mantendo apenas o padrão
-        selectTransp.innerHTML = '<option value="">-- Sem Frete / Retirada no Balcão --</option>';
-
-        // Percorre a lista vinda do MySQL e monta as tags <option> 
-        transportadoras.forEach(transp => {
-            const opcao = document.createElement("option");
-            opcao.value = transp.id;
-            opcao.text = `${transp.nome || transp.razaoSocial || 'Transportadora Sem Nome'} (${transp.uf || 'BR'})`;
-            opcao.setAttribute("data-uf-transp", transp.uf || "");
-            selectTransp.appendChild(opcao);
-        });
 
     } catch (erro) {
-        console.error("❌ Falha crítica ao alimentar o select de transportadoras:", erro);
+
+        console.error(
+            "❌ Falha ao carregar transportadoras:",
+            erro
+        );
     }
 }
 
-window.carregarTransportadorasPDV = carregarTransportadorasPDV;
+window.carregarTransportadorasPDV =
+    carregarTransportadorasPDV;
 
 
+// ==========================================================
+// 🚚 MODALIDADE DO FRETE - SAÍDA
+// ==========================================================
 
+window.alterarModalidadeFreteSaida = function() {
+
+    const tipoFrete =
+        document.getElementById("tipoFrete");
+
+    const blocoTransportadora =
+        document.getElementById("blocoTransportadoraModalImpostos");
+
+    const transportadora =
+        document.getElementById("selectTransportadoraModalImpostos");
+
+    const valorFrete =
+        document.getElementById("valorFrete");
+
+    if (!tipoFrete ||
+        !blocoTransportadora ||
+        !transportadora ||
+        !valorFrete) {
+
+        return;
+    }
+
+    if (tipoFrete.value === "FOB") {
+
+        blocoTransportadora.style.display = "block";
+
+        return;
+    }
+
+    if (tipoFrete.value === "CIF") {
+
+        blocoTransportadora.style.display = "none";
+        transportadora.value = "";
+
+        return;
+    }
+
+    if (tipoFrete.value === "SEM_FRETE") {
+
+        blocoTransportadora.style.display = "none";
+        transportadora.value = "";
+        valorFrete.value = "0.00";
+
+        if (typeof window.calcularTotalNota === "function") {
+            window.calcularTotalNota();
+        }
+
+        return;
+    }
+
+    blocoTransportadora.style.display = "none";
+    transportadora.value = "";
+};
