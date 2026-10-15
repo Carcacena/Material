@@ -21,14 +21,53 @@
 					</select>
 				</div>
 				
+				<div class="col" style="margin-bottom:10px;">
 
-				<!-- 🚚 NOVO: Caixa de Transportadora integrada (Reaproveitando os Clientes/PJs do sistema) -->
-				<div style="margin-bottom: 15px; border-bottom: 1px dashed #25422e; padding-bottom: 12px;">
-				    <label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Transportadora Responsável pelo Frete</label>
-				    <select id="selectTransportadoraModalImpostos" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030; cursor: pointer;">
-				        <option value="">-- Sem Frete / Retirada no Balcão --</option>
-				    </select>
-				</div>		
+								<label>Modalidade do Frete</label>
+
+								<select id="tipoFrete"
+								        onchange="window.alterarModalidadeFreteSaida()"
+								        style="
+							                width:100%;
+							                padding:8px;
+							                border-radius:4px;
+							                border:1px solid #ccc;
+							            ">
+
+									<option value="">Selecione...</option>
+
+									<option value="FOB">
+										FOB - Frete por conta do comprador
+									</option>
+
+									<option value="CIF">
+										CIF - Frete por conta do fornecedor
+									</option>
+
+									<option value="SEM_FRETE">
+										Sem Frete / Retirada
+									</option>
+
+								</select>
+								<div id="blocoTransportadoraModalImpostos"
+								     style="margin-bottom: 12px; display: none;">
+
+								    <label style="display: block; font-size: 13px; margin-bottom: 4px; color: #e67e22; font-weight: bold;">
+								        Transportadora
+								    </label>
+
+								    <select id="selectTransportadoraModalImpostos"
+								            style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #e67e22; background: #ffffff; color: #333030; cursor: pointer;">
+
+								        <option value="">
+								            -- Selecione a Transportadora --
+								        </option>
+
+								    </select>
+								</div>
+
+							</div>
+				
 
 		<!-- Bloco ICMS Normal -->
 		<div style="margin-bottom: 12px;">
