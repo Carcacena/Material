@@ -72,12 +72,13 @@ public class SecurityConfig {
        return http 
            .csrf(csrf -> csrf.disable()) 
            .cors(Customizer.withDefaults()) 
-           .authorizeHttpRequests(auth -> auth // 🌟 O PONTO DE ENCADEAMENTO FOI CORRIGIDO AQUI!
+           .authorizeHttpRequests(auth -> auth
+               // 🌟 1. Opções de CORS pré-flight e rotas base de autenticação
                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
                .requestMatchers("/auth/**").permitAll() 
                .requestMatchers("/api/auth/**", "/public/**").permitAll() 
                
-               // 1. Arquivos visuais liberados para o navegador desenhar a tela 
+               // 🌟 2. Arquivos visuais e estáticos liberados para o navegador desenhar a tela 
                .requestMatchers( 
                    "/", 
                    "/*.html", 
@@ -89,36 +90,34 @@ public class SecurityConfig {
                    "/mp3/**", 
                    "/favicon.ico", 
                    "/error", 
-                   "/componentes-js/**" // 🌟 ADICIONE ESTA LINHA AQUI!
-                
-                   
+                   "/componentes-js/**"
                ).permitAll() 
                
-               // 🌟 1. PRIMEIRO: Abre as exceções públicas (Tudo que NÃO precisa de login fica no topo)
-               .requestMatchers("/carrinho/public/pedido/**").permitAll() // Exceção do PDF
-             	   .requestMatchers(
-            				    "/menu/**", // 👈 Liberando a nova pasta com o HTML e o JS do menu juntos!
-            				    "/Entradas/**", 
-            				    "/Fornecedores/**", 
-            				    "/Clientes/**", 
-            				    "/Produtos/**",
-            				    "/relatorios/**", 
-            				    "/vendas/**",
-            				    "/OrigemSistema/**",
-            				    "/css/**",
-            				    "/js/**",
-            				    "/api/**"
-            				).permitAll()   
-               // 🔒 2. DEPOIS: Bloqueia as rotas específicas do sistema (Exige autenticação)
+               // 🌟 3. Rotas públicas do sistema e pastas de recursos estáticos (HTML/JS/CSS)
+               .requestMatchers("/carrinho/public/pedido/**").permitAll() // Exceção do PDF público
+               .requestMatchers(
+                   "/menu/**", // Pasta com HTML e JS do menu integrados
+                   "/Entradas/**", 
+                   "/Fornecedores/**", 
+                   "/Clientes/**", 
+                   "/Produtos/**",
+                   "/relatorios/**", 
+                   "/vendas/**",
+                   "/OrigemSistema/**",
+                   "/css/**",
+                   "/js/**"
+                   // ⚠️ Se os seus controllers privados usam "/api/...", remova a linha abaixo:
+                   // "/api/**" 
+               ).permitAll()   
+
+               // 🔒 4. Bloqueia as rotas específicas do sistema (Exige autenticação/Token JWT)
                .requestMatchers("/admin/**", "/usuario/**").authenticated() 
                .requestMatchers("/imprimeCarrinho/imprimeCarrinho/**").authenticated() 
 
-               // 🔒 3. POR ÚLTIMO: Bloqueia as rotas gerais e o que sobrou do carrinho
+               // 🔒 5. Bloqueia o que sobrou do carrinho e qualquer outra requisição da aplicação
                .requestMatchers("/carrinho", "/carrinho/**").authenticated() 
                .anyRequest().authenticated()
-          
-           		   
-        		   ) 
+           ) 
            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) 
            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) 
            .build(); 
