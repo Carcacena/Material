@@ -404,7 +404,7 @@ async function confirmarFaturamentoDefinitivo() {
         // ⚡ TRATAMENTO ATÔMICO: Lê como TEXTO PURO para aceitar a string "Venda faturada..." do Java
        
 			
-		if (response.ok) {
+			if (response.ok) {
 
 		    const mensagemSucesso = await response.text();
 
