@@ -37,38 +37,49 @@ public class CarrinhoController {
             // 1. Chama a regra de serviço original para faturar
             carrinhoService.faturarCarrinhoDoPedido(numeroPedido, clienteId);
             
-            // 2. ⚡ ALINHAMENTO FISCAL: Busca os itens do lote para descobrir o ID do carrinho
+            // 2. Busca os itens do lote atualizados pós-faturamento
             List<com.material.model.Carrinho> itens = carrinhoService.pesquisarTodosItensDoPedido(numeroPedido);
             
             com.material.dto.CarrinhoImpostosDTO respostaDTO = new com.material.dto.CarrinhoImpostosDTO();
-            respostaDTO.setNumeroNotaFiscal(1973); // Fallback padrão de segurança
-            respostaDTO.setSerie("UN");
             
             if (itens != null && !itens.isEmpty()) {
-                Long carrinhoId = itens.get(0).getId();
+                com.material.model.Carrinho primeiroItem = itens.get(0);
+                Long carrinhoId = primeiroItem.getId();
+                
+                // 🌟 ACUMULADOR SEGURO: Busca o número sequencial real gerado pelo motor do faturamento
+                if (primeiroItem.getNumeroNotaFiscal() != null) {
+                    respostaDTO.setNumeroNotaFiscal(Integer.valueOf(primeiroItem.getNumeroNotaFiscal().toString()));
+                } else {
+                    respostaDTO.setNumeroNotaFiscal(1); // Se for o primeiro da base limpa, inicia em 1
+                }
+                respostaDTO.setSerie(primeiroItem.getSerie() != null ? primeiroItem.getSerie() : "B1");
+
                 try {
-                    // 🌟 BUSCA BLINDADA: Executa a busca de impostos vinculada ao carrinho
+                    // Tenta complementar com as informações detalhadas da tabela de impostos
                     com.material.model.CarrinhoImpostos impostos = carrinhoImpostosService.buscarPorCarrinho(carrinhoId);
                     if (impostos != null) {
                         if (impostos.getNumeroNotaFiscal() != null) {
-                            // 🌟 CONVERSÃO DE SEGURANÇA: Garante que converte para o tipo que o seu DTO precisa
-                            try {
-                                respostaDTO.setNumeroNotaFiscal(Integer.valueOf(impostos.getNumeroNotaFiscal().toString()));
-                            } catch (Exception e) {
-                                // Se o seu DTO for String por baixo dos panos, o Java cai aqui:
-                                System.out.println("ℹ️ Ajustando mapeamento de tipo para String no DTO.");
-                            }
+                            respostaDTO.setNumeroNotaFiscal(Integer.valueOf(impostos.getNumeroNotaFiscal().toString()));
                         }
                         if (impostos.getSerie() != null) {
                             respostaDTO.setSerie(impostos.getSerie().toString());
                         }
+                        // 🌟 SINCRO DE ENCARGOS: Preenche os valores para o frontend não receber tudo null
+                        respostaDTO.setValorTotalNota(impostos.getValorTotalNota());
+                        respostaDTO.setValorTotalProdutos(impostos.getValorTotalProdutos());
+                        respostaDTO.setValorIcms(impostos.getValorIcms());
+                        respostaDTO.setBaseCalculoIcms(impostos.getBaseCalculoIcms());
                     }
                 } catch (Exception e) {
                     System.out.println("ℹ️ Impostos sendo processados ou tabela vazia para o ID: " + carrinhoId);
                 }
+            } else {
+                // Fallback absoluto caso o pedido suma por erro de transação
+                respostaDTO.setNumeroNotaFiscal(1);
+                respostaDTO.setSerie("B1");
             }
             
-            // 3. Retorna o objeto DTO estruturado legítimo em JSON
+            // 3. Retorna o objeto DTO legítimo e dinâmico
             return ResponseEntity.ok(respostaDTO);
             
         } catch (RuntimeException e) {
