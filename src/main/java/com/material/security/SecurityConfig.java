@@ -32,13 +32,11 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
 
     CorsConfiguration configuration = new CorsConfiguration();
-        
-    configuration.setAllowedOrigins(List.of(
-            "http://localhost:8080",
-                // 👈 Coloque a URL cirúrgica aqui!
-            "https://material-construcao-production.up.railway.app/"
-        ));
-    
+        configuration.setAllowedOrigins(List.of(
+    "http://localhost:8080",
+    "https://material-production-ec0c.up.railway.app" // 👈 Removida a barra '/' do final!
+));
+   
     configuration.setAllowedMethods(List.of(
         "GET",
         "POST",

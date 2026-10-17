@@ -404,14 +404,36 @@ async function confirmarFaturamentoDefinitivo() {
         // ⚡ TRATAMENTO ATÔMICO: Lê como TEXTO PURO para aceitar a string "Venda faturada..." do Java
        
 			
-			if (response.ok) {
+		if (response.ok) {
 
-			    const mensagemSucesso = await response.text();
+		    const mensagemSucesso = await response.text();
 
-			    console.log(
-			        "🎯 [Faturamento] Resposta do Servidor: "
-			        + mensagemSucesso
-			    );
+		    console.log(
+		        "🎯 [Faturamento] Resposta do Servidor: "
+		        + mensagemSucesso
+		    );
+
+		    let dadosFaturamento = null;
+
+		    try {
+		        dadosFaturamento = JSON.parse(mensagemSucesso);
+		    } catch (e) {
+		        console.log("ℹ️ Resposta do faturamento não veio em JSON.");
+		    }
+
+		    const numeroNotaFiscalReal =
+		        Number(dadosFaturamento?.numeroNotaFiscal)
+		        || Number(numeroNotaFiscal);
+
+		    const serieReal =
+		        dadosFaturamento?.serie
+		        || serie;
+
+		    console.log(
+		        "🔑 NF/Série definitivas do faturamento:",
+		        numeroNotaFiscalReal,
+		        serieReal
+		    );
 
 
 			    // ============================================================
@@ -479,11 +501,11 @@ async function confirmarFaturamentoDefinitivo() {
 			        clienteId:
 			            Number(idFinalCliente),
 
-			        numeroNotaFiscal:
-			            Number(numeroNotaFiscal),
+						numeroNotaFiscal:
+						    numeroNotaFiscalReal,
 
-			        serie:
-			            serie,
+						serie:
+						    serieReal,
 
 			        valorFinalCorrigido:
 			            Number(valorFinanceiro.toFixed(2)),
