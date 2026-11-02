@@ -36,6 +36,17 @@ window.processarLoteSelecionado =
     processarLoteSelecionado;
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
 // =========================================================================
 async function estornarNotaViaPainel(entradaId) {
     if (!entradaId) {
@@ -99,8 +110,16 @@ function fecharModalDevolucao() {
         modal.style.display = "none";
     }
 }
+<<<<<<< HEAD
 async function devolucaoEntrada() {
     const urlServidorAtual = window.urlServidor || "http://localhost:8080";
+=======
+
+// 🔍 BUSCA NO BANCO AS NOTAS ATIVAS (STATUS 1) E INJETA NO DROPDOWN
+async function devolucaoEntrada() {
+    const urlServidorAtual = window.urlServidor || "http://localhost:8080";
+    const token = typeof obterTokenSeguro === "function" ? obterTokenSeguro() : "";
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
 
     const selectNota = document.getElementById("selectNotasAtivas");
     if (!selectNota) return;
@@ -111,6 +130,7 @@ async function devolucaoEntrada() {
     if (areaItens) areaItens.style.display = "none";
 
     try {
+<<<<<<< HEAD
         // CORRIGIDO: Usa a sua função oficial para gerar os headers com o Token
         const headersAutenticados = typeof montarHeaders === "function" 
             ? montarHeaders() 
@@ -122,6 +142,17 @@ async function devolucaoEntrada() {
         });
 
         if (!resposta.ok) throw new Error(`Erro ao carregar notas do servidor. Status: ${resposta.status}`);
+=======
+        const resposta = await fetch(`${urlServidorAtual}/api/entradas/ativas-resumo`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (!resposta.ok) throw new Error("Erro ao carregar notas do servidor.");
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
         const notas = await resposta.json();
 
         console.log("=== DADOS DO BANCO RECEBIDOS ===", notas);
@@ -158,16 +189,21 @@ async function buscarItensDaNotaSelecionada(idNota) {
         return;
     }
 
+<<<<<<< HEAD
     // CORRIGIDO: Usa a URL absoluta do servidor e seus cabeçalhos oficiais com Token
     const urlServidorAtual = window.urlServidor || "http://localhost:8080";
     const headersAutenticados = typeof montarHeaders === "function" 
         ? montarHeaders() 
         : { "Content-Type": "application/json" };
 
+=======
+    const token = typeof obterTokenSeguro === "function" ? obterTokenSeguro() : "";
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
     const tabelaItens = document.getElementById("corpoTabelaItensDevolucao");
     tabelaItens.innerHTML = "";
 
     try {
+<<<<<<< HEAD
         // CORRIGIDO: Monta as URLs completas para evitar o erro de subpasta
         const urlItens = `${urlServidorAtual}/api/entradas/${idNota}/itens`;
         const urlImpostos = `${urlServidorAtual}/api/entradas/${idNota}/impostos`;
@@ -181,13 +217,26 @@ async function buscarItensDaNotaSelecionada(idNota) {
         if (!respostaItens.ok) {
             throw new Error(`Erro ao carregar itens da nota. Status: ${respostaItens.status}`);
         }
+=======
+        // 1. Busca paralela dos itens e impostos no Spring Boot (Chama as duas APIs)
+        const [respostaItens, respostaImpostos] = await Promise.all([
+            fetch(`/api/entradas/${idNota}/itens`, { headers: { "Authorization": `Bearer ${token}` } }),
+            fetch(`/api/entradas/${idNota}/impostos`, { headers: { "Authorization": `Bearer ${token}` } })
+        ]);
+
+        if (!respostaItens.ok) throw new Error("Erro ao carregar itens da nota.");
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
         
         const data = await respostaItens.json();
         const listaDeItens = Array.isArray(data) ? data : (data.itens || []);
         const dadosImpostos = respostaImpostos.status === 200 ? await respostaImpostos.json() : {};
 
         if (listaDeItens.length === 0) {
+<<<<<<< HEAD
             tabelaItens.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:10px; color:#666;">Nenhum produto nesta nota.</td></tr>`;
+=======
+            tabelaItens.innerHTML = `<tr><td colspan="2" style="text-align:center; padding:10px; color:#666;">Nenhum produto nesta nota.</td></tr>`;
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
             return;
         }
 
@@ -195,13 +244,19 @@ async function buscarItensDaNotaSelecionada(idNota) {
         listaDeItens.forEach((item) => {
             let nomeProd = item.produtoDescricao || item.nomeProduto || item.produtoNome || "Produto sem nome";
             const quantidade = item.quantidade || item.qtd || 0;
+<<<<<<< HEAD
             const precoCusto = Number(item.precoCusto || 0);
             
+=======
+			const precoCusto =
+			    Number(item.precoCusto || 0);
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
             // Corta textos excessivamente longos para manter a linha limpa
             if (nomeProd.length > 80) {
                 nomeProd = nomeProd.substring(0, 77) + "...";
             }
 
+<<<<<<< HEAD
             const linhaProduto = `
                 <tr style="border-bottom: 1px solid #dddddd; background: #ffffff !important;">
                     <td colspan="2" style="padding: 8px 15px; color: #333333 !important; font-weight: 500; text-align: left; font-size: 13px; background: #ffffff !important;">
@@ -219,6 +274,58 @@ async function buscarItensDaNotaSelecionada(idNota) {
         });
 
         // 3. Extração dos impostos reais vindos da tabela entrada_impostos
+=======
+			const linhaProduto = `
+			    <tr style="
+			        border-bottom: 1px solid #dddddd;
+			        background: #ffffff !important;
+			    ">
+
+			        <td colspan="2"
+			            style="
+			                padding: 8px 15px;
+			                color: #333333 !important;
+			                font-weight: 500;
+			                text-align: left;
+			                font-size: 13px;
+			                background: #ffffff !important;
+			            ">
+			            📦 ${nomeProd}
+			        </td>
+
+			        <td style="
+			            padding: 8px 15px;
+			            color: #333333 !important;
+			            text-align: center !important;
+			            font-weight: bold;
+			            background: #ffffff !important;
+			        ">
+			            ${quantidade}
+			        </td>
+
+			        <td style="
+			            padding: 8px 10px;
+			            color: #333333 !important;
+			            text-align: right !important;
+			            font-weight: bold;
+			            background: #ffffff !important;
+			        ">
+			            R$ ${precoCusto.toLocaleString(
+			                'pt-BR',
+			                {
+			                    minimumFractionDigits: 2,
+			                    maximumFractionDigits: 2
+			                }
+			            )}
+			        </td>
+
+			    </tr>
+			`;
+            tabelaItens.insertAdjacentHTML('beforeend', linhaProduto);
+        });
+
+        // 3. Extração dos impostos reais da NF 1956 vindos da tabela entrada_impostos
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
         const icms = dadosImpostos.baseCalculoIcms || 0;
         const vIcms = dadosImpostos.valorIcms || 0;
         const frete = dadosImpostos.valorFrete || 0;
@@ -242,11 +349,15 @@ async function buscarItensDaNotaSelecionada(idNota) {
         document.getElementById("areaItensNota").style.display = "block";
 
     } catch (erro) {
+<<<<<<< HEAD
         console.error("Erro completo ao buscar itens/impostos:", erro);
+=======
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
         alert("Erro ao montar lote: " + erro.message);
     }
 }
 
+<<<<<<< HEAD
 async function filtrarNotasDevolucao() {
     const dataInicio = document.getElementById("dataInicioDevolucao").value;
     const dataFim = document.getElementById("dataFimDevolucao").value;
@@ -332,6 +443,204 @@ async function filtrarNotasDevolucao() {
         selectNota.innerHTML = '<option value="">Erro ao pesquisar notas</option>';
         alert("Falha na pesquisa: " + erro.message);
     }
+=======
+
+// ==========================================================
+// 🔎 FILTRA NOTAS DE ENTRADA POR PERÍODO
+// Painel de Devolução / Estorno
+// ==========================================================
+
+async function filtrarNotasDevolucao() {
+
+    const dataInicio =
+        document.getElementById("dataInicioDevolucao").value;
+
+    const dataFim =
+        document.getElementById("dataFimDevolucao").value;
+
+    const selectNota =
+        document.getElementById("selectNotasAtivas");
+
+
+    if (!dataInicio || !dataFim) {
+
+        alert(
+            "Informe a Data Inicial e a Data Final."
+        );
+
+        return;
+    }
+
+
+    if (dataInicio > dataFim) {
+
+        alert(
+            "A Data Inicial não pode ser maior que a Data Final."
+        );
+
+        return;
+    }
+
+
+    const token =
+        typeof obterTokenSeguro === "function"
+            ? obterTokenSeguro()
+            : "";
+
+
+    selectNota.innerHTML =
+        '<option value="">Buscando notas...</option>';
+
+
+    // Esconde o lote antigo durante uma nova pesquisa
+    const areaItens =
+        document.getElementById("areaItensNota");
+
+    if (areaItens) {
+
+        areaItens.style.display = "none";
+
+    }
+
+
+    try {
+
+        const resposta = await fetch(
+
+            `/api/entradas/filtrar?inicio=${dataInicio}&fim=${dataFim}`,
+
+            {
+                method: "GET",
+
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            }
+
+        );
+
+
+        if (!resposta.ok) {
+
+            throw new Error(
+                "Erro ao pesquisar Notas Fiscais."
+            );
+
+        }
+
+
+        const notas =
+            await resposta.json();
+
+
+        selectNota.innerHTML =
+            '<option value="">-- Escolha uma Nota Fiscal --</option>';
+
+
+        // Neste painel interessam somente notas ATIVAS
+        const notasAtivas =
+            notas.filter(nota =>
+                nota.status == null ||
+                Number(nota.status) === 1
+            );
+
+
+        if (notasAtivas.length === 0) {
+
+            selectNota.innerHTML =
+                '<option value="">Nenhuma nota ativa encontrada no período</option>';
+
+            return;
+        }
+
+
+        notasAtivas.forEach(nota => {
+
+            const option =
+                document.createElement("option");
+
+            option.value =
+                nota.id;
+
+
+            // Se o endpoint já devolver "label",
+            // aproveitamos o que o Java montou.
+            if (nota.label) {
+
+                option.textContent =
+                    nota.label;
+
+            } else {
+
+                const numeroNota =
+                    nota.numeroNota ||
+                    nota.id ||
+                    "S/N";
+
+                let fornecedor =
+                    "Não informado";
+
+
+                if (nota.nomeFornecedor) {
+
+                    fornecedor =
+                        nota.nomeFornecedor;
+
+                } else if (nota.fornecedorNome) {
+
+                    fornecedor =
+                        nota.fornecedorNome;
+
+                } else if (
+                    nota.fornecedor &&
+                    nota.fornecedor.nome
+                ) {
+
+                    fornecedor =
+                        nota.fornecedor.nome;
+
+                }
+
+
+                option.textContent =
+                    `Nota ID: ${nota.id} ` +
+                    `(NF: ${numeroNota}) - ` +
+                    `Fornecedor: ${fornecedor}`;
+            }
+
+
+            selectNota.appendChild(
+                option
+            );
+
+        });
+
+
+        console.log(
+            "Notas ativas encontradas no período:",
+            notasAtivas.length
+        );
+
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao filtrar notas para devolução:",
+            erro
+        );
+
+        selectNota.innerHTML =
+            '<option value="">Erro ao pesquisar notas</option>';
+
+        alert(
+            "Falha na pesquisa: " +
+            erro.message
+        );
+
+    }
+
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
 }
 
 
@@ -489,3 +798,13 @@ async function filtrarNotasDevolucao() {
 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af

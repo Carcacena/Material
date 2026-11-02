@@ -45,7 +45,11 @@ public class EntradaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno ao processar a entrada de estoque.");
         }
     }
+<<<<<<< HEAD
    
+=======
+    
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
     @PutMapping("/devolver-nota/{numeroNota}")
     public ResponseEntity<?> devolverNota(@PathVariable String numeroNota) {
         try {
@@ -55,7 +59,11 @@ public class EntradaController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+<<<<<<< HEAD
    
+=======
+    
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
     @GetMapping("/ativas-resumo")
     public ResponseEntity<?> listarNotasAtivasParaEstorno() {
         try {
@@ -103,6 +111,11 @@ public class EntradaController {
             return ResponseEntity.badRequest().body("Erro ao processar estorno: " + e.getMessage());
         }
     }
+<<<<<<< HEAD
    
    
+=======
+    
+    
+>>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
 }
