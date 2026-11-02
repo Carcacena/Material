@@ -109,18 +109,18 @@ public class SecurityConfig {
                ).permitAll()   
 
                // 🔒 4. Bloqueia as rotas específicas do sistema (Exige autenticação/Token JWT)
-<<<<<<< HEAD
+
             // 🔒 4. Bloqueia as rotas específicas do sistema (Exige autenticação/Token JWT)
                .requestMatchers("/api/entradas/**").authenticated() 
                .requestMatchers("/admin/**", "/usuario/**").authenticated() 
                .requestMatchers("/imprimeCarrinho/imprimeCarrinho/**").authenticated()
                
           
-=======
+
                .requestMatchers("/admin/**", "/usuario/**").authenticated() 
                .requestMatchers("/imprimeCarrinho/imprimeCarrinho/**").authenticated() 
 
->>>>>>> 501f2c33b9c6613fe7dc9144133784ce24f0d3af
+ 
                // 🔒 5. Bloqueia o que sobrou do carrinho e qualquer outra requisição da aplicação
                .requestMatchers("/carrinho", "/carrinho/**").authenticated() 
                .anyRequest().authenticated()
