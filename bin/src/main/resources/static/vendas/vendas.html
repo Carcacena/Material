@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="UTF-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>Mesa de Negociação - Sistema Magia</title>
+
+
+
+
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background: linear-gradient(135deg, #2c3e50, #4caf50);
+			color: white;
+			min-height: 100vh;
+			padding: 25px;
+			margin: 0;
+			user-select: none;
+		}
+
+		h2,
+		h4 {
+			color: white;
+			margin-bottom: 12px;
+		}
+
+		/* ======================================================
+           ESTRUTURA PRINCIPAL
+           ====================================================== */
+
+		.grid-caixa {
+			display: flex;
+			flex-direction: row;
+			gap: 20px;
+			width: 100%;
+			margin-top: 15px;
+			align-items: stretch;
+		}
+
+		.bloco-arvore {
+			flex: 1.4;
+			min-width: 450px;
+		}
+
+		.bloco-carrinho {
+			flex: 1.1;
+			min-width: 380px;
+		}
+
+		.box-custom {
+			background: rgba(0, 0, 0, 0.45);
+			padding: 20px;
+			border-radius: 8px;
+			box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+			height: 100%;
+		}
+
+		/* ======================================================
+           CAMPOS
+           ====================================================== */
+
+		.form-control,
+		.form-select {
+			width: 100% !important;
+			padding: 10px !important;
+			color: white !important;
+			background: rgba(255, 255, 255, 0.1) !important;
+			border: 1px solid rgba(255, 255, 255, 0.2) !important;
+			border-radius: 6px;
+		}
+
+		.form-control:focus,
+		.form-select:focus {
+			color: white !important;
+			background: rgba(255, 255, 255, 0.2) !important;
+			border-color: #ff9800 !important;
+			outline: none;
+			box-shadow: none;
+		}
+
+		.form-control::placeholder {
+			color: #bdc3c7;
+		}
+
+		.form-select option {
+			color: white;
+			background: #2c3e50;
+		}
+
+		.form-label {
+			display: block;
+			margin-bottom: 6px !important;
+			color: #ff9800;
+			font-weight: bold;
+		}
+
+		/* ======================================================
+           STATUS
+           ====================================================== */
+
+		.status-badge {
+			padding: 5px 10px;
+			border-radius: 4px;
+			font-size: 13px;
+			font-weight: bold;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+		}
+
+		.status-andamento {
+			color: black;
+			background: #f39c12;
+		}
+
+		/* ======================================================
+           CATÁLOGO / ÁRVORE
+           ====================================================== */
+
+		.bloco-localizar-produto {
+			display: flex;
+			flex-direction: column;
+			min-height: 560px;
+		}
+
+		.cabecalho-arvore {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 15px;
+			padding-bottom: 14px;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+		}
+
+		.cabecalho-arvore h4 {
+			margin: 0 0 4px 0;
+		}
+
+		.cabecalho-arvore small {
+			color: #bdc3c7;
+		}
+
+		.contador-catalogo {
+			min-width: 75px;
+			padding: 8px 12px;
+			text-align: center;
+			background: rgba(255, 152, 0, 0.12);
+			border: 1px solid rgba(255, 152, 0, 0.35);
+			border-radius: 8px;
+		}
+
+		.contador-catalogo span {
+			display: block;
+			color: #ff9800;
+			font-size: 22px;
+			font-weight: bold;
+		}
+
+		.contador-catalogo small {
+			color: #bdc3c7;
+			font-size: 10px;
+			text-transform: uppercase;
+		}
+
+		.barra-localizacao {
+			display: grid;
+			grid-template-columns: minmax(220px, 1fr) 130px;
+			gap: 14px;
+			margin-top: 16px;
+			margin-bottom: 12px;
+		}
+
+		.legenda-arvore {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 12px;
+			padding: 8px 10px;
+			margin-bottom: 10px;
+			color: #bdc3c7;
+			background: rgba(0, 0, 0, 0.18);
+			border-radius: 6px;
+			font-size: 11px;
+		}
+
+		.arvore-produtos {
+			flex: 1;
+			min-height: 290px;
+			max-height: 370px;
+			overflow-y: auto;
+			padding-right: 5px;
+			scrollbar-width: thin;
+		}
+
+		.mensagem-carregamento,
+		.mensagem-vazia {
+			padding: 30px 15px;
+			color: #bdc3c7;
+			text-align: center;
+			border: 1px dashed rgba(255, 255, 255, 0.18);
+			border-radius: 7px;
+		}
+
+		.grupo-produto {
+			margin-bottom: 8px;
+		}
+
+		.produto-header,
+		.fornecedor-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 10px;
+			width: 100%;
+			padding: 12px 14px;
+			margin-top: 6px;
+			color: white;
+			background: rgba(0, 0, 0, 0.28);
+			border: 1px solid rgba(255, 152, 0, 0.28);
+			border-radius: 7px;
+			cursor: pointer;
+			text-align: left;
+			font-weight: bold;
+			transition: 0.2s ease;
+		}
+
+		.produto-header:hover,
+		.fornecedor-header:hover {
+			background: rgba(255, 152, 0, 0.13);
+			border-color: rgba(255, 152, 0, 0.65);
+		}
+
+		.produto-header.aberto {
+			background: rgba(255, 152, 0, 0.18);
+			border-color: #ff9800;
+		}
+
+		.produto-header-esquerda {
+			display: flex;
+			align-items: center;
+			gap: 9px;
+		}
+
+		.produto-seta {
+			display: inline-block;
+			width: 14px;
+			color: #ff9800;
+			transition: transform 0.2s ease;
+		}
+
+		.produto-header.aberto .produto-seta {
+			transform: rotate(90deg);
+		}
+
+		.produto-quantidade-marcas {
+			min-width: 30px;
+			padding: 3px 8px;
+			color: #ff9800;
+			background: rgba(255, 152, 0, 0.12);
+			border-radius: 12px;
+			text-align: center;
+			font-size: 11px;
+			font-weight: bold;
+		}
+
+		.produtos-lista {
+			display: none;
+			margin: 4px 0 10px 18px;
+			padding-left: 12px;
+			border-left: 2px solid rgba(255, 152, 0, 0.25);
+		}
+
+		.produto-item {
+			position: relative;
+			display: block;
+			margin-top: 6px;
+			padding: 11px 12px;
+			background: rgba(255, 255, 255, 0.035);
+			border: 1px solid transparent;
+			border-radius: 6px;
+			cursor: pointer;
+			transition: 0.18s ease;
+		}
+
+		.produto-item:hover {
+			transform: translateX(3px);
+			background: rgba(255, 255, 255, 0.075);
+		}
+
+		.produto-item.selecionado {
+			background: rgba(255, 152, 0, 0.22) !important;
+			border-color: #ff9800 !important;
+			box-shadow: 0 0 10px rgba(255, 152, 0, 0.15);
+		}
+
+		.produto-item.validade-proxima {
+			background: rgba(192, 57, 43, 0.18);
+			border-left: 4px solid #ff5b4d;
+		}
+
+		.produto-linha-principal {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 12px;
+		}
+
+		.produto-fornecedor {
+			color: white;
+		}
+
+		.produto-tipo {
+			margin-left: 5px;
+			color: #ffb74d;
+			font-size: 11px;
+		}
+
+		.produto-preco {
+			white-space: nowrap;
+			padding: 4px 9px;
+			color: white;
+			background: #278c4c;
+			border-radius: 12px;
+			font-size: 12px;
+			font-weight: bold;
+		}
+
+		.produto-linha-detalhes {
+			margin-top: 5px;
+			color: #bdc3c7;
+			font-size: 11px;
+			line-height: 1.5;
+		}
+
+		.produto-margem {
+			color: #74e68c;
+			font-weight: bold;
+		}
+
+		.produto-validade-alerta {
+			color: #ff8a80;
+			font-weight: bold;
+		}
+
+		.painel-produto-selecionado {
+			margin-top: 14px;
+			padding: 12px 14px;
+			background: rgba(0, 0, 0, 0.26);
+			border: 1px solid rgba(94, 255, 94, 0.22);
+			border-radius: 7px;
+		}
+
+		.produto-selecionado-titulo {
+			margin-bottom: 4px;
+			color: #5eff5e;
+			font-weight: bold;
+		}
+
+		.produto-selecionado-detalhes {
+			color: #bdc3c7;
+			font-size: 12px;
+		}
+
+		/* ======================================================
+           CUPOM
+           ====================================================== */
+
+		.table-custom {
+			width: 100%;
+			margin-top: 5px;
+			color: white !important;
+		}
+
+		.table-custom th {
+			padding: 10px;
+			color: #ff9800 !important;
+			background: rgba(0, 0, 0, 0.3) !important;
+			border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+		}
+
+		.item-linha {
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		}
+
+		.item-linha td {
+			padding: 10px 6px;
+		}
+
+		.total-caixa {
+			margin-top: 10px;
+			padding: 12px;
+			color: #5eff5e;
+			background: rgba(0, 0, 0, 0.3);
+			border: 1px solid rgba(94, 255, 94, 0.3);
+			border-radius: 6px;
+			text-align: right;
+			font-size: 28px;
+			font-weight: bold;
+		}
+
+		/* ======================================================
+           PAINEL FLUTUANTE
+           ====================================================== */
+
+		.painel-flutuante {
+			position: fixed;
+			top: 220px;
+			right: 30px;
+			z-index: 2000;
+			width: 140px;
+			padding: 12px;
+			background: rgba(15, 25, 35, 0.93);
+			border: 2px solid #ff9800;
+			border-radius: 8px;
+			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+		}
+
+		.painel-header {
+			padding-bottom: 6px;
+			margin-bottom: 10px;
+			color: #ff9800;
+			border-bottom: 1px dashed rgba(255, 152, 0, 0.4);
+			cursor: move;
+			text-align: center;
+			font-size: 11px;
+			font-weight: bold;
+			text-transform: uppercase;
+		}
+
+		.painel-corpo {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.btn-menu-vertical {
+			width: 100%;
+			padding: 8px 0;
+			color: white;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			text-align: center;
+			font-size: 12px;
+			font-weight: bold;
+			text-transform: uppercase;
+		}
+
+		.btn-menu-vertical:hover {
+			transform: scale(1.03);
+			filter: brightness(1.15);
+		}
+
+		.btn-incluir {
+			background: #27ae60;
+		}
+
+		.btn-fechar {
+			background: #e67e22;
+		}
+
+		.btn-excluir {
+			background: #c0392b;
+		}
+
+		.btn-voltar {
+			background: #7f8c8d;
+		}
+
+		.btn-carrinho {
+			background: #c0492b;
+		}
+
+
+		.btn-devolucao {
+			background: #EE82EE;
+		}
+
+
+
+		/* ======================================================
+           RESPONSIVIDADE
+           ====================================================== */
+
+		/* ==========================================================
+		   		   📱 RESPONSIVIDADE - CELULAR VERTICAL
+		   		   ========================================================== */
+		@media (max-width: 768px) {
+
+			html,
+			body {
+				width: 100%;
+				max-width: 100%;
+				margin: 0;
+				padding: 0;
+				overflow-x: hidden;
+			}
+
+			body {
+				padding: 8px;
+				box-sizing: border-box;
+			}
+
+			.container {
+				width: 100%;
+				max-width: 100%;
+				margin: 0;
+				padding: 12px;
+				box-sizing: border-box;
+			}
+
+			/* Campos ficam um embaixo do outro */
+			.row {
+				flex-direction: column;
+				width: 100%;
+				gap: 10px;
+			}
+
+			.col {
+				width: 100%;
+				min-width: 0 !important;
+				box-sizing: border-box;
+			}
+
+			input,
+			select,
+			button {
+				max-width: 100%;
+				box-sizing: border-box;
+			}
+
+			/* Tabela de itens */
+			.painel-itens-nota {
+				width: 100%;
+				max-width: 100%;
+				overflow-x: auto;
+			}
+
+			#tabelaItens {
+				min-width: 550px;
+			}
+
+			/* Botão flutuante AÇÕES */
+			.botao-flutuante-nota {
+				right: 10px;
+				bottom: 10px;
+			}
+
+			/* Menu flutuante */
+			.menu-flutuante-nota {
+				left: 10px !important;
+				right: 10px !important;
+				bottom: 70px;
+				width: auto !important;
+				max-width: none !important;
+				box-sizing: border-box;
+			}
+
+			/* Modal de devolução */
+			#modalSelecaoNotaDevolucao .modal-content {
+				width: calc(100% - 20px) !important;
+				margin: 5vh auto !important;
+				padding: 15px !important;
+				box-sizing: border-box;
+			}
+
+			/* Modal de impostos */
+			#modalImpostos {
+				top: 10px !important;
+				left: 10px !important;
+				right: 10px !important;
+				width: auto !important;
+				max-height: calc(100vh - 20px) !important;
+				box-sizing: border-box;
+			}
+
+			/* Painel gerencial */
+			#modalPainelGerencial {
+				top: 10px !important;
+				left: 10px !important;
+				right: 10px !important;
+				width: auto !important;
+				max-height: calc(100vh - 20px) !important;
+				box-sizing: border-box;
+			}
+
+			#modalPainelGerencial table {
+				min-width: 650px;
+			}
+
+			#btnFiltrarEntradas {
+				width: 100% !important;
+				margin-left: 0 !important;
+			}
+		}
+
+		table {
+			font-size: 12px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="container-fluid">
+
+		<div class="d-flex justify-content-between align-items-center mb-2 px-2">
+
+			<h2 class="m-0">
+				⚡ Sistema Magia -
+				<small style="color: #bdc3c7;">
+					Balcão de Vendas Inteligente
+				</small>
+			</h2>
+
+			<div>
+				<span class="text-uppercase font-monospace me-2" style="font-size: 11px; color: #bdc3c7;">
+					Status do Carrinho:
+				</span>
+
+				<span id="labelStatusCarrinho" class="status-badge status-andamento">
+					SEM PEDIDO
+				</span>
+			</div>
+
+		</div>
+
+		<div class="grid-caixa">
+
+			<!-- Parte 1: Catálogo e Árvore Horizontal -->
+			<div class="box-custom bloco-localizar-produto"
+				style="display: flex; flex-direction: column; height: 100%; min-height: 560px;">
+
+				<!-- 1. Cabeçalho Hierárquico Inteligente -->
+				<div class="cabecalho-arvore"
+					style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.12); gap: 15px;">
+
+					<!-- Título Único do Catálogo -->
+					<div>
+						<h4 style="margin: 0; color: white; font-weight: bold;">🌳1.Produtos</h4>
+						<small style="color: #bdc3c7; font-size: 11px;">
+						</small>
+					</div>
+
+					<!-- 🚀 TRIO DE CONTROLE VISUAL: Itens, Quantidade e Próxima NF-e perfeitamente alinhados -->
+					<div style="display: flex; align-items: center; gap: 10px;">
+
+						<!-- Bloco 1: Contador de Itens -->
+						<div class="contador-catalogo"
+							style="min-width: 75px; padding: 5px; text-align: center; background: rgba(255, 152, 0, 0.12); border: 1px solid rgba(255, 152, 0, 0.35); border-radius: 8px;">
+							<span id="contadorProdutosCatalogo"
+								style="display: block; color: #ff9800; font-size: 20px; font-weight: bold; line-height: 1.1;">0</span>
+							<small style="color: #bdc3c7; font-size: 10px; text-transform: uppercase;">itens</small>
+						</div>
+
+						<!-- Bloco 2: Seletor de Quantidade -->
+						<div
+							style="min-width: 75px; padding: 5px; text-align: center; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 152, 0, 0.25); border-radius: 8px; display: flex; flex-direction: column; align-items: center;">
+							<input type="number" id="inputQuantidade" value="1" min="1" step="1"
+								style="width: 55px; background: #111; border: none; color: #5eff5e; font-size: 20px; font-weight: bold; text-align: center; outline: none; height: 26px; line-height: 26px; padding: 0;">
+							<small
+								style="color: #bdc3c7; font-size: 10px; text-transform: uppercase; margin-top: 2px;">Qtde</small>
+						</div>
+
+						<!-- ⚡ Mostrador da Próxima Nota Fiscal -->
+						<div class="nota-fiscal" style="min-width: 85px; padding: 5px; text-align: center;
+						           background: rgba(94, 255, 94, 0.08);
+						           border: 1px solid rgba(94, 255, 94, 0.3);
+						           border-radius: 8px;
+						           display: flex;
+						           flex-direction: column;
+						           align-items: center;">
+
+							<span id="displayProximaNotaFiscal" style="width: 65px;
+						               color: #5eff5e;
+						               font-size: 20px;
+						               font-weight: bold;
+						               text-align: center;
+						               height: 26px;
+						               line-height: 26px;">
+								-
+							</span>
+
+							<small style="color: #bdc3c7;
+						               font-size: 10px;
+						               text-transform: uppercase;
+						               margin-top: 2px;">
+								NOTA FISCAL
+							</small>
+						</div>
+
+
+						<!-- ⚡ Mostrador da Série Fiscal -->
+						<div class="contador-nota-fiscal" style="min-width: 85px; padding: 5px; text-align: center;
+						           background: rgba(94, 255, 94, 0.08);
+						           border: 1px solid rgba(94, 255, 94, 0.3);
+						           border-radius: 8px;
+						           display: flex;
+						           flex-direction: column;
+						           align-items: center;">
+
+							<span id="displaySerie" style="width: 65px;
+						               color: #5eff5e;
+						               font-size: 20px;
+						               font-weight: bold;
+						               text-align: center;
+						               height: 26px;
+						               line-height: 26px;">
+								-
+							</span>
+
+							<small style="color: #bdc3c7;
+						               font-size: 10px;
+						               text-transform: uppercase;
+						               margin-top: 2px;">
+								SÉRIE
+							</small>
+						</div>
+
+					</div>
+				</div>
+
+				<!-- 2. Container da Árvore (Onde o JS joga a hierarquia pura) -->
+				<div id="containerArvoreVendas" class="arvore-produtos"
+					style="flex: 1; min-height: 250px; max-height: 380px; overflow-y: auto; padding-right: 5px; margin-top: 15px; margin-bottom: 15px;">
+					<div class="mensagem-carregamento" style="padding: 20px; text-align: center; color: #bdc3c7;">
+						Carregando catálogo de produtos...</div>
+				</div>
+
+				<!-- 3. 🟢 PAINEL SEGURO: Rodapé de Comando -->
+				<div id="painelProdutoSelecionado"
+					style="padding: 12px; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 152, 0, 0.3); border-radius: 8px; margin-top: auto;">
+					<div
+						style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px;">
+
+						<div style="flex: 1;">
+							<div id="textoSelecionadoTitulo"
+								style="color: #5eff5e; font-weight: bold; font-size: 14px; margin-bottom: 2px;">Nenhum
+								produto pego</div>
+							<div id="textoSelecionadoDetalhes" style="color: #bdc3c7; font-size: 12px;">Clique em uma
+								marca para habilitar o botão.</div>
+						</div>
+
+						<div>
+							<button id="btnMoverParaCupom" class="btn"
+								style="background: #27ae60; color: white; font-weight: bold; padding: 8px 16px; border: none; border-radius: 6px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; cursor: pointer; display: none;"
+								onclick="acionarMoverProduto()">
+								Mover ➡️
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Parte 2: Itens do Cupom / Carrinho -->
+			<div class="box-custom"
+				style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+				<div>
+					<h4>2. Itens do Cupom</h4>
+					<div style="max-height: 280px; overflow-y: auto;">
+						<table class="table-custom">
+							<thead>
+								<tr>
+									<th style="width: 55%;">Descrição do Produto</th>
+									<th style="width: 15%; text-align: center;">Qtd</th>
+									<th style="width: 30%; text-align: right;">Subtotal</th>
+								</tr>
+							</thead>
+							<tbody id="corpoTabelaItens">
+								<!-- Itens em standby entram via JS -->
+							</tbody>
+						</table>
+						<div id="tabelaItensVazia" style="text-align: center; color: #bdc3c7; padding: 40px 0;">Mesa
+							vazia. Aguardando itens...</div>
+					</div>
+				</div>
+				<div>
+					<div class="form-label" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+						Total Geral do Pedido:</div>
+					<div class="total-caixa" id="labelTotalVenda">R$ 0,00</div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+
+	<!-- ⚡ FILTRO ULTRA RÁPIDO DO BALCÃO -->
+	<script>
+		function filtrarArvoreLocalmente() {
+			const termo = document.getElementById("inputPesquisaProduto").value.toLowerCase().trim();
+			const blocosRaiz = document.querySelectorAll("#containerArvoreVendas > div");
+
+			blocosRaiz.forEach(bloco => {
+				const textoBloco = bloco.textContent.toLowerCase();
+				if (textoBloco.includes(termo)) {
+					bloco.style.display = "block";
+				} else {
+					bloco.style.display = "none";
+				}
+			});
+		}
+	</script>
+
+	</div>
+	</div>
+
+	</div>
+
+	</div>
+
+	<!-- Parte 3: modal de fechamento e painel flutuante -->
+	<div id="container-fechamento-pedido"></div>
+
+	<!-- 🌟 Container dos impostos -->
+	<div id="container-impostos"></div>
+
+	<!-- 💰 Financeiro da Venda -->
+	<div id="container-financeiro"></div>
+	<!-- 📦 SCRIPT GLOBAL INJETADO DIRETO NA MESA DE NEGOCIAÇÃO -->
+	<script>
+		// Força a função a existir na raiz global (window), impedindo erros de "not defined"
+		window.togglePainelDoCaixaDirect = function () {
+			const painel = document.getElementById("painelCaixa");
+			if (!painel) return;
+
+			// Pega o estilo real e alterna sem frescura
+			if (painel.style.display === "none") {
+				painel.style.setProperty("display", "block", "important");
+			} else {
+				painel.style.setProperty("display", "none", "important");
+			}
+		};
+
+		// 🌟 ADICIONADO: Lógica global infalível para abrir o Modal de Impostos
+		window.impostoFrete = function () {
+			console.log("👉 Botão Imposto + Frete clicado!");
+			const modal = document.getElementById("modalImpostos");
+
+			if (modal) {
+				modal.style.setProperty("display", "block", "important");
+				console.log("🎯 Quadro de impostos exibido na tela.");
+			} else {
+				console.error("❌ Erro: O elemento #modalImpostos não foi encontrado na página! Verifique se o container-impostos e o arquivo impostos.html estão corretos.");
+			}
+		};
+
+		// 🌟 ADICIONADO: Lógica global infalível para fechar o Modal de Impostos
+		window.fecharModalImpostos = function () {
+			const modal = document.getElementById("modalImpostos");
+			if (modal) {
+				modal.style.setProperty("display", "none", "important");
+			}
+		};
+	</script>
+
+
+	<script>
+		async function carregarComponente(idContainer, urlArquivo) {
+			try {
+				const resposta = await fetch(urlArquivo);
+
+				if (!resposta.ok) {
+					throw new Error(
+						`Erro ao carregar ${urlArquivo}: HTTP ${resposta.status}`
+					);
+				}
+
+				const html = await resposta.text();
+
+				const container = document.getElementById(idContainer);
+
+				if (container) {
+					container.innerHTML = html;
+				}
+
+			} catch (erro) {
+				console.error(erro);
+
+				const container = document.getElementById(idContainer);
+
+				if (container) {
+					container.innerHTML = `
+                        <div class="box-custom">
+                            <div class="mensagem-vazia">
+                                Não foi possível carregar este componente.
+                            </div>
+                        </div>
+                    `;
+				}
+			}
+		}
+
+		async function carregarArquivoJavaScript(src) {
+			return new Promise((resolve, reject) => {
+				const script = document.createElement("script");
+
+				script.src = src;
+				script.onload = resolve;
+
+				script.onerror = () => {
+					reject(
+						new Error(`Erro ao carregar o arquivo ${src}`)
+					);
+				};
+
+				document.body.appendChild(script);
+			});
+		}
+
+		// Programa principal da Mesa de Negociação
+		async function inicializarTela() {
+			try {
+
+				// 1. Carrega os componentes HTML primeiro
+				await Promise.all([
+
+				    carregarComponente(
+				        "container-fechamento-pedido",
+				        "/vendas/fechamento-pedido.html"
+				    ),
+
+				    carregarComponente(
+				        "container-impostos",
+				        "/vendas/impostos.html"
+				    ),
+
+				    carregarComponente(
+				        "container-financeiro",
+				        "/vendas/Financeiro/financeiro.html"
+				    )
+
+				]);
+					
+					
+
+			
+
+				console.log("Componentes HTML carregados com sucesso!");
+
+				// 2. Configura os painéis da tela
+				configurarPainelArrastavel();
+
+				// 3. Lista de arquivos JavaScript de lógica
+				const arquivosLogica = [
+					'/componentes-js/utils.js',
+					'/vendas/modulo-localizar.js',
+					'/vendas/modulo-cupom.js',
+					'/vendas/DevolverPedido/devolucao.js',
+					'/vendas/LimparCupom/cancelarPedido.js',
+					'/vendas/carrinho-js/carrinho.js',
+					'/vendas/carrinho-js/imprimeCarrinho.js',
+					'/vendas/modulo-fechamento.js',
+					'/vendas/Financeiro/financeiro.js',
+					'/vendas/venda.js'
+				];
+
+				for (const src of arquivosLogica) {
+					await carregarArquivoJavaScript(src);
+				}
+
+				const modalFinanceiro =
+					document.getElementById("modalFecharPedido");
+
+				if (modalFinanceiro &&
+					typeof dragElement === "function") {
+
+					dragElement(modalFinanceiro);
+				}
+
+				const modalImpostosArraste =
+					document.getElementById("modalImpostos");
+
+				if (modalImpostosArraste &&
+					typeof dragElement === "function") {
+
+					dragElement(modalImpostosArraste);
+				}
+
+				// 4. Inicializa a lógica principal
+				if (typeof inicializarLogicaVenda === "function") {
+					inicializarLogicaVenda();
+				}
+
+			} catch (erro) {
+				console.error(
+					"Erro ao inicializar a Mesa de Negociação:",
+					erro
+				);
+			}
+		}
+
+
+		function configurarPainelArrastavel() {
+			const painel = document.getElementById("painelCaixa");
+			const header = document.getElementById("painelCaixaHeader");
+
+			if (!painel || !header) {
+				return;
+			}
+
+			let posicaoXAnterior = 0;
+			let posicaoYAnterior = 0;
+
+			header.onmousedown = iniciarArrasto;
+
+			function iniciarArrasto(evento) {
+				evento.preventDefault();
+
+				posicaoXAnterior = evento.clientX;
+				posicaoYAnterior = evento.clientY;
+
+				document.onmouseup = pararArrasto;
+				document.onmousemove = arrastarPainel;
+			}
+
+			function arrastarPainel(evento) {
+				evento.preventDefault();
+
+				const deslocamentoX =
+					posicaoXAnterior - evento.clientX;
+
+				const deslocamentoY =
+					posicaoYAnterior - evento.clientY;
+
+				posicaoXAnterior = evento.clientX;
+				posicaoYAnterior = evento.clientY;
+
+				painel.style.top =
+					`${painel.offsetTop - deslocamentoY}px`;
+
+				painel.style.left =
+					`${painel.offsetLeft - deslocamentoX}px`;
+
+				painel.style.right = "auto";
+			}
+
+			function pararArrasto() {
+				document.onmouseup = null;
+				document.onmousemove = null;
+			}
+		}
+
+		window.addEventListener(
+			"DOMContentLoaded",
+			inicializarTela
+		);
+	</script>
+
+	<!-- 🎯 PASSO 2: SCRIPT DE INTEGRAÇÃO DO PAINEL DE PEDIDOS DO BALCÃO -->
+	<script>
+		// ⏳ RITUAL AUTOMÁTICO: Coloca as datas de hoje nos campos assim que o caixa abre
+		document.addEventListener("DOMContentLoaded", () => {
+			const hoje = new Date().toISOString().split('T')[0];
+			if (document.getElementById('vendaDataInicio')) document.getElementById('vendaDataInicio').value = hoje;
+			if (document.getElementById('vendaDataFim')) document.getElementById('vendaDataFim').value = hoje;
+		});
+
+		// 🔍 FUNÇÃO: Filtra os cupons gerados batendo no nosso RelatorioController unificado
+		async function filtrarVendasPorPeriodo() {
+			const dataInicio = document.getElementById('vendaDataInicio').value;
+			const dataFim = document.getElementById('vendaDataFim').value;
+			const select = document.getElementById('selectVendaDinamica');
+
+			if (!dataInicio || !dataFim) {
+				alert("⚠️ Por favor, informe o período de datas completo!");
+				return;
+			}
+
+			select.innerHTML = '<option value="">Buscando pedidos no MySQL...</option>';
+
+			try {
+				// Busca o token de segurança usando a função global do seu utils.js
+				const token = window.obterTokenSeguro();
+
+				const response = await fetch(`/api/relatorios/vendas/periodo?inicio=${dataInicio}&fim=${dataFim}`, {
+					method: "GET",
+					headers: {"Authorization": `Bearer ${token}`}
+				});
+
+				if (!response.ok) throw new Error("Erro na comunicação com o servidor.");
+				const vendas = await response.json();
+
+				if (vendas.length === 0) {
+					select.innerHTML = '<option value="">-- NENHUM PEDIDO ENCONTRADO NO PERÍODO --</option>';
+					return;
+				}
+
+				select.innerHTML = '<option value="">-- SELECIONE UM PEDIDO DE VENDA --</option>';
+
+				// Alimenta o dropdown com o número real do pedido, nome do cliente e valor total
+				vendas.forEach(v => {
+					const opt = document.createElement('option');
+					const numPedido = v.numeroNota || 'S/P';
+					opt.value = numPedido;
+
+					const cliente = v.fornecedorNome || 'Consumidor Final';
+					const total = v.valorTotalNota ? parseFloat(v.valorTotalNota).toFixed(2) : '0.00';
+
+					opt.textContent = `🛒 Pedido Nº: ${numPedido} | Cliente: ${cliente} | Total: R$ ${total}`;
+					select.appendChild(opt);
+				});
+
+			} catch (erro) {
+				console.error("Erro ao filtrar vendas no faturamento:", erro);
+				select.innerHTML = '<option value="">Erro ao carregar pedidos do banco</option>';
+			}
+		}
+
+		// 🖨️ FUNÇÃO: Dispara o download da DANFE azul corporativa pelo passaporte universal
+		function imprimirDanfeSaida() {
+			const idVenda = document.getElementById('selectVendaDinamica').value;
+
+			if (!idVenda) {
+				alert("⚠️ Por favor, selecione um Pedido de Venda na lista antes de imprimir!");
+				return;
+			}
+
+			// Consome o endpoint centralizado do RelatorioController e a função baixarPdf do utils.js
+			const endpoint = `/api/relatorios/danfe-saida/${idVenda}`;
+			window.baixarPdf(endpoint, `DANFE_Saida_Pedido_${idVenda}`);
+		}
+	</script>
+
+	<!-- 🎯 PASSO 2: SCRIPT DE INTEGRAÇÃO DO PAINEL DE PEDIDOS DO BALCÃO -->
+	<script>
+		// ⏳ RITUAL AUTOMÁTICO: Coloca as datas de hoje nos campos assim que o caixa abre
+		document.addEventListener("DOMContentLoaded", () => {
+			const hoje = new Date().toISOString().split('T')[0];
+			if (document.getElementById('vendaDataInicio')) document.getElementById('vendaDataInicio').value = hoje;
+			if (document.getElementById('vendaDataFim')) document.getElementById('vendaDataFim').value = hoje;
+		});
+
+		// 🔍 FUNÇÃO: Filtra os cupons gerados batendo no nosso RelatorioController unificado
+		async function filtrarVendasPorPeriodo() {
+			const dataInicio = document.getElementById('vendaDataInicio').value;
+			const dataFim = document.getElementById('vendaDataFim').value;
+			const select = document.getElementById('selectVendaDinamica');
+
+			if (!dataInicio || !dataFim) {
+				alert("⚠️ Por favor, informe o período de datas completo!");
+				return;
+			}
+
+			select.innerHTML = '<option value="">Buscando pedidos no MySQL...</option>';
+
+			try {
+				const token = window.obterTokenSeguro();
+
+				const response = await fetch(`/api/relatorios/vendas/periodo?inicio=${dataInicio}&fim=${dataFim}`, {
+					method: "GET",
+					headers: {"Authorization": `Bearer ${token}`}
+				});
+
+				if (!response.ok) throw new Error("Erro na comunicação com o servidor.");
+				const vendas = await response.json();
+
+				if (vendas.length === 0) {
+					select.innerHTML = '<option value="">-- NENHUM PEDIDO ENCONTRADO NO PERÍODO --</option>';
+					return;
+				}
+
+				select.innerHTML = '<option value="">-- SELECIONE UM PEDIDO DE VENDA --</option>';
+
+				vendas.forEach(v => {
+					const opt = document.createElement('option');
+					const numPedido = v.numeroNota || 'S/P';
+					opt.value = numPedido;
+
+					const cliente = v.fornecedorNome || 'Consumidor Final';
+					const total = v.valorTotalNota ? parseFloat(v.valorTotalNota).toFixed(2) : '0.00';
+
+					opt.textContent = `🛒 Pedido Nº: ${numPedido} | Cliente: ${cliente} | Total: R$ ${total}`;
+					select.appendChild(opt);
+				});
+
+			} catch (erro) {
+				console.error("Erro ao filtrar vendas no faturamento:", erro);
+				select.innerHTML = '<option value="">Erro ao carregar pedidos do banco</option>';
+			}
+		}
+
+		// 🖨️ FUNÇÃO: Dispara o download da DANFE azul corporativa pelo passaporte universal
+		function imprimirDanfeSaida() {
+			const idVenda = document.getElementById('selectVendaDinamica').value;
+
+			if (!idVenda) {
+				alert("⚠️ Por favor, selecione um Pedido de Venda na lista antes de impressão!");
+				return;
+			}
+
+			const endpoint = `/api/relatorios/danfe-saida/${idVenda}`;
+			window.baixarPdf(endpoint, `DANFE_Saida_Pedido_${idVenda}`);
+		}
+
+		// 🔥 SOLUÇÃO DO BOTÃO AÇÕES: Injetado diretamente no escopo correto
+		window.togglePainelDoCaixaDirect = function () {
+			const painel = document.getElementById("painelCaixa");
+			if (!painel) return;
+
+			if (painel.style.display === "none" || window.getComputedStyle(painel).display === "none") {
+				painel.style.setProperty("display", "block", "important");
+			} else {
+				painel.style.setProperty("display", "none", "important");
+			}
+		};
+	</script>
+
+
+
+
+
+
+
+	<!--<script src="https://jsdelivr.net"></script>
+
+		
+		<!-- 🌐 Bootstrap Híbrido direto da nuvem: Carrega primeiro e dá suporte para os módulos -->
+
+	<script src="/componentes-js/utils.js"></script>
+	<script src="/Entradas/appDevolucao.js"></script>
+	<script src="/Entradas/appDevolucao.js"></script>
+
+
+
+</body>
+
+</html>

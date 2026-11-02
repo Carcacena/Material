@@ -1,0 +1,1 @@
+CREATE INDEX idx_cr_status ON contas_receber (status);

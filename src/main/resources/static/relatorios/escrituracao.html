@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Escrituração Fiscal - Sistema Magia</title>
+	<!-- 🔗 Conecta com o gerenciador global de tokens e PDFs do seu utils.js -->
+	<script src="../componentes-js/utils.js"></script>
+	<style>
+		* { box-sizing: border-box; }
+		body {
+			margin: 0; min-height: 100vh; font-family: Arial, sans-serif; color: #ffffff;
+			display: flex; justify-content: center; align-items: center;
+			background: radial-gradient(circle at top left, rgba(76, 175, 80, 0.12), transparent 30%), linear-gradient(135deg, #17202a, #273746, #1f3a2f);
+			padding: 15px;
+		}
+		.box {
+			width: 100%; max-width: 380px; background: rgba(0, 0, 0, 0.75); border-radius: 12px;
+			padding: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55); position: relative;
+			overflow: hidden;
+		}
+		.box::before {
+			content: ""; position: absolute; top: 0; left: 14px; right: 14px; height: 3px;
+			background: linear-gradient(90deg, #4caf50, #ff9800, #03a9f4);
+		}
+		.cabecalho { text-align: center; margin-bottom: 12px; }
+		.cabecalho h2 { margin: 2px 0; font-size: 16px; color: #4caf50; }
+		.cabecalho .subtitulo { font-size: 10px; color: #b8c7d0; }
+		.form-grupo { margin-bottom: 10px; }
+		label { display: block; font-size: 10px; text-transform: uppercase; color: #ffb74d; margin-bottom: 4px; font-weight: bold; }
+		input[type="date"] {
+			width: 100%; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
+			border-radius: 6px; padding: 6px; color: #ffffff; font-size: 12px; outline: none;
+		}
+		.grid-acoes { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 14px; }
+		button {
+			width: 100%; border: none; border-radius: 6px; padding: 8px 6px; font-size: 12px;
+			font-weight: bold; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;
+		}
+		.btn-gerar { background: linear-gradient(135deg, #198754, #157347); }
+		.btn-voltar { background: linear-gradient(135deg, #56606d, #4b5563); }
+		.info { margin-top: 12px; padding-top: 8px; font-size: 10px; color: #9fb0ba; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+	</style>
+</head>
+<body>
+	<div class="box">
+		<div class="cabecalho">
+			<h2>🧾 Escrituração Fiscal</h2>
+			<div class="subtitulo">Livro Registro de Apuração de Impostos</div>
+		</div>
+		<div class="form-grupo">
+			<label>Data Inicial</label>
+			<input type="date" id="dataInicio">
+		</div>
+		<div class="form-grupo">
+			<label>Data Final</label>
+			<input type="date" id="dataFim">
+		</div>
+		<div class="grid-acoes">
+			<button class="btn-gerar" onclick="processarFaturamentoFiscal()">📊 Gerar Relatório Consolidado (PDF)</button>
+			<button class="btn-voltar" onclick="voltarMenu()">⬅️ Voltar ao Menu</button>
+		</div>
+		<div class="info">Emissão em lote via processamento nativo 🛡️</div>
+	</div>
+	<script>
+		document.addEventListener("DOMContentLoaded", () => {
+			const token = obterTokenSeguro();
+			if (!token) { window.location.href = "/login.html"; return; }
+			const hoje = new Date();
+			
+			const ano = hoje.getFullYear();
+			const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+			const dia = String(hoje.getDate()).padStart(2, '0');
+			
+			// Define por padrão o período do mês atual em curso de forma segura
+			document.getElementById("dataInicio").value = `${ano}-${mes}-01`;
+			document.getElementById("dataFim").value = `${ano}-${mes}-${dia}`;
+		});
+
+		function processarFaturamentoFiscal() {
+			const inicio = document.getElementById("dataInicio").value;
+			const fim = document.getElementById("dataFim").value;
+			if (!inicio || !fim) { alert("Por favor, selecione o período completo."); return; }
+			
+			// Dispara a requisição passando o cabeçalho Authorization através do utils.js
+			window.baixarPdf(`/api/relatorios/escrituracao-fiscal?dataInicio=${inicio}&dataFim=${fim}`, "apuracao-fiscal");
+		}
+
+		function voltarMenu() { window.location.href = "/menu/menu.html"; }
+	</script>
+</body>
+<script src="/relatorios/modulo-Relatorios.js"></script>
+
+</html>

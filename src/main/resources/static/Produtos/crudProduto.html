@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Gerenciamento de Produtos</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background: linear-gradient(135deg, #2c3e50, #4caf50);
+			color: white;
+			min-height: 100vh;
+			padding: 30px 20px;
+			margin: 0;
+			user-select: none;
+		}
+
+		.box-custom {
+			background: rgba(0, 0, 0, 0.45);
+			padding: 25px;
+			border-radius: 8px;
+			box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+		}
+
+		h2,
+		h4 {
+			color: white;
+			margin-bottom: 15px;
+		}
+
+		.form-control,
+		.form-select {
+			background: rgba(255, 255, 255, 0.1);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			color: white;
+		}
+
+		.form-control:focus,
+		.form-select:focus {
+			background: rgba(255, 255, 255, 0.2);
+			color: white;
+			border-color: #ff9800;
+			box-shadow: none;
+		}
+
+		.form-select option {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.fornecedor-header {
+			width: 100%;
+			text-align: left;
+			padding: 10px 15px;
+			background: rgba(0, 0, 0, 0.3);
+			color: #ff9800 !important;
+			border: 1px solid rgba(255, 152, 0, 0.3);
+			border-radius: 6px;
+			cursor: pointer;
+			font-weight: bold;
+			margin-top: 8px;
+		}
+
+		.fornecedor-header:hover {
+			background: rgba(255, 152, 0, 0.15);
+		}
+
+		.produtos-lista {
+			padding-left: 15px;
+			border-left: 2px dashed rgba(255, 152, 0, 0.2);
+			margin-bottom: 10px;
+		}
+
+		.produto-item {
+			padding: 10px;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			cursor: pointer;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-radius: 4px;
+			margin-top: 4px;
+		}
+
+		.produto-item:hover {
+			background: rgba(255, 255, 255, 0.05);
+		}
+
+		.produto-item.selecionado {
+			background: rgba(255, 152, 0, 0.3) !important;
+			color: white !important;
+			font-weight: bold;
+			border: 1px solid #ff9800;
+		}
+
+		.painel-flutuante {
+			position: fixed;
+			top: 220px;
+			right: 40px;
+			width: 145px;
+			background: rgba(15, 25, 35, 0.9);
+			border: 2px solid #ff9800;
+			outline: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 8px;
+			padding: 12px;
+			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+			z-index: 2000;
+		}
+
+		.painel-header {
+			padding-bottom: 8px;
+			cursor: move;
+			text-align: center;
+			color: #ff9800;
+			border-bottom: 1px dashed rgba(255, 152, 0, 0.4);
+			margin-bottom: 12px;
+			font-size: 11px;
+			font-weight: bold;
+			text-transform: uppercase;
+			letter-spacing: 1.5px;
+		}
+
+		.painel-corpo {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.btn-menu-vertical {
+			width: 100%;
+			padding: 8px 0;
+			border: none;
+			border-radius: 4px;
+			color: white;
+			font-weight: bold;
+			font-size: 12px;
+			text-transform: uppercase;
+			text-align: center;
+			cursor: pointer;
+		}
+
+		.btn-menu-vertical:hover {
+			transform: scale(1.03);
+			filter: brightness(1.15);
+		}
+
+		.btn-incluir {
+			background: #27ae60;
+		}
+
+		.btn-alterar {
+			background: #2980b9;
+		}
+
+		.btn-excluir {
+			background: #c0392b;
+		}
+
+		.btn-voltar {
+			background: #7f8c8d;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container-fluid max-width-1200">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h2 class="m-0">🌿 Gerenciamento de Produtos</h2>
+		</div>
+
+		<div class="row g-4" style="display: flex; flex-direction: row; width: 100%; gap: 20px;">
+			<div class="col-lg-5" style="flex: 1; min-width: 350px;">
+				<div class="box-custom">
+					<h4 id="tituloFormulario">Cadastrar Produto</h4>
+					<form id="formProduto">
+						<input type="hidden" id="produtoId">
+
+						<!-- 1. Nome do Produto -->
+						<div class="mb-4">
+							<label for="nomeProduto" class="form-label" style="font-weight: bold; color: #ff9800;">Nome
+								do Produto</label>
+							<input type="text" class="form-control" id="nomeProduto" required
+								placeholder="Ex: Tijolo Baiano" style="padding: 10px;">
+						</div>
+
+						<!-- 2. Fornecedor -->
+						<div class="mb-4">
+							<label for="selecionaFornecedor" class="form-label"
+								style="font-weight: bold; color: #ff9800;">Fornecedor</label>
+							<select class="form-select" id="selecionaFornecedor" required style="padding: 10px;">
+								<option value="">Selecione...</option>
+							</select>
+						</div>
+
+						<!-- 3. Tipo de Venda e Validade -->
+						<div class="row g-3 mb-4">
+							<div class="col-sm-6">
+								<label for="tipoProduto" class="form-label"
+									style="font-weight: bold; color: #ff9800;">Tipo de Venda</label>
+								<select class="form-select" id="tipoProduto" style="padding: 10px;">
+									<option value="false">Unidade / Peça</option>
+									<option value="true">A Granel (Kg/Mt)</option>
+								</select>
+							</div>
+							<div class="col-sm-6">
+								<label for="dataValidade" class="form-label"
+									style="font-weight: bold; color: #ff9800;">Data de Validade</label>
+								<input type="date" class="form-control" id="dataValidade" style="padding: 10px;">
+							</div>
+
+							<!-- 4. Preço de Custo e Preço de Venda -->
+							<div class="row g-3 mb-4">
+								<div class="col-sm-6">
+									<label for="precoCusto" class="form-label"
+										style="font-weight: bold; color: #ff9800;">Preço de Custo (R$)</label>
+									<input type="number" class="form-control" id="precoCusto" step="0.01" required
+										placeholder="0.00" oninput="calcularMargem()" style="padding: 10px;">
+								</div>
+								<div class="col-sm-6">
+									<label for="precoVenda" class="form-label"
+										style="font-weight: bold; color: #ff9800;">Preço de Venda (R$)</label>
+									<input type="number" class="form-control" id="precoVenda" step="0.01" required
+										placeholder="0.00" oninput="calcularMargem()" style="padding: 10px;">
+								</div>
+							</div>
+
+							<!-- 5. Bloco da Margem de Lucro -->
+							<div class="mb-4 p-2"
+								style="font-weight: bold; font-size: 16px; background: rgba(255,152,0,0.1); border-radius: 4px; text-align: center;">
+								Margem de Lucro Atual: <span id="valorMargem"
+									style="color: #5eff5e; font-size: 18px;">0.00</span>%
+							</div>
+
+							<!-- 6. NOVO: Campo para o Saldo de Estoque Atual (Estilizado no padrão) -->
+
+							<!-- 6. NOVO: Campo para a Quantidade da Última Entrada -->
+							<div class="mb-4">
+								<label for="qteEntrada" class="form-label"
+									style="font-weight: bold; color: #ff9800;">Qtd. Última Entrada</label>
+								<input type="number" class="form-control" id="qteEntrada" min="0" required value="0"
+									style="padding: 10px;">
+							</div>
+
+							<!-- 6. NOVO: Campo para o Saldo de Estoque Atual -->
+							<div class="mb-4">
+								<label for="estoqueAtual" class="form-label"
+									style="font-weight: bold; color: #ff9800;">Estoque Atual</label>
+								<input type="number" class="form-control" id="estoqueAtual" min="0" required value="0"
+									style="padding: 10px;">
+							</div>
+
+
+
+
+
+							<!-- 7. Botão Salvar Produto -->
+							<button type="submit" class="btn w-100"
+								style="background: #ff9800; border: none; padding: 12px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 1px;"
+								id="btnSalvar">
+								Salvar Produto
+							</button>
+					</form>
+				</div>
+			</div>
+
+			<!-- Coluna da Direita: Árvore de Produtos por Fornecedor -->
+			<div class="col-lg-7">
+				<div class="box-custom h-100">
+					<h4>Produtos por Fornecedor</h4>
+					<div class="table-responsive" style="max-height: 430px; overflow-y: auto;">
+						<div id="containerFornecedoresProdutos"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Painel Flutuante do Menu Lateral (::: MENU :::) -->
+	<div id="meuPainelFlutuante" class="painel-flutuante">
+		<div id="meuPainelHeader" class="painel-header">::: MENU :::</div>
+		<div class="painel-corpo">
+			<button class="btn-menu-vertical btn-incluir" onclick="acionarIncluir()">Incluir</button>
+			<button class="btn-menu-vertical btn-alterar" onclick="acionarAlterar()">Alterar</button>
+			<button class="btn-menu-vertical btn-excluir" onclick="acionarExcluir()">Excluir</button>
+		<!--	<button class="btn-menu-vertical btn-voltar"
+				onclick="window.location.href='/menu/menu.html'"><u>V</u>oltar</button>-->
+				<a class="btn-menu-vertical btn-voltar" href="/menu/menu.html"><u>V</u>oltar</a>
+
+		</div>
+	</div>
+
+	<!-- Script de Arrasto do Menu Flutuante -->
+	<script>
+		const painel = document.getElementById("meuPainelFlutuante"),
+			header = document.getElementById("meuPainelHeader");
+		let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+		if (header) {
+			header.onmousedown = iniciarArrasto;
+		} else {
+			painel.onmousedown = iniciarArrasto;
+		}
+
+		function iniciarArrasto(e) {
+			e = e || window.event;
+			e.preventDefault();
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			document.onmouseup = pararArrasto;
+			document.onmousemove = arrastandoPainel;
+		}
+
+		function arrastandoPainel(e) {
+			e = e || window.event;
+			e.preventDefault();
+			pos1 = pos3 - e.clientX;
+			pos2 = pos4 - e.clientY;
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			painel.style.top = (painel.offsetTop - pos2) + "px";
+			painel.style.left = (painel.offsetLeft - pos1) + "px";
+			painel.style.right = "auto";
+		}
+
+		function pararArrasto() {
+			document.onmouseup = null;
+			document.onmousemove = null;
+		}
+	</script>
+
+	<script src="/Produtos/appProduto.js"></script>
+
+
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>

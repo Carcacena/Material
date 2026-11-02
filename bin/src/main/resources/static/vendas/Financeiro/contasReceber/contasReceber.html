@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Contas a Receber - Sistema Magia</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+    min-height: 100vh;
+
+    font-family: Arial, sans-serif;
+
+    background:
+        linear-gradient(
+            135deg,
+            #172b3a,
+            #24495a,
+            #234d38
+        );
+
+    color: white;
+}
+
+.pagina {
+
+    width: min(1400px, 96%);
+    margin: 18px auto;
+}
+
+.cabecalho {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 14px;
+}
+
+.titulo {
+
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.subtitulo {
+
+    color: #bdc3c7;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.cards {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(5, minmax(150px, 1fr));
+
+    gap: 10px;
+
+    margin-bottom: 12px;
+}
+
+.card {
+
+    background:
+        rgba(0, 0, 0, 0.32);
+
+    border:
+        1px solid rgba(
+            255,
+            255,
+            255,
+            0.08
+        );
+
+    border-radius: 10px;
+
+    padding: 12px;
+
+    box-shadow:
+        0 8px 20px rgba(
+            0,
+            0,
+            0,
+            0.28
+        );
+}
+
+.card small {
+
+    color: #bdc3c7;
+
+    display: block;
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+}
+
+.card strong {
+
+    display: block;
+
+    margin-top: 5px;
+
+    font-family: monospace;
+
+    font-size: 20px;
+
+    color: #5eff5e;
+}
+
+.filtros {
+
+    background:
+        rgba(0,0,0,0.30);
+
+    border-radius: 10px;
+
+    padding: 10px;
+
+    margin-bottom: 12px;
+
+    display: grid;
+
+    grid-template-columns:
+        2fr 1fr 0.8fr 1.2fr 1fr 1fr;
+
+    gap: 8px;
+}
+
+input,
+select {
+
+    width: 100%;
+
+    background:
+        rgba(255,255,255,0.05);
+
+    color: white;
+
+    border:
+        1px solid rgba(
+            255,
+            255,
+            255,
+            0.15
+        );
+
+    border-radius: 6px;
+
+    padding: 8px;
+
+    outline: none;
+}
+
+select option {
+    color: black;
+}
+
+.painel {
+
+    background:
+        rgba(0,0,0,0.35);
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 12px 30px
+        rgba(0,0,0,0.35);
+
+    overflow: hidden;
+}
+
+.painel-titulo {
+
+    padding: 10px 14px;
+
+    color: #ff9800;
+
+    font-weight: bold;
+
+    border-bottom:
+        1px dashed rgba(
+            255,
+            152,
+            0,
+            0.4
+        );
+}
+
+.area-scroll {
+
+    height: 53vh;
+
+    min-height: 330px;
+
+    overflow-y: auto;
+
+    padding: 10px;
+}
+
+.cliente {
+
+    margin-bottom: 8px;
+
+    border-radius: 8px;
+
+    overflow: hidden;
+
+    background:
+        rgba(255,255,255,0.025);
+}
+
+.cliente-cabecalho {
+
+    padding: 9px 10px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+    color: white;
+}
+
+.cliente-cabecalho:hover {
+
+    background:
+        rgba(255,255,255,0.05);
+}
+
+.nota {
+
+    margin-left: 24px;
+
+    margin-bottom: 6px;
+}
+
+.nota-cabecalho {
+
+    color: #ff9800;
+
+    cursor: pointer;
+
+    padding: 6px;
+}
+
+.parcelas {
+
+    margin-left: 24px;
+}
+
+.parcela {
+
+    display: grid;
+
+    grid-template-columns:
+        70px 105px 130px 120px 1fr 95px;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 7px;
+
+    border-bottom:
+        1px solid rgba(
+            255,
+            255,
+            255,
+            0.05
+        );
+
+    font-size: 12px;
+}
+
+.parcela:hover {
+
+    background:
+        rgba(255,255,255,0.04);
+}
+
+.valor {
+
+    color: #5eff5e;
+
+    font-family: monospace;
+
+    font-weight: bold;
+}
+
+.status {
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    border-radius: 10px;
+
+    padding: 4px 8px;
+
+    text-align: center;
+}
+
+.A-VENCER {
+
+    background: #176b37;
+}
+
+.VINCENDO {
+
+    background: #c47b00;
+}
+
+.VENCIDO {
+
+    background: #a83232;
+}
+
+.PAGO {
+
+    background: #2471a3;
+}
+
+.DEVOLVIDO {
+
+    background: #626567;
+}
+
+button {
+
+    border: none;
+
+    border-radius: 6px;
+
+    padding: 7px 10px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+.btn-baixar {
+
+    background: #27ae60;
+
+    color: white;
+}
+
+.btn-voltar {
+
+    background: #34495e;
+
+    color: white;
+}
+
+.rodape {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-top: 12px;
+}
+
+@media(max-width: 900px) {
+
+    .cards {
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+    .filtros {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+    .parcela {
+        grid-template-columns:
+            1fr;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="pagina">
+
+    <div class="cabecalho">
+
+        <div>
+
+            <div class="titulo">
+                💰 CONTAS A RECEBER
+            </div>
+
+            <div class="subtitulo">
+                Histórico financeiro —
+                Sistema Magia
+            </div>
+
+        </div>
+
+        <button
+            class="btn-voltar"
+            onclick="voltarMenu()">
+            ← Voltar
+        </button>
+
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+            <small>Em Aberto</small>
+            <strong id="cardAberto">
+                R$ 0,00
+            </strong>
+        </div>
+
+        <div class="card">
+            <small>Vincendo</small>
+            <strong id="cardVincendo">
+                R$ 0,00
+            </strong>
+        </div>
+
+        <div class="card">
+            <small>Vencido</small>
+            <strong id="cardVencido">
+                R$ 0,00
+            </strong>
+        </div>
+
+        <div class="card">
+            <small>Recebido</small>
+            <strong id="cardPago">
+                R$ 0,00
+            </strong>
+        </div>
+
+        <div class="card">
+            <small>Devolvido</small>
+            <strong id="cardDevolvido">
+                R$ 0,00
+            </strong>
+        </div>
+
+    </div>
+
+    <div class="filtros">
+
+        <input
+            id="filtroCliente"
+            placeholder="Cliente">
+
+        <input
+            id="filtroNota"
+            placeholder="NF">
+
+        <input
+            id="filtroSerie"
+            placeholder="Série">
+
+        <select id="filtroSituacao">
+
+            <option value="">
+                Todas situações
+            </option>
+
+            <option value="A VENCER">
+                A Vencer
+            </option>
+
+            <option value="VINCENDO">
+                Vincendo
+            </option>
+
+            <option value="VENCIDO">
+                Vencido
+            </option>
+
+            <option value="PAGO">
+                Pago
+            </option>
+
+            <option value="DEVOLVIDO">
+                Devolvido
+            </option>
+
+        </select>
+
+        <input
+            type="date"
+            id="filtroDataInicial">
+
+        <input
+            type="date"
+            id="filtroDataFinal">
+
+    </div>
+
+    <div class="painel">
+
+        <div class="painel-titulo">
+            🌳 HISTÓRICO DE TÍTULOS
+        </div>
+
+        <div
+            id="arvoreContas"
+            class="area-scroll">
+        </div>
+
+    </div>
+
+</div>
+
+           <script src="contasReceber.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Menu - Material de Construção</title>
+
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			font-family: Arial, sans-serif;
+			color: #ffffff;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background:
+				radial-gradient(circle at top left, rgba(76, 175, 80, 0.12), transparent 30%),
+				radial-gradient(circle at bottom right, rgba(255, 152, 0, 0.10), transparent 25%),
+				linear-gradient(135deg, #17202a, #273746, #1f3a2f);
+			padding: 20px;
+		}
+
+		.box {
+			width: 100%;
+			max-width: 460px;
+			background: rgba(0, 0, 0, 0.72);
+			border-radius: 20px;
+			padding: 28px 24px 20px;
+			box-shadow:
+				0 18px 40px rgba(0, 0, 0, 0.55),
+				0 0 0 1px rgba(255, 255, 255, 0.05);
+			backdrop-filter: blur(6px);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.box::before {
+			content: "";
+			position: absolute;
+			top: 0;
+			left: 18px;
+			right: 18px;
+			height: 3px;
+			border-radius: 10px;
+			background: linear-gradient(90deg, #4caf50, #ff9800, #03a9f4);
+			box-shadow: 0 0 12px rgba(255, 152, 0, 0.5);
+		}
+
+		.cabecalho {
+			text-align: center;
+			margin-bottom: 18px;
+		}
+
+		.cabecalho h2 {
+			margin: 8px 0 6px;
+			font-size: 20px;
+			color: #4caf50;
+			text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+		}
+
+		.cabecalho .subtitulo {
+			font-size: 12px;
+			color: #b8c7d0;
+			letter-spacing: 0.3px;
+		}
+
+		.bloco-titulo {
+			font-size: 11px;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+			color: #ffb74d;
+			text-align: left;
+			margin: 16px 2px 8px;
+			font-weight: bold;
+		}
+
+		.grid-buttons {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 12px;
+		}
+
+		button {
+			width: 100%;
+			border: none;
+			border-radius: 10px;
+			padding: 14px 10px;
+			font-size: 14px;
+			font-weight: bold;
+			color: white;
+			cursor: pointer;
+			transition: all 0.22s ease;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+		}
+
+		button:hover {
+			transform: translateY(-2px);
+			filter: brightness(1.04);
+			box-shadow: 0 10px 18px rgba(0, 0, 0, 0.36);
+		}
+
+		button:active {
+			transform: translateY(0);
+		}
+
+		.full-width {
+			grid-column: span 2;
+		}
+
+		.btn-pdv {
+			background: linear-gradient(135deg, #2e7d32, #388e3c);
+			border: 1px solid rgba(124, 255, 128, 0.28);
+			font-size: 15px;
+		}
+
+		.btn-laranja {
+			background: linear-gradient(135deg, #ff9800, #f57c00);
+		}
+
+		.btn-cinza {
+			background: linear-gradient(135deg, #56606d, #4b5563);
+		}
+
+		.btn-azul {
+			background: linear-gradient(135deg, #0288d1, #039be5);
+		}
+
+		.btn-verde-financeiro {
+			background: linear-gradient(135deg, #198754, #157347);
+		}
+
+		.btn-roxo {
+			background: linear-gradient(135deg, #6f42c1, #5e35b1);
+		}
+
+		.btn-sair {
+			background: linear-gradient(135deg, #d63031, #c62828);
+			margin-top: 4px;
+		}
+
+		.info {
+			margin-top: 18px;
+			padding-top: 14px;
+			font-size: 12px;
+			color: #9fb0ba;
+			text-align: center;
+			border-top: 1px solid rgba(255, 255, 255, 0.08);
+		}
+
+		.rodape-frase {
+			margin-top: 6px;
+			font-size: 11px;
+			color: #7f8c8d;
+			text-align: center;
+		}
+
+		@media (max-width: 520px) {
+			.box {
+				padding: 24px 18px 18px;
+			}
+
+			.grid-buttons {
+				grid-template-columns: 1fr;
+			}
+
+			.full-width {
+				grid-column: span 1;
+			}
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="box">
+
+		<div class="cabecalho">
+			<h2>🌳 Material Construção</h2>
+			<div class="subtitulo">Painel central do Sistema Magia</div>
+		</div>
+
+		<div class="bloco-titulo">Operação Principal</div>
+		<div class="grid-buttons">
+			<button class="btn-pdv full-width" onclick="irVendas()">⚡ Lançar Venda (PDV)</button>
+		</div>
+
+		<div class="bloco-titulo">Cadastros e Movimento</div>
+		<div class="grid-buttons">
+			<button class="btn-laranja" onclick="irProdutos()">📦 Produtos</button>
+			<button class="btn-laranja" onclick="irEntradas()">📥 Entradas (NF)</button>
+
+			<button class="btn-cinza" onclick="irClientes()">👥 Clientes</button>
+			<button class="btn-cinza" onclick="irFornecedores()">🚚 Fornecedores</button>
+		</div>
+
+		<div class="bloco-titulo">Financeiro</div>
+		<div class="grid-buttons">
+			<button class="btn-verde-financeiro" onclick="irContasReceber()">💰 Contas a Receber</button>
+			<button class="btn-roxo" onclick="irContasPagar()">🧾 Contas a Pagar</button>
+		</div>
+		
+
+
+
+		<div class="bloco-titulo">Gerencial</div>
+		<div class="grid-buttons">
+			<button class="btn-azul full-width" onclick="irRelatorios()">📊 Relatórios Gerenciais (PDF)</button>
+			<button class="btn-cinza full-width" onclick="irOrigemSistema()">🛠️ Origem do Sistema</button>
+			<button class="btn-sair full-width" onclick="sair()">❌ Sair do Sistema</button>
+		</div>
+
+		<div class="info">Usuário autenticado via JWT 🔑</div>
+		<div class="rodape-frase">Problemas existem para ser explicados.</div>
+
+	</div>
+
+	<script>
+		// 🔑 PROTEÇÃO DE ACESSO
+		const token = localStorage.getItem("token");
+		if (!token) {
+			window.location.href = "/login.html";
+		}
+
+		// 🚀 NAVEGAÇÃO
+		function irVendas() {
+			window.location.href = "/vendas/vendas.html";
+		}
+
+		function irFornecedores() {
+			window.location.href = "/Fornecedores/crudFornecedor.html";
+		}
+
+		function irProdutos() {
+			window.location.href = "/Produtos/crudProduto.html";
+		}
+
+		function irClientes() {
+			window.location.href = "/Clientes/crudCliente.html";
+		}
+
+		function irEntradas() {
+			window.location.href = "/Entradas/entradaProduto.html";
+		}
+
+		function irOrigemSistema() {
+			window.location.href = "/OrigemSistema/crudOrigemSistema.html";
+		}
+
+		function irRelatorios() {
+			window.location.href = "/relatorios/painelRelatorios.html";
+		}
+
+		// 💰 FINANCEIRO - LIGAÇÕES PROVISÓRIAS
+		function irContasReceber() {
+		    // A barra no início impede que a pasta atual (ex: /menu/) seja colada antes da URL
+		    window.location.href = "/vendas/Financeiro/contasReceber/contasReceber.html"; 
+		}
+
+		function irContasPagar() {
+			// ajuste depois para o caminho real
+			alert("Ligação provisória: Contas a Pagar");
+			// window.location.href = "/Financeiro/contasPagar.html";
+		}
+
+		// 🚪 LOGOUT
+		function sair() {
+			localStorage.removeItem("token");
+			window.location.href = "/login.html";
+		}
+	</script>
+
+</body>
+
+</html>

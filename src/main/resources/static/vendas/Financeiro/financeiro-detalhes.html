@@ -1,0 +1,149 @@
+<!-- ================================================================= -->
+<!-- MODAL FINANCEIRO DETALHES — MODELAGEM DE TELA DIRETA (CARTÃO)     -->
+<!-- ================================================================= -->
+<div class="modal fade" id="modalFinanceiroDetalhes" tabindex="-1" aria-hidden="true"
+	style="display: none; position: fixed; z-index: 9999; top: 5%; left: 50%; transform: translateX(-50%);">
+
+	<style>
+		#modalFinanceiroDetalhes .modal-dialog {
+			margin: 12px auto;
+			max-width: 370px;
+			/* Encaixe cirúrgico para telas de 15" e mobile */
+			width: 94%;
+		}
+
+		#modalFinanceiroDetalhes .modal-content-ia {
+			background: rgba(15, 28, 41, 0.96) !important;
+			backdrop-filter: blur(10px);
+			-webkit-backdrop-filter: blur(10px);
+			border: 1px solid rgba(41, 128, 185, 0.4);
+			border-radius: 12px;
+			box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+			overflow: hidden;
+		}
+
+		#modalFinanceiroDetalhes .ia-input-sm {
+			background: rgba(255, 255, 255, 0.03) !important;
+			border: 1px solid rgba(255, 255, 255, 0.08) !important;
+			color: #ffffff !important;
+			border-radius: 6px;
+			padding: 5px 10px;
+			font-size: 13px;
+			height: 35px;
+		}
+
+		#modalFinanceiroDetalhes .ia-input-sm:focus {
+			border-color: #58b9ff !important;
+			box-shadow: 0 0 8px rgba(88, 185, 255, 0.2) !important;
+		}
+
+		.bloco-etapa-fixo {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+		}
+	</style>
+
+	<div class="modal-dialog">
+		<div class="modal-content modal-content-ia">
+
+			<!-- CABEÇALHO COMPACTO -->
+			<div class="modal-header text-white"
+				style="border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.2); padding: 10px 14px;">
+				<div style="display: flex; align-items: center; gap: 8px;">
+					<div
+						style="width: 8px; height: 8px; background: #39d875; border-radius: 50%; box-shadow: 0 0 8px #39d875;">
+					</div>
+					<h6 class="modal-title font-monospace"
+						style="color: #ffffff; font-weight: 700; margin:0; font-size: 13px;">
+						FINANCEIRO DA VENDA
+					</h6>
+				</div>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"
+					style="opacity: 0.6; transform: scale(0.75);"></button>
+			</div>
+
+			<!-- BARRA DE PROGRESSO ULTRA SLIM (INICIA CHEIA/VERDE) -->
+			<div style="width: 100%; background: rgba(255,255,255,0.05); height: 2px;">
+				<div id="barraProgressoDetalhe"
+					style="height: 2px; width: 100%; background: #39d875; box-shadow: 0 0 8px #39d875; transition: width 0.3s ease, background 0.3s ease;">
+				</div>
+			</div>
+
+			<!-- CORPO DO MODAL -->
+			<div class="modal-body text-white p-3" style="max-height: 52vh; overflow-y: auto;">
+
+				<!-- PASSO ÚNICO: FORMULÁRIO COMPACTO DO CARTÃO -->
+				<div id="etapaParte2" class="bloco-etapa-fixo">
+					<div>
+						<div
+							style="color: #58b9ff; font-weight: bold; margin-bottom: 10px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
+							💳 INFORMAÇÕES DE FATURAMENTO
+						</div>
+
+						<div class="row g-2 mb-3">
+							<div class="col-12">
+								<label class="form-label mb-1"
+									style="color: rgba(255,255,255,0.5); font-size:11px;">Bandeira</label>
+								<select id="selectBandeira" name="bandeira" class="form-select ia-input-sm">
+									<option value="">Selecione...</option>
+									<option value="VISA">VISA</option>
+									<option value="MASTERCARD">MASTERCARD</option>
+									<option value="ELO">ELO</option>
+									<option value="AMEX">AMERICAN EXPRESS</option>
+								</select>
+							</div>
+							<div class="col-6">
+								<label class="form-label mb-1"
+									style="color: rgba(255,255,255,0.5); font-size:11px;">Final Cartão</label>
+								<input type="text" id="inputFinalCartao" name="final_cartao" maxlength="4"
+									class="form-control ia-input-sm" placeholder="1234">
+							</div>
+							<div class="col-6">
+								<label class="form-label mb-1"
+									style="color: rgba(255,255,255,0.5); font-size:11px;">Parcelas</label>
+								<input type="number" id="inputParcelas" name="parcelas" min="1" value="1"
+									class="form-control ia-input-sm">
+							</div>
+							<div class="col-12">
+								<label class="form-label mb-1"
+									style="color: rgba(255,255,255,0.5); font-size:11px;">Código Autorização</label>
+								<input type="text" id="inputAutorizacao" name="codigo_autorizacao"
+									class="form-control ia-input-sm" placeholder="Autorização">
+							</div>
+							<div class="col-12">
+								<label class="form-label mb-1"
+									style="color: rgba(255,255,255,0.5); font-size:11px;">Identificador da Transação (NSU)</label>
+								<input type="text" id="inputTransacaoId" name="identificador_transacao"
+									class="form-control ia-input-sm" placeholder="ID Transação">
+							</div>
+						</div>
+					</div>
+
+					<!-- BOTÕES DE AÇÃO -->
+					<div class="row g-2">
+						<div class="col-4">
+							<button type="button" class="btn w-100" data-bs-dismiss="modal"
+								style="background: rgba(255,255,255,0.04); color: #fff; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 9px; font-size: 12px;">
+								Voltar
+							</button>
+						</div>
+						<div class="col-8">
+							<button type="button" class="btn w-100 fw-bold" onclick="salvarFinanceiroDetalhes()"
+								style="background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 6px; padding: 9px; font-size: 12px; box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);">
+								Confirmar e Salvar
+							</button>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function salvarFinanceiroDetalhes() {
+		alert('Salvando informações no Railway...');
+	}
+</script>
