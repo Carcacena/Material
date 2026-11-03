@@ -1,33 +1,22 @@
+
 async function processarLoteSelecionado() {
-
-    const selectNota =
-        document.getElementById("selectNotasAtivas");
-
+    const selectNota = document.getElementById("selectNotasAtivas");
     if (!selectNota) {
-
         alert("Erro: seletor de Nota Fiscal não localizado.");
         return;
-
     }
 
     const entradaId = selectNota.value;
-
     if (!entradaId) {
-
         alert("Selecione uma Nota Fiscal para devolução.");
         return;
-
     }
 
     await estornarNotaViaPainel(entradaId);
-
 }
 
-
 // Garante acesso pelo onclick do HTML
-window.processarLoteSelecionado =
-    processarLoteSelecionado;
-
+window.processarLoteSelecionado = processarLoteSelecionado;
 
 // =========================================================================
 async function estornarNotaViaPainel(entradaId) {
@@ -43,14 +32,21 @@ async function estornarNotaViaPainel(entradaId) {
     );
     if (!confirmar) return;
 
-    const token = typeof obterTokenSeguro === "function" ? obterTokenSeguro() : "";
-    const headers = typeof montarHeaders === "function" ? montarHeaders() : { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
+    // CORRIGIDO: Detecta dinamicamente a URL correta do ambiente
+    const urlServidorAtual = window.urlServidor || window.location.origin;
+    
+    // CORRIGIDO: Usa estritamente a função de cabeçalhos oficial do sistema
+    const headersAutenticados = typeof montarHeaders === "function" 
+        ? montarHeaders() 
+        : { "Content-Type": "application/json" };
 
     try {
-        const resposta = await fetch(`/api/entradas/estornar/${entradaId}`, {
+        // CORRIGIDO: Monta a URL absoluta com o servidor dinâmico detectado
+        const urlEstorno = `${urlServidorAtual}/api/entradas/estornar/${entradaId}`;
+
+        const resposta = await fetch(urlEstorno, {
             method: "POST",
-            headers: headers
+            headers: headersAutenticados
         });
 
         if (!resposta.ok) {
@@ -94,7 +90,6 @@ function fecharModalDevolucao() {
 }
 
 async function devolucaoEntrada() {
-    // CORRIGIDO: Se não houver uma URL fixa configurada, ele pega o domínio atual (Local ou Railway) automaticamente!
     const urlServidorAtual = window.urlServidor || window.location.origin;
     
     const selectNota = document.getElementById("selectNotasAtivas");
@@ -105,7 +100,6 @@ async function devolucaoEntrada() {
     if (areaItens) areaItens.style.display = "none";
 
     try {
-        // CORRIGIDO: Usa a sua função oficial para gerar os headers com o Token
         const headersAutenticados = typeof montarHeaders === "function" 
             ? montarHeaders() 
             : { "Content-Type": "application/json" };
@@ -152,10 +146,9 @@ async function buscarItensDaNotaSelecionada(idNota) {
         return;
     }
 
-    // CORRIGIDO: Usa a URL absoluta do servidor e seus cabeçalhos oficiais com Token
     const urlServidorAtual = window.urlServidor || window.location.origin;
 		
-	const headersAutenticados = typeof montarHeaders === "function" 
+    const headersAutenticados = typeof montarHeaders === "function" 
         ? montarHeaders() 
         : { "Content-Type": "application/json" };
 
@@ -163,11 +156,9 @@ async function buscarItensDaNotaSelecionada(idNota) {
     tabelaItens.innerHTML = "";
 
     try {
-        // CORRIGIDO: Monta as URLs completas para evitar o erro de subpasta
         const urlItens = `${urlServidorAtual}/api/entradas/${idNota}/itens`;
         const urlImpostos = `${urlServidorAtual}/api/entradas/${idNota}/impostos`;
 
-        // 1. Busca paralela dos itens e impostos no Spring Boot (Chama as duas APIs)
         const [respostaItens, respostaImpostos] = await Promise.all([
             fetch(urlItens, { method: "GET", headers: headersAutenticados }),
             fetch(urlImpostos, { method: "GET", headers: headersAutenticados })
@@ -186,13 +177,11 @@ async function buscarItensDaNotaSelecionada(idNota) {
             return;
         }
 
-        // 2. 🌲 SUB-RAIZ: Laço contínuo dos produtos (Produto 1, Produto 2... listados em sequência)
         listaDeItens.forEach((item) => {
             let nomeProd = item.produtoDescricao || item.nomeProduto || item.produtoNome || "Produto sem nome";
             const quantidade = item.quantidade || item.qtd || 0;
             const precoCusto = Number(item.precoCusto || 0);
             
-            // Corta textos excessivamente longos para manter a linha limpa
             if (nomeProd.length > 80) {
                 nomeProd = nomeProd.substring(0, 77) + "...";
             }
@@ -213,13 +202,11 @@ async function buscarItensDaNotaSelecionada(idNota) {
             tabelaItens.insertAdjacentHTML('beforeend', linhaProduto);
         });
 
-        // 3. Extração dos impostos reais vindos da tabela entrada_impostos
         const icms = dadosImpostos.baseCalculoIcms || 0;
         const vIcms = dadosImpostos.valorIcms || 0;
         const frete = dadosImpostos.valorFrete || 0;
         const totalNota = dadosImpostos.valorTotalNota || 0;
 
-        // 4. 🧮 FECHAMENTO DO LOTE: Adiciona a tarja fiscal uma única vez no final da tabela (CORRIGIDO PARA FUNDO BRANCO)
         const linhaFechamentoImpostos = `
             <tr style="background: #ffffff; border-top: 2px solid #e67e22;">
                 <td colspan="4" style="padding: 12px 15px; border-left: 4px solid #e67e22; text-align: left;">
@@ -239,92 +226,5 @@ async function buscarItensDaNotaSelecionada(idNota) {
     } catch (erro) {
         console.error("Erro completo ao buscar itens/impostos:", erro);
         alert("Erro ao montar lote: " + erro.message);
-    }
-}
-
-async function filtrarNotasDevolucao() {
-    const dataInicio = document.getElementById("dataInicioDevolucao").value;
-    const dataFim = document.getElementById("dataFimDevolucao").value;
-    const selectNota = document.getElementById("selectNotasAtivas");
-
-    if (!dataInicio || !dataFim) {
-        alert("Informe a Data Inicial e a Data Final.");
-        return;
-    }
-
-    if (dataInicio > dataFim) {
-        alert("A Data Inicial não pode ser maior que a Data Final.");
-        return;
-    }
-
-    const urlServidorAtual = window.urlServidor || "http://localhost:8080";
-
-    selectNota.innerHTML = '<option value="">Buscando notas...</option>';
-
-    const areaItens = document.getElementById("areaItensNota");
-    if (areaItens) {
-        areaItens.style.display = "none";
-    }
-
-    try {
-        // CORRIGIDO: Usa a sua função oficial para gerar os headers com o Token
-        const headersAutenticados = typeof montarHeaders === "function" 
-            ? montarHeaders() 
-            : { "Content-Type": "application/json" };
-
-        const urlCompleta = `${urlServidorAtual}/api/entradas/filtrar?inicio=${dataInicio}&fim=${dataFim}`;
-        
-        const resposta = await fetch(urlCompleta, {
-            method: "GET",
-            headers: headersAutenticados
-        });
-
-        if (!resposta.ok) {
-            throw new Error(`Erro ao pesquisar Notas Fiscais. Status do servidor: ${resposta.status}`);
-        }
-
-        const notas = await resposta.json();
-
-        selectNota.innerHTML = '<option value="">-- Escolha uma Nota Fiscal --</option>';
-
-        const notasAtivas = notas.filter(nota =>
-            nota.status == null || Number(nota.status) === 1
-        );
-
-        if (notasAtivas.length === 0) {
-            selectNota.innerHTML = '<option value="">Nenhuma nota ativa encontrada no período</option>';
-            return;
-        }
-
-        notasAtivas.forEach(nota => {
-            const option = document.createElement("option");
-            option.value = nota.id;
-
-            if (nota.label) {
-                option.textContent = nota.label;
-            } else {
-                const numeroNota = nota.numeroNota || nota.id || "S/N";
-                let fornecedor = "Não informado";
-
-                if (nota.nomeFornecedor) {
-                    fornecedor = nota.nomeFornecedor;
-                } else if (nota.fornecedorNome) {
-                    fornecedor = nota.fornecedorNome;
-                } else if (nota.fornecedor && nota.fornecedor.nome) {
-                    fornecedor = nota.fornecedor.nome;
-                }
-
-                option.textContent = `Nota ID: ${nota.id} (NF: ${numeroNota}) - Fornecedor: ${fornecedor}`;
-            }
-
-            selectNota.appendChild(option);
-        });
-
-        console.log("Notas ativas encontradas no período:", notasAtivas.length);
-
-    } catch (erro) {
-        console.error("Erro ao filtrar notas para devolução:", erro);
-        selectNota.innerHTML = '<option value="">Erro ao pesquisar notas</option>';
-        alert("Falha na pesquisa: " + erro.message);
     }
 }
