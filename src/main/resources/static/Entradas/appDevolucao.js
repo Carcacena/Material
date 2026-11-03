@@ -93,8 +93,8 @@ function fecharModalDevolucao() {
     }
 }
 async function devolucaoEntrada() {
-    const urlServidorAtual = window.urlServidor || "http://localhost:8080";
-
+    //const urlServidorAtual = window.urlServidor || "http://localhost:8080";
+	const urlServidorAtual = window.location.origin;
     const selectNota = document.getElementById("selectNotasAtivas");
     if (!selectNota) return;
 
@@ -152,8 +152,11 @@ async function buscarItensDaNotaSelecionada(idNota) {
     }
 
     // CORRIGIDO: Usa a URL absoluta do servidor e seus cabeçalhos oficiais com Token
-    const urlServidorAtual = window.urlServidor || "http://localhost:8080";
-    const headersAutenticados = typeof montarHeaders === "function" 
+    //const urlServidorAtual = window.urlServidor || "http://localhost:8080";
+	
+	const urlServidorAtual = window.urlServidor 
+	
+	const headersAutenticados = typeof montarHeaders === "function" 
         ? montarHeaders() 
         : { "Content-Type": "application/json" };
 
@@ -326,159 +329,3 @@ async function filtrarNotasDevolucao() {
         alert("Falha na pesquisa: " + erro.message);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
