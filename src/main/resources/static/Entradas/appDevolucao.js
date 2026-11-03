@@ -1,4 +1,3 @@
-
 async function processarLoteSelecionado() {
     const selectNota = document.getElementById("selectNotasAtivas");
     if (!selectNota) {
@@ -9,6 +8,13 @@ async function processarLoteSelecionado() {
     const entradaId = selectNota.value;
     if (!entradaId) {
         alert("Selecione uma Nota Fiscal para devolução.");
+        return;
+    }
+
+    // 🔒 TRAVA DE SEGURANÇA: Bloqueia re-estorno de notas que já exibem o texto de devolvida
+    const optionSelecionada = selectNota.options[selectNota.selectedIndex];
+    if (optionSelecionada && optionSelecionada.textContent.includes("[DEVOLVIDA]")) {
+        alert("🚨 Operação Recusada!\nEsta Nota Fiscal já consta como DEVOLVIDA no sistema.");
         return;
     }
 
@@ -32,16 +38,12 @@ async function estornarNotaViaPainel(entradaId) {
     );
     if (!confirmar) return;
 
-    // CORRIGIDO: Detecta dinamicamente a URL correta do ambiente
     const urlServidorAtual = window.urlServidor || window.location.origin;
-    
-    // CORRIGIDO: Usa estritamente a função de cabeçalhos oficial do sistema
     const headersAutenticados = typeof montarHeaders === "function" 
         ? montarHeaders() 
         : { "Content-Type": "application/json" };
 
     try {
-        // CORRIGIDO: Monta a URL absoluta com o servidor dinâmico detectado
         const urlEstorno = `${urlServidorAtual}/api/entradas/estornar/${entradaId}`;
 
         const resposta = await fetch(urlEstorno, {
@@ -56,9 +58,11 @@ async function estornarNotaViaPainel(entradaId) {
 
         alert("🚀 Sucesso! Entrada devolvida e estoque estornado com sucesso no MySQL.");
 
-        const select = document.getElementById('selectNotaGerencial');
-        if (select) {
-            select.dispatchEvent(new Event('change'));
+        // Atualiza a listagem automaticamente após estornar
+        if (document.getElementById("dataInicioDevolucao").value) {
+            filtrarNotasDevolucao();
+        } else {
+            devolucaoEntrada();
         }
 
     } catch (erro) {
@@ -73,9 +77,12 @@ function abrirPainelGerencial() {
     if (modal) {
         modal.style.display = "block";
         console.log("Painel Seletivo de Notas aberto com sucesso!");
-        if (typeof devolucaoEntrada === "function") {
-            devolucaoEntrada();
-        }
+	
+		if (typeof filtrarNotasDevolucao === "function") {
+		    filtrarNotasDevolucao();
+		}
+		
+		
     } else {
         alert("Erro técnico: Não encontramos a div 'modalSelecaoNotaDevolucao' no HTML.");
     }
@@ -89,6 +96,7 @@ function fecharModalDevolucao() {
     }
 }
 
+// 🔍 Carrega o resumo inicial de notas do banco de dados
 async function devolucaoEntrada() {
     const urlServidorAtual = window.urlServidor || window.location.origin;
     
@@ -115,31 +123,123 @@ async function devolucaoEntrada() {
         console.log("=== DADOS DO BANCO RECEBIDOS ===", notas);
 
         if (notas.length === 0) {
-            console.log("Nenhuma nota ativa (Status 1) encontrada no banco de dados.");
+            console.log("Nenhuma nota cadastrada encontrada no banco de dados.");
             return;
         }
 
-        notas.forEach(nota => {
-            const option = document.createElement("option");
-            option.value = nota.id;
+		notas.forEach(nota => {
 
-            const numNota = nota.numeroNota || nota.id || "S/N";
+		    const option = document.createElement("option");
 
-            let fornecedor = "Não informado";
-            if (nota.nomeFornecedor) fornecedor = nota.nomeFornecedor;
-            else if (nota.fornecedorNome) fornecedor = nota.fornecedorNome;
-            else if (nota.fornecedor && nota.fornecedor.nome) fornecedor = nota.fornecedor.nome;
-            else if (nota.fornecedor && nota.fornecedor.razaoSocial) fornecedor = nota.fornecedor.razaoSocial;
+		    option.value = nota.id;
 
-            option.text = `Nota ID: ${nota.id} (NF: ${numNota}) - Fornecedor: ${fornecedor}`;
-            selectNota.appendChild(option);
-        });
+		    const status = Number(nota.status);
 
+		    const textoLabel =
+		        nota.label ||
+		        `Nota ID: ${nota.id}`;
+
+		    if (status === 2) {
+
+		        option.textContent = `🔴 ${textoLabel}`;
+		        option.style.color = "#e74c3c";
+
+		    } else {
+
+		        option.textContent = `🟢 ${textoLabel}`;
+		        option.style.color = "#27ae60";
+		    }
+
+		    selectNota.appendChild(option);
+		});
     } catch (erro) {
         console.error("Erro ao listar notas para o painel:", erro);
     }
 }
 
+// 🗓️ Filtra as notas por período no painel
+async function filtrarNotasDevolucao() {
+    const dataInicio = document.getElementById("dataInicioDevolucao").value;
+    const dataFim = document.getElementById("dataFimDevolucao").value;
+    const selectNota = document.getElementById("selectNotasAtivas");
+
+    if (!dataInicio || !dataFim) {
+        alert("Informe a Data Inicial e a Data Final.");
+        return;
+    }
+
+    if (dataInicio > dataFim) {
+        alert("A Data Inicial não pode ser maior que a Data Final.");
+        return;
+    }
+
+    const urlServidorAtual = window.urlServidor || window.location.origin;
+    selectNota.innerHTML = '<option value="">Buscando notas...</option>';
+
+    const areaItens = document.getElementById("areaItensNota");
+    if (areaItens) areaItens.style.display = "none";
+
+    try {
+        const headersAutenticados = typeof montarHeaders === "function" 
+            ? montarHeaders() 
+            : { "Content-Type": "application/json" };
+
+        const urlCompleta = `${urlServidorAtual}/api/entradas/filtrar?inicio=${dataInicio}&fim=${dataFim}`;
+        
+        const resposta = await fetch(urlCompleta, {
+            method: "GET",
+            headers: headersAutenticados
+        });
+
+        if (!resposta.ok) {
+            throw new Error(`Erro ao pesquisar Notas Fiscais. Status do servidor: ${resposta.status}`);
+        }
+
+        const notas = await resposta.json();
+        selectNota.innerHTML = '<option value="">-- Escolha uma Nota Fiscal --</option>';
+
+        if (notas.length === 0) {
+            selectNota.innerHTML = '<option value="">Nenhuma nota encontrada no período</option>';
+            return;
+        }
+
+		notas.forEach(nota => {
+		          const option = document.createElement("option");
+		          option.value = nota.id;
+
+		          // Pega o label completo montado pelo Java ou cria o padrão do sistema
+		          const textoLabel = nota.label || "";
+		          const numNota = nota.numeroNota || nota.id || "S/N";
+		          const fornecedor = nota.fornecedorNome || "Não informado";
+
+		          // 🔍 ENGENHARIA REVERSA IGUAL AO BALCÃO:
+		          // Se o Java mandar a propriedade status=2 OU se o texto do label contiver "Devolv"
+		          const ehDevolvida = (nota.status && Number(nota.status) === 2) || 
+		                              textoLabel.includes("Devolvido") || 
+		                              textoLabel.includes("Devolucao") || 
+		                              textoLabel.includes("Devolução");
+
+		          if (ehDevolvida) {
+		              // Se o Java já mandou o label pronto, usamos ele, senão montamos com o ícone vermelho
+		              option.textContent = nota.label ? `🔴 ${nota.label}` : `🔴 [DEVOLVIDA] ID: ${nota.id} (NF: ${numNota}) - Fornecedor: ${fornecedor}`;
+		              option.style.color = "#e74c3c"; // Vermelho igual ao Balcão de Vendas
+		          } else {
+		              option.textContent = nota.label ? `🟢 ${nota.label}` : `🟢 [FATURADO] ID: ${nota.id} (NF: ${numNota}) - Fornecedor: ${fornecedor}`;
+		              option.style.color = "#27ae60"; // Verde igual ao Balcão de Vendas
+		          }
+
+		          selectNota.appendChild(option);
+		      });
+        console.log("Notas processadas no período filtrado:", notas.length);
+
+    } catch (erro) {
+        console.error("Erro ao filtrar notas para devolução:", erro);
+        selectNota.innerHTML = '<option value="">Erro ao pesquisar notas</option>';
+        alert("Falha na pesquisa: " + erro.message);
+    }
+}
+
+// 📦 Traz os produtos e a tarja de impostos ao selecionar uma nota na lista
 async function buscarItensDaNotaSelecionada(idNota) {
     if (!idNota) {
         document.getElementById("areaItensNota").style.display = "none";
@@ -147,7 +247,6 @@ async function buscarItensDaNotaSelecionada(idNota) {
     }
 
     const urlServidorAtual = window.urlServidor || window.location.origin;
-		
     const headersAutenticados = typeof montarHeaders === "function" 
         ? montarHeaders() 
         : { "Content-Type": "application/json" };
@@ -228,3 +327,10 @@ async function buscarItensDaNotaSelecionada(idNota) {
         alert("Erro ao montar lote: " + erro.message);
     }
 }
+
+
+
+
+
+
+

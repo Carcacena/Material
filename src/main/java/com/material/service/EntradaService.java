@@ -263,37 +263,80 @@ public class EntradaService {
         return entradaEstornada;
       
     }
-    
-    // 🔍 NOVO MÉTODO: Filtra as notas fiscais por período para o select do painel flutuante
-    public List<java.util.Map<String, Object>> buscarEntradasPorPeriodo(java.time.LocalDate inicio, java.time.LocalDate fim) {
-        
-        // 1. Executa a sua query nativa do EntradaRepository que retorna a lista de DTOs
-        List<com.material.dto.EntradaPeriodoDTO> entradasDto = entradaRepository.buscarEntradasPorPeriodo(inicio, fim);
-        
-        // 2. Converte os DTOs em um mapa leve para o JavaScript ler sem complicação
+    public List<java.util.Map<String, Object>> buscarEntradasPorPeriodo(
+            java.time.LocalDate inicio,
+            java.time.LocalDate fim) {
+
+        List<com.material.dto.EntradaPeriodoDTO> entradasDto =
+                entradaRepository.buscarEntradasPorPeriodo(inicio, fim);
+
         return entradasDto.stream().map(dto -> {
-            java.util.Map<String, Object> map = new java.util.HashMap<>();
-            
-            // Garanta que seu EntradaPeriodoDTO tenha esses métodos getters criados!
-            map.put("id", dto.getId()); 
-            
-            // Verifica se a nota está ativa ou estornada (opcional, assume ativa se o DTO não trouxer o status)
-            String statusTexto = "🟩 Ativa"; 
-            
-            // Monta o texto amigável pro pião ler na lista suspensa do balcão
-            String label = String.format("Nota: %s | Fornecedor: %s | Dt: %s | Total: R$ %s | [%s]",
+
+            java.util.Map<String, Object> map =
+                    new java.util.HashMap<>();
+
+            map.put("id", dto.getId());
+            map.put("status", dto.getStatus());
+
+            String statusTexto =
+                    Integer.valueOf(2).equals(dto.getStatus())
+                            ? "🔴 Devolvida"
+                            : "🟢 Ativa";
+
+            String label = String.format(
+                    "Nota: %s | Fornecedor: %s | Dt: %s | Total: R$ %s | %s",
                     dto.getNumeroNota(),
-                    dto.getFornecedorNome(), // Nome do getter do fornecedor no seu EntradaPeriodoDTO
-                    dto.getDataRecebimento() != null ? dto.getDataRecebimento().toString() : "Sem Data",
-                 //   dto.getValorTotalNota() != null ? dto.getValorTotalNota().toString() : "0.00",
-                   		dto.getValorTotal() != null ? dto.getValorTotal().toString() : "0.00",
-                    		
-                   		statusTexto);
-                    
+                    dto.getFornecedorNome(),
+                    dto.getDataRecebimento() != null
+                            ? dto.getDataRecebimento().toString()
+                            : "Sem Data",
+                    dto.getValorTotal() != null
+                            ? dto.getValorTotal().toString()
+                            : "0.00",
+                    statusTexto
+            );
+
             map.put("label", label);
+
             return map;
+
         }).collect(java.util.stream.Collectors.toList());
     }
+    
+    
+    
+    
+    
+    // 🔍 NOVO MÉTODO: Filtra as notas fiscais por período para o select do painel flutuante
+   // public List<java.util.Map<String, Object>> buscarEntradasPorPeriodo(java.time.LocalDate inicio, java.time.LocalDate fim) {
+        
+        // 1. Executa a sua query nativa do EntradaRepository que retorna a lista de DTOs
+   //     List<com.material.dto.EntradaPeriodoDTO> entradasDto = entradaRepository.buscarEntradasPorPeriodo(inicio, fim);
+        
+        // 2. Converte os DTOs em um mapa leve para o JavaScript ler sem complicação
+   //     return entradasDto.stream().map(dto -> {
+   //         java.util.Map<String, Object> map = new java.util.HashMap<>();
+            
+            // Garanta que seu EntradaPeriodoDTO tenha esses métodos getters criados!
+  //          map.put("id", dto.getId()); 
+            
+            // Verifica se a nota está ativa ou estornada (opcional, assume ativa se o DTO não trouxer o status)
+  //          String statusTexto = "🟩 Ativa"; 
+            
+            // Monta o texto amigável pro pião ler na lista suspensa do balcão
+  //          String label = String.format("Nota: %s | Fornecedor: %s | Dt: %s | Total: R$ %s | [%s]",
+  //                  dto.getNumeroNota(),
+  //                  dto.getFornecedorNome(), // Nome do getter do fornecedor no seu EntradaPeriodoDTO
+  //                  dto.getDataRecebimento() != null ? dto.getDataRecebimento().toString() : "Sem Data",
+                 //   dto.getValorTotalNota() != null ? dto.getValorTotalNota().toString() : "0.00",
+  //                 		dto.getValorTotal() != null ? dto.getValorTotal().toString() : "0.00",
+                    		
+  //                 		statusTexto);
+                    
+  //          map.put("label", label);
+  //          return map;
+  //      }).collect(java.util.stream.Collectors.toList());
+  //  }
  // 🟩 ADICIONADO: Garante que o Hibernate mantenha a conexão aberta para ler a lista de itens sem quebrar!
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public Map<String, Object> buscarItensDaEntrada(Long entradaId) {

@@ -15,16 +15,16 @@ import com.material.model.Entrada;
 @Repository
 public interface EntradaRepository extends JpaRepository<Entrada, Long> {
 
-    @Query("SELECT new com.material.dto.EntradaPeriodoDTO(e.id, e.numeroNota, e.dataRecebimento, f.nome, i.valorTotalNota) " +
-           "FROM Entrada e " +
-           "JOIN e.fornecedor f " +
-           "LEFT JOIN EntradaImpostos i ON i.entrada.id = e.id " +
-           "WHERE e.dataRecebimento BETWEEN :inicio AND :fim " +
-           "ORDER BY e.dataRecebimento DESC")
-    List<EntradaPeriodoDTO> buscarEntradasPorPeriodo(
-            @Param("inicio") LocalDate inicio,
-            @Param("fim") LocalDate fim);
-
+	@Query("SELECT new com.material.dto.EntradaPeriodoDTO(" +
+		       "e.id, e.numeroNota, e.dataRecebimento, f.nome, i.valorTotalNota, e.status) " +
+		       "FROM Entrada e " +
+		       "JOIN e.fornecedor f " +
+		       "LEFT JOIN EntradaImpostos i ON i.entrada.id = e.id " +
+		       "WHERE e.dataRecebimento BETWEEN :inicio AND :fim " +
+		       "ORDER BY e.dataRecebimento DESC")
+		List<EntradaPeriodoDTO> buscarEntradasPorPeriodo(
+		        @Param("inicio") LocalDate inicio,
+		        @Param("fim") LocalDate fim);
     // 🔄 Localiza a entrada para devolução
     Optional<Entrada> findByNumeroNota(String numeroNota);
     // 🎯 Versão garantida: Usa o mesmo JOIN manual que funciona no seu sistema
