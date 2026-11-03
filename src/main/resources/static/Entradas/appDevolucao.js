@@ -100,7 +100,53 @@ async function devolucaoEntrada() {
 
     selectNota.innerHTML = '<option value="">-- Escolha uma Nota Fiscal --</option>';
 
-    const areaItens = document.getElementById("areaItensNota");
+    const areaItens = async function processarLoteSelecionado() {
+        const notas = await resposta.json();
+
+        selectNota.innerHTML = '<option value="">-- Escolha uma Nota Fiscal --</option>';
+
+        const notasAtivas = notas.filter(nota =>
+            nota.status == null || Number(nota.status) === 1
+        );
+
+        if (notasAtivas.length === 0) {
+            selectNota.innerHTML = '<option value="">Nenhuma nota ativa encontrada no período</option>';
+            return;
+        }
+
+        notasAtivas.forEach(nota => {
+            const option = document.createElement("option");
+            option.value = nota.id;
+
+            if (nota.label) {
+                option.textContent = nota.label;
+            } else {
+                const numeroNota = nota.numeroNota || nota.id || "S/N";
+                let fornecedor = "Não informado";
+
+                if (nota.nomeFornecedor) {
+                    fornecedor = nota.nomeFornecedor;
+                } else if (nota.fornecedorNome) {
+                    fornecedor = nota.fornecedorNome;
+                } else if (nota.fornecedor && nota.fornecedor.nome) {
+                    fornecedor = nota.fornecedor.nome;
+                }
+
+                option.textContent = `Nota ID: ${nota.id} (NF: ${numeroNota}) - Fornecedor: ${fornecedor}`;
+            }
+
+            selectNota.appendChild(option);
+        });
+
+        console.log("Notas ativas encontradas no período:", notasAtivas.length);
+
+    } catch (erro) {
+        console.error("Erro ao filtrar notas para devolução:", erro);
+        selectNota.innerHTML = '<option value="">Erro ao pesquisar notas</option>';
+        alert("Falha na pesquisa: " + erro.message);
+    }
+}
+document.getElementById("areaItensNota");
     if (areaItens) areaItens.style.display = "none";
 
     try {
