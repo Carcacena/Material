@@ -1,6 +1,7 @@
 CREATE TABLE produto (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(150) NOT NULL,
+    codigo_barras VARCHAR(50) UNIQUE DEFAULT NULL, -- 🔌 Campo crucial para o leitor USB funcionar!
     fornecedor_id BIGINT NOT NULL,
     a_granel BOOLEAN NOT NULL DEFAULT FALSE,
     preco_custo DECIMAL(10, 2),

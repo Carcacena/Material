@@ -909,6 +909,23 @@
 			}
 		});
 	</script>
+	
+	<!-- Importação do mesmo Motor de Arrasto Global -->
+	    <script src="/componentes-js/drag.js"></script>
+
+	    <!-- Ativação para as telas de Entrada de Produtos -->
+	    <script>
+	        ativarArrastoGlobal([
+	            { seletorPrincipal: "#modalImpostos", seletorGatilho: "h4" },
+	            { seletorPrincipal: "#modalSelecaoNotaDevolucao", seletorGatilho: "div" },
+	            { seletorPrincipal: "#modalPainelGerencial", seletorGatilho: "div" }
+	        ]);
+	    </script>
+	
+	
+	
+	
+	
 
 	<div id="containerFinanceiro"></div>
 </body>

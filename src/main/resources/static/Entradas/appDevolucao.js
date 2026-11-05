@@ -329,6 +329,62 @@ async function buscarItensDaNotaSelecionada(idNota) {
 }
 
 
+function configurarPainelDevolucaoArrastavel() {
+
+    const painel = document.getElementById("painelDevolucao");
+    const header = document.getElementById("painelDevolucaoHeader");
+
+    if (!painel || !header) {
+        return;
+    }
+
+    let posicaoXAnterior = 0;
+    let posicaoYAnterior = 0;
+
+    header.onmousedown = iniciarArrasto;
+
+    function iniciarArrasto(evento) {
+
+        evento.preventDefault();
+
+        posicaoXAnterior = evento.clientX;
+        posicaoYAnterior = evento.clientY;
+
+        document.onmouseup = pararArrasto;
+        document.onmousemove = arrastarPainel;
+    }
+
+    function arrastarPainel(evento) {
+
+        evento.preventDefault();
+
+        const deslocamentoX =
+            posicaoXAnterior - evento.clientX;
+
+        const deslocamentoY =
+            posicaoYAnterior - evento.clientY;
+
+        posicaoXAnterior = evento.clientX;
+        posicaoYAnterior = evento.clientY;
+
+        painel.style.top =
+            `${painel.offsetTop - deslocamentoY}px`;
+
+        painel.style.left =
+            `${painel.offsetLeft - deslocamentoX}px`;
+
+        painel.style.margin = "0";
+        painel.style.right = "auto";
+    }
+
+    function pararArrasto() {
+
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+
 
 
 

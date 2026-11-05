@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 	<meta charset="UTF-8">
 
@@ -473,8 +474,7 @@
 			background: #EE82EE;
 		}
 
-
-
+		incio parte 2
 		/* ======================================================
            RESPONSIVIDADE
            ====================================================== */
@@ -596,6 +596,10 @@
 		}
 	</style>
 </head>
+
+
+inicio parte 3
+
 
 <body>
 
@@ -782,6 +786,11 @@
 
 	</div>
 
+
+	inicio parte 4
+
+
+
 	<!-- ⚡ FILTRO ULTRA RÁPIDO DO BALCÃO -->
 	<script>
 		function filtrarArvoreLocalmente() {
@@ -929,8 +938,8 @@
 
 					carregarComponente(
 						"container-financeiro",
-						 "/Entradas/Financeiro/financeiro.html" 
-						
+						"/Entradas/Financeiro/financeiro.html"
+
 					),
 				]);
 
@@ -941,9 +950,10 @@
 				console.log("Componentes HTML carregados com sucesso!");
 
 				// 2. Configura os painéis da tela
-				configurarPainelArrastavel();
+				//configurarPainelArrastavel();
 
-				// 3. Lista de arquivos JavaScript de lógica
+				// 3. Lista de arquivos
+				//  JavaScript de lógica
 				const arquivosLogica = [
 					'/componentes-js/utils.js',
 					'/vendas/modulo-localizar.js',
@@ -994,54 +1004,111 @@
 
 
 		function configurarPainelArrastavel() {
-			const painel = document.getElementById("painelCaixa");
-			const header = document.getElementById("painelCaixaHeader");
+		    // 1. Mantém o painel do caixa/ações original se ele existir
+		    const painelCaixa = document.getElementById("painelCaixa");
+		    const headerCaixa = document.getElementById("painelCaixaHeader");
+		    if (painelCaixa && headerCaixa) {
+		        aplicarLogicaMovimento(painelCaixa, headerCaixa);
+		    }
 
-			if (!painel || !header) {
-				return;
-			}
+		    // 2. 🥷 VIGIA MULTI-MODAL: Monitora e captura o painel de impostos e o modal de clientes
+		    const rastreadorDeTelas = new MutationObserver(() => {
+		        // Varre tags de cabeçalho na tela buscando os títulos
+		        const todosCabecalhos = document.querySelectorAll('div, h2, h3, h4, h5, span');
+		        
+		        todosCabecalhos.forEach(cabecalho => {
+		            const texto = cabecalho.textContent.trim();
 
-			let posicaoXAnterior = 0;
-			let posicaoYAnterior = 0;
+		            // CASO A: Encontrou a tela de Impostos e Clientes (Painel Laranja)
+		            if (texto.includes("Impostos e Clientes") && !cabecalho.dataset.arrastavelAtivo) {
+		                cabecalho.dataset.arrastavelAtivo = "true";
+		                
+		                // Encontra o container mãe (id*="modalImpostos" ou similar)
+		                const containerImpostos = cabecalho.closest('.box-custom') || document.getElementById("modalImpostos") || cabecalho.parentElement;
+		                if (containerImpostos) {
+		                    aplicarLogicaMovimento(containerImpostos, cabecalho);
+		                }
+		            }
 
-			header.onmousedown = iniciarArrasto;
+		            // CASO B: Encontrou o Modal de Seleção de Clientes ou Devolução (Modal Cinza de Trás)
+		            if ((texto.includes("Selecionar Cliente para o Pedido") || texto.includes("Selecione a Nota Fiscal para Devolução")) && !cabecalho.dataset.arrastavelAtivo) {
+		                cabecalho.dataset.arrastavelAtivo = "true";
+		                
+		                // Pega a estrutura interna do modal do Bootstrap (.modal-content ou .modal-dialog)
+		                const caixaModal = cabecalho.closest('.modal-content') || cabecalho.closest('.modal-dialog') || cabecalho.parentElement;
+		                if (caixaModal) {
+		                    aplicarLogicaMovimento(caixaModal, cabecalho);
+		                }
+		            }
+		        });
+		    });
 
-			function iniciarArrasto(evento) {
-				evento.preventDefault();
-
-				posicaoXAnterior = evento.clientX;
-				posicaoYAnterior = evento.clientY;
-
-				document.onmouseup = pararArrasto;
-				document.onmousemove = arrastarPainel;
-			}
-
-			function arrastarPainel(evento) {
-				evento.preventDefault();
-
-				const deslocamentoX =
-					posicaoXAnterior - evento.clientX;
-
-				const deslocamentoY =
-					posicaoYAnterior - evento.clientY;
-
-				posicaoXAnterior = evento.clientX;
-				posicaoYAnterior = evento.clientY;
-
-				painel.style.top =
-					`${painel.offsetTop - deslocamentoY}px`;
-
-				painel.style.left =
-					`${painel.offsetLeft - deslocamentoX}px`;
-
-				painel.style.right = "auto";
-			}
-
-			function pararArrasto() {
-				document.onmouseup = null;
-				document.onmousemove = null;
-			}
+		    // Inicializa o vigia no body inteiro para pegar injeções dinâmicas
+		    rastreadorDeTelas.observe(document.body, { childList: true, subtree: true });
 		}
+
+		// ⚙️ Função de cálculo de movimento com quebra de travas CSS do Bootstrap
+		function aplicarLogicaMovimento(elementoPrincipal, elementoGatilho) {
+		    let posicaoXAnterior = 0;
+		    let posicaoYAnterior = 0;
+
+		    elementoGatilho.style.cursor = "move";
+		    elementoGatilho.style.setProperty("user-select", "none", "important");
+
+		    elementoGatilho.onmousedown = iniciarArrasto;
+
+		    function iniciarArrasto(evento) {
+		        // Bloqueia o arrasto se o clique começar dentro de campos de digitação ou botões
+		        if (evento.target.closest('button') || evento.target.closest('input') || evento.target.closest('select')) {
+		            return;
+		        }
+		        evento.preventDefault();
+
+		        posicaoXAnterior = evento.clientX;
+		        posicaoYAnterior = evento.clientY;
+
+		        // Captura a posição geométrica exata atual na tela antes de aplicar estilos absolutos
+		        const retangulo = elementoPrincipal.getBoundingClientRect();
+		        
+		        // Aplica a sequência de destravamento de CSS
+		        elementoPrincipal.style.setProperty("position", "absolute", "important");
+		        elementoPrincipal.style.setProperty("margin", "0", "important");
+		        elementoPrincipal.style.setProperty("transform", "none", "important");
+		        
+		        // Fixa o elemento na coordenada milimétrica em que ele já se encontrava aberto
+		        elementoPrincipal.style.top = `${window.scrollY + retangulo.top}px`;
+		        elementoPrincipal.style.left = `${window.scrollX + retangulo.left}px`;
+
+		        document.onmouseup = pararArrasto;
+		        document.onmousemove = arrastarPainel;
+		    }
+
+		    function arrastarPainel(evento) {
+		        evento.preventDefault();
+
+		        const deslocamentoX = posicaoXAnterior - evento.clientX;
+		        const deslocamentoY = posicaoYAnterior - evento.clientY;
+
+		        posicaoXAnterior = evento.clientX;
+		        posicaoYAnterior = evento.clientY;
+
+		        // Atualiza a posição baseada no deslocamento do cursor
+		        elementoPrincipal.style.top = `${elementoPrincipal.offsetTop - deslocamentoY}px`;
+		        elementoPrincipal.style.left = `${elementoPrincipal.offsetLeft - deslocamentoX}px`;
+		        elementoPrincipal.style.right = "auto";
+		    }
+
+		    function pararArrasto() {
+		        document.onmouseup = null;
+		        document.onmousemove = null;
+		    }
+		}
+
+
+
+
+
+
 
 		window.addEventListener(
 			"DOMContentLoaded",
@@ -1049,7 +1116,7 @@
 		);
 	</script>
 
-	
+
 
 	<!--<script src="https://jsdelivr.net"></script>
 
@@ -1059,6 +1126,19 @@
 	<script src="/componentes-js/utils.js"></script>
 	<script src="/Entradas/appDevolucao.js"></script>
 	<script src="/Entradas/appDevolucao.js"></script>
+	
+	<!-- Importação do Motor de Arrasto Global do Sistema Magia -->
+	    <script src="/componentes-js/drag.js"></script>
+
+	    <!-- Ativação para as telas de Vendas -->
+	    <script>
+	        ativarArrastoGlobal([
+	            { seletorPrincipal: "#painelCaixa", seletorGatilho: "#painelCaixaHeader" },
+	            { seletorPrincipal: "#modalImpostos", seletorGatilho: "h4" },
+	            { seletorPrincipal: "#modalSelecaoNotaDevolucao", seletorGatilho: "div" },
+	            { seletorPrincipal: "#modalPainelGerencial", seletorGatilho: "div" }
+	        ]);
+	    </script>
 
 
 

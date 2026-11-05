@@ -16,6 +16,9 @@ public class Produto {
     @Column(nullable = false)
     private String nome;
 
+    @Column(name = "codigo_barras", unique = true)
+    private String codigoBarras;
+
     @Column(name = "a_granel", nullable = false)
     private Boolean aGranel = false;
 
@@ -91,6 +94,14 @@ public class Produto {
         this.nome = nome;
     }
 
+    public String getCodigoBarras() {
+        return codigoBarras;
+    }
+
+    public void setCodigoBarras(String codigoBarras) {
+        this.codigoBarras = codigoBarras;
+    }
+
     public Boolean getAGranel() {
         return aGranel;
     }
@@ -139,7 +150,6 @@ public class Produto {
         this.estoque = estoque;
     }
 
-    // 🆕 NOVOS: Métodos adicionados para o controle das novas colunas
     public int getQteEntrada() {
         return qteEntrada;
     }

@@ -27,6 +27,7 @@ const cabecalhoRequisicao = {
 };
 
 let produtoSelecionadoId = null;
+let listaProdutosGeral = []; // Cache local para busca instantânea do leitor USB
 
 if (!token) {
     window.location.href = "login.html";
@@ -37,33 +38,191 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarFornecedores();
     carregarProdutos();
     document.getElementById("formProduto").addEventListener("submit", cadastrarProduto);
-    
+
     // 🧮 Regra COBOL de consistência: Se for inclusão, o estoque acompanha a entrada inicial
     document.getElementById("qteEntrada").addEventListener("input", () => {
         if (!produtoSelecionadoId) {
             document.getElementById("estoqueAtual").value = document.getElementById("qteEntrada").value;
         }
     });
-    
+
+    // 🔌 Captura o Enter automático do leitor de código de barras no input dedicado
+    const campoBarras = document.getElementById("codigoBarras");
+    if (campoBarras) {
+        campoBarras.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault(); // Evita submeter o formulário antes da hora
+                buscarPorCodigoBarras(e.target.value);
+            }
+        });
+    }
+
     bloquearFormulario(true);
 });
 
-// 🛠️ AUXILIAR DE CONTROLE DOS CAMPOS (Afinado com os novos campos)
+
+// 📦 BUSCAR PRODUTOS E MONTAR OS BLOCOS COLAPSÁVEIS COM SUB-RAIZ DE DADOS DO LOTE
+async function carregarProdutos() {
+    try {
+        const response = await fetch(`${API_URL}/produtos`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!response.ok) return;
+        const produtos = await response.json();
+        listaProdutosGeral = produtos; // Cache local para buscas do leitor USB
+
+        const container = document.getElementById("containerFornecedoresProdutos");
+        if (!container) return;
+        container.innerHTML = "";
+
+        const agrupadoPorFornecedor = {};
+        produtos.forEach(prod => {
+            const fornecedorNome = prod.fornecedor ? prod.fornecedor.nome : "Sem Fornecedor";
+            if (!agrupadoPorFornecedor[fornecedorNome]) agrupadoPorFornecedor[fornecedorNome] = [];
+            agrupadoPorFornecedor[fornecedorNome].push(prod);
+        });
+
+        const fornecedoresOrdenados = Object.keys(agrupadoPorFornecedor).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+        fornecedoresOrdenados.forEach(fornecedorNome => {
+            const produtosFornecedor = agrupadoPorFornecedor[fornecedorNome];
+            const divGrupo = document.createElement("div");
+            divGrupo.style.marginBottom = "10px";
+
+            const btnHeader = document.createElement("button");
+            btnHeader.type = "button";
+            btnHeader.className = "fornecedor-header";
+            btnHeader.innerHTML = `📁 <strong>${fornecedorNome}</strong> (${produtosFornecedor.length})`;
+
+            const divProdutosList = document.createElement("div");
+            divProdutosList.className = "produtos-lista";
+            divProdutosList.style.display = "none";
+
+            btnHeader.addEventListener("click", () => {
+                const estaFechado = divProdutosList.style.display === "none";
+                divProdutosList.style.display = estaFechado ? "block" : "none";
+            });
+            produtosFornecedor.forEach(p => {
+                const divProdutoContainer = document.createElement("div");
+                divProdutoContainer.style.borderBottom = "1px solid #1b2834";
+
+                const item = document.createElement("div");
+                item.className = "produto-item";
+                item.id = `prod-item-${p.id}`;
+                item.style.display = "flex";
+                item.style.width = "100%";
+                item.style.alignItems = "center";
+                item.style.padding = "10px 5px";
+
+                const barrasText = p.codigoBarras ? ` [${p.codigoBarras}]` : ' [Sem Código]';
+                const vencimentoAlert = p.proximoVencimento ? `<span style="background:#c0392b; color:white; font-size:9px; padding:1px 3px; border-radius:3px; margin-left:4px; font-weight:bold;">⚠️</span>` : '';
+
+                const custoFormated = p.precoCusto ? `R$ ${p.precoCusto.toFixed(2)}` : 'R$ 0.00';
+                const vendaFormated = p.precoVenda ? `R$ ${p.precoVenda.toFixed(2)}` : 'R$ 0.00';
+                const margemFormated = p.margemLucro ? `${p.margemLucro.toFixed(1)}%` : '0.0%';
+
+                item.innerHTML = `
+			                    <div style="flex: 2.5; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+			                        <span>📦 <strong>${p.nome}</strong></span><span style="color:rgba(255,255,255,0.5); font-size:11px;">${barrasText}</span>${vencimentoAlert}
+			                    </div>
+			                    <div style="flex: 1; text-align: center; color: #ffaa66; font-size: 13px;">${custoFormated}</div>
+			                    <div style="flex: 1; text-align: center; color: #5eff5e; font-size: 13px; font-weight: bold;">${vendaFormated}</div>
+			                    <div style="flex: 1; text-align: center; color: #00ffff; font-size: 13px;">${margemFormated}</div>
+			                    <div style="flex: 1; text-align: right; padding-right: 15px; font-weight: bold;">${p.estoqueAtual} Un.</div>
+			                `;
+
+                const divSubRaizDetalhes = document.createElement("div");
+                divSubRaizDetalhes.id = `prod-detalhe-${p.id}`;
+                divSubRaizDetalhes.style.display = "none";
+                divSubRaizDetalhes.style.background = "rgba(0, 0, 0, 0.4)";
+                divSubRaizDetalhes.style.padding = "10px 15px";
+                divSubRaizDetalhes.style.marginLeft = "15px";
+                divSubRaizDetalhes.style.marginBottom = "5px";
+                divSubRaizDetalhes.style.borderRadius = "4px";
+                divSubRaizDetalhes.style.borderLeft = "2px dashed #00bc8c";
+                divSubRaizDetalhes.style.fontSize = "12px";
+
+                divSubRaizDetalhes.innerHTML = `
+							                   <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; color: #ffffff !important;">
+							                       <!-- Linha 1: Logística e Identificação -->
+							                       <div style="display: flex; flex-direction: row; gap: 20px; white-space: nowrap; align-items: center;">
+							                           <div>📌 <strong>ID Lote:</strong> ${p.id}</div>
+							                           <div>📥 <strong>Última Entrada:</strong> ${p.qteEntrada} Un.</div>
+							                           <div>📅 <strong>Validade:</strong> ${p.dataValidade || 'Não Informada'}</div>
+							                       </div>
+							                       <!-- Linha 2: Financeiro Aninhado (O Perfume para não estourar o vídeo) -->
+							                       <div style="display: flex; flex-direction: row; gap: 20px; white-space: nowrap; align-items: center; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 6px;">
+							                           <div style="color: #ffaa66 !important;">💰 <strong>Custo Lote:</strong> ${custoFormated}</div>
+							                           <div style="color: #5eff5e !important;">🏷️ <strong>Preço Venda:</strong> ${vendaFormated}</div>
+							                           <div style="color: #00ffff !important;">📈 <strong>Margem Real:</strong> ${margemFormated}</div>
+							                       </div>
+							                   </div>
+							               `;
+
+                item.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll("[id^='prod-detalhe-']").forEach(d => {
+                        if (d.id !== `prod-detalhe-${p.id}`) d.style.display = "none";
+                    });
+                    const estaOculta = divSubRaizDetalhes.style.display === "none";
+                    divSubRaizDetalhes.style.display = estaOculta ? "block" : "none";
+                    carregarProdutoNoFormulario(p);
+                });
+
+                divProdutoContainer.appendChild(item);
+                divProdutoContainer.appendChild(divSubRaizDetalhes);
+                divProdutosList.appendChild(divProdutoContainer);
+            });
+
+            divGrupo.appendChild(btnHeader);
+            divGrupo.appendChild(divProdutosList);
+            container.appendChild(divGrupo);
+        });
+    } catch (e) {
+        console.error("Falha ao processar a grade comparativa:", e);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 🛠️ AUXILIAR DE CONTROLE DOS CAMPOS (Afinado com o Código de Barras e novos estoques)
 function bloquearFormulario(status) {
-	   document.getElementById("nomeProduto").disabled = status;
-	   document.getElementById("selecionaFornecedor").disabled = status;
-	   document.getElementById("tipoProduto").disabled = status;
-	   document.getElementById("dataValidade").disabled = status;
-	   document.getElementById("precoCusto").disabled = status;
-	   document.getElementById("precoVenda").disabled = status;
-	   document.getElementById("qteEntrada").disabled = status;
-    
-    // 🆕 Novos campos integrados no bloqueio de tela
-    document.getElementById("qteEntrada").disabled = status;
-    document.getElementById("estoqueAtual").disabled = status;
-    
-    document.getElementById("btnSalvar").disabled = status;
-    document.getElementById("formProduto").style.opacity = status ? "0.5" : "1";
+    if (document.getElementById("codigoBarras")) document.getElementById("codigoBarras").disabled = status;
+    if (document.getElementById("nomeProduto")) document.getElementById("nomeProduto").disabled = status;
+    if (document.getElementById("selecionaFornecedor")) document.getElementById("selecionaFornecedor").disabled = status;
+    if (document.getElementById("tipoProduto")) document.getElementById("tipoProduto").disabled = status;
+    if (document.getElementById("dataValidade")) document.getElementById("dataValidade").disabled = status;
+    if (document.getElementById("precoCusto")) document.getElementById("precoCusto").disabled = status;
+    if (document.getElementById("precoVenda")) document.getElementById("precoVenda").disabled = status;
+    if (document.getElementById("qteEntrada")) document.getElementById("qteEntrada").disabled = status;
+    if (document.getElementById("estoqueAtual")) document.getElementById("estoqueAtual").disabled = status;
+
+    const btnSalvar = document.getElementById("btnSalvar");
+    if (btnSalvar) {
+        btnSalvar.disabled = status;
+    }
+    document.getElementById("formProduto").style.opacity = status ? "0.9" : "1";
+    //document.getElementById("formProduto").style.opacity = status ? "0.85" : "1";
+    //document.getElementById("formProduto").style.opacity = status ? "0.5" : "1";
 }
 
 // 🧮 CÁLCULO DINÂMICO DE MARGEM
@@ -85,22 +244,58 @@ function acionarIncluir() {
     document.getElementById("valorMargem").textContent = "0.00";
     document.querySelectorAll(".produto-item").forEach(r => r.classList.remove("selecionado"));
     bloquearFormulario(false);
+    document.getElementById("codigoBarras").focus(); // Foco inicial direto no código de barras
+}
+
+// 🟡 BOTÃO ALTERAR DO MENU FLUTUANTE
+function acionarAlterar() {
+    if (!produtoSelecionadoId) {
+        alert("Selecione um produto na lista antes de alterar!");
+        return;
+    }
+    bloquearFormulario(false);
     document.getElementById("nomeProduto").focus();
 }
 
-// 💾 SALVAR / ALTERAR PRODUTO (Payload enviado ao Java totalmente atualizado)
+// 🔴 BOTÃO EXCLUIR DO MENU FLUTUANTE
+async function acionarExcluir() {
+    if (!produtoSelecionadoId) {
+        alert("Selecione um produto na lista antes de excluir!");
+        return;
+    }
+    if (confirm("Confirma a exclusão definitiva deste produto?")) {
+        try {
+            const response = await fetch(`${API_URL}/produtos/${produtoSelecionadoId}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (response.ok) {
+                alert("Produto excluído com sucesso!");
+                acionarIncluir();
+                bloquearFormulario(true);
+                carregarProdutos();
+            } else {
+                alert("Erro ao excluir o produto.");
+            }
+        } catch (e) {
+            console.error("Erro na exclusão:", e);
+            alert("Falha de comunicação ao excluir produto.");
+        }
+    }
+}
+
+// 💾 SALVAR / ALTERAR PRODUTO (Payload enviado ao Java totalmente atualizado com Código de Barras)
 async function cadastrarProduto(event) {
     event.preventDefault();
-    
+
     const produtoDados = {
         nome: document.getElementById("nomeProduto").value,
+        codigoBarras: document.getElementById("codigoBarras").value.trim() || null,
         fornecedorId: parseInt(document.getElementById("selecionaFornecedor").value),
         aGranel: document.getElementById("tipoProduto").value === "true",
         precoCusto: parseFloat(document.getElementById("precoCusto").value),
         precoVenda: parseFloat(document.getElementById("precoVenda").value),
         dataValidade: document.getElementById("dataValidade").value || null,
-        
-        // 🆕 Enviando as novas variáveis estruturadas para a API do Spring
         qteEntrada: parseInt(document.getElementById("qteEntrada").value) || 0,
         estoqueAtual: parseInt(document.getElementById("estoqueAtual").value) || 0
     };
@@ -119,7 +314,7 @@ async function cadastrarProduto(event) {
         });
 
         if (response.ok) {
-            alert(produtoSelecionadoId ? "Produto alterado!" : "Produto cadastrado!");
+            alert(produtoSelecionadoId ? "Produto alteredo!" : "Produto cadastrado!");
             document.getElementById("formProduto").reset();
             document.getElementById("valorMargem").textContent = "0.00";
             produtoSelecionadoId = null;
@@ -128,245 +323,96 @@ async function cadastrarProduto(event) {
         } else {
             const erro = await response.text();
             console.error("Erro ao salvar produto:", response.status, erro);
-            alert("Erro ao salvar produto.");
+            alert("Erro ao salvar produto: " + erro);
         }
     } catch (e) {
         console.error("Falha ao salvar produto:", e);
         alert("Falha de comunicação ao salvar produto.");
     }
 }
-// 💾 SALVAR / ALTERAR PRODUTO
-
-// 📦 BUSCAR PRODUTOS E MONTAR OS BLOCOS COLAPSÁVEIS (ÁRVORE)
-async function carregarProdutos() {
-    try {
-        const response = await fetch(`${API_URL}/produtos`, {
-            method: "GET",
-            headers: { "Authorization": `Bearer ${token}` }
-        });
-        
-        console.log("GET /produtos status:", response.status);
-        if (!response.ok) {
-            const erro = await response.text();
-            console.error("Erro ao carregar produtos:", response.status, erro);
-            return;
-        }
-        
-        const produtos = await response.json();
-        console.log("Produtos carregados:", produtos);
-        
-        const container = document.getElementById("containerFornecedoresProdutos");
-        if (!container) {
-            console.error("Container containerFornecedoresProdutos não encontrado.");
-            return;
-        }
-        container.innerHTML = "";
-        
-        // 🌳 FORNECEDOR = PAI / PRODUTOS = FILHOS
-        const agrupadoPorFornecedor = {};
-        produtos.forEach(prod => {
-            const fornecedorNome = prod.fornecedor ? prod.fornecedor.nome : "Sem Fornecedor";
-            if (!agrupadoPorFornecedor[fornecedorNome]) {
-                agrupadoPorFornecedor[fornecedorNome] = [];
-            }
-            agrupadoPorFornecedor[fornecedorNome].push(prod);
-        });
-        
-        // Ordena os fornecedores alfabeticamente
-        const fornecedoresOrdenados = Object.keys(agrupadoPorFornecedor).sort((a, b) => a.localeCompare(b, "pt-BR"));
-        
-        fornecedoresOrdenados.forEach(fornecedorNome => {
-            const produtosFornecedor = agrupadoPorFornecedor[fornecedorNome];
-            const divGrupo = document.createElement("div");
-            divGrupo.style.marginBottom = "10px";
-            
-            // 📁 Cabeçalho do fornecedor
-            const btnHeader = document.createElement("button");
-            btnHeader.className = "fornecedor-header";
-            btnHeader.innerHTML = `📁 <strong>${fornecedorNome}</strong> (${produtosFornecedor.length})`;
-            
-            // Área dos produtos começa fechada
-            const divProdutosList = document.createElement("div");
-            divProdutosList.className = "produtos-lista";
-            divProdutosList.style.display = "none";
-            
-            btnHeader.addEventListener("click", () => {
-                const estaFechado = divProdutosList.style.display === "none";
-                divProdutosList.style.display = estaFechado ? "block" : "none";
-            });
-            
-            // Ordena os produtos do fornecedor
-            produtosFornecedor
-                .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
-                .forEach(prod => {
-                    const item = document.createElement("div");
-                    item.className = "produto-item";
-                    
-                    // Alerta de validade nos próximos 30 dias
-                    if (prod.dataValidade) {
-                        const hoje = new Date();
-                        hoje.setHours(0, 0, 0, 0);
-                        const validade = new Date(`${prod.dataValidade}T00:00:00`);
-                        const diferencaDias = (validade - hoje) / (1000 * 60 * 60 * 24);
-                        if (diferencaDias >= 0 && diferencaDias <= 30) {
-                            item.style.cssText = "background-color: rgba(255,0,0,0.15);" + "border-left: 4px solid #ff4d4d;" + "color: #ff9999;";
-                        }
-                    }
-                    
-                    const custo = Number(prod.precoCusto) || 0;
-                    const venda = Number(prod.precoVenda) || 0;
-                    const margem = custo > 0 ? (((venda - custo) / custo) * 100).toFixed(0) : "0";
-                    const tipoLabel = prod.aGranel ? "[Granel]" : "[Unid]";
-                    const validadeLabel = prod.dataValidade ? ` | Val: ${new Date(`${prod.dataValidade}T00:00:00`).toLocaleDateString("pt-BR")}` : "";
-                    
-                    // 🆕 Captura segura dos novos campos numéricos vindos do Java
-                    const qteEntradaShow = prod.qteEntrada || 0;
-                    const estoqueAtualShow = prod.estoqueAtual || 0;
-                    
-                    // 🆕 Exibe o estoque atual com destaque verde na árvore de visualização
-                    item.innerHTML = `
-                        <span>
-                            📦 <strong>${prod.id}</strong> - ${prod.nome} 
-                            <small style="color:#ff9800;"> ${tipoLabel} </small>
-                            <small style="color:#4caf50; font-weight:bold; margin-left:10px;">Estoque: ${estoqueAtualShow}</small>
-                        </span>
-                        <span>
-                            Cust: R$ ${custo.toFixed(2)} | Vend: R$ ${venda.toFixed(2)} | <strong>Lucro: ${margem}%</strong> ${validadeLabel}
-                        </span>
-                    `;
-                    
-                    // Dados usados pelos botões Alterar e Excluir
-                    item.dataset.id = prod.id;
-                    item.dataset.nome = prod.nome;
-                    item.dataset.fornecedorid = prod.fornecedor ? prod.fornecedor.id : "";
-                    item.dataset.agranel = prod.aGranel;
-                    item.dataset.precocusto = custo;
-                    item.dataset.precovenda = venda;
-                    item.dataset.datavalidade = prod.dataValidade || "";
-                    
-                    // 🆕 Alimenta a árvore DOM com os dados de controle de estoque
-                    item.dataset.qteentrada = qteEntradaShow;
-                    item.dataset.estoqueatual = estoqueAtualShow;
-                    
-                    item.addEventListener("click", e => {
-                        e.stopPropagation();
-                        document.querySelectorAll(".produto-item").forEach(elemento => elemento.classList.remove("selecionado"));
-                        item.classList.add("selecionado");
-                        produtoSelecionadoId = Number(prod.id);
-                    });
-                    
-                    divProdutosList.appendChild(item);
-                });
-                
-            divGrupo.appendChild(btnHeader);
-            divGrupo.appendChild(divProdutosList);
-            container.appendChild(divGrupo);
-        });
-    } catch (e) {
-        console.error("Erro ao carregar árvore de produtos:", e);
-    }
-}
+// 📦 CARREGAR LISTA DE FORNECEDORES NO DROP-DOWN (Corrigido para bater com a API)
 
 async function carregarFornecedores() {
     try {
+        // 🚀 Ajustado de /fornecedores para /api/fornecedores para alinhar com o Spring Boot
         const response = await fetch(`${API_URL}/api/fornecedores`, {
             method: "GET",
             headers: { "Authorization": `Bearer ${token}` }
         });
-        console.log("GET /fornecedores status:", response.status);
         if (response.ok) {
             const fornecedores = await response.json();
-            console.log("Fornecedores carregados:", fornecedores);
+            console.log("Fornecedores carregados para o select:", fornecedores);
+
             const select = document.getElementById("selecionaFornecedor");
             if (select) {
                 select.innerHTML = '<option value="">Selecione...</option>';
                 fornecedores.forEach(f => {
-                    const opt = document.createElement("option");
-                    opt.value = f.id;
-                    opt.textContent = f.nome;
-                    select.appendChild(opt);
+                    const idFornecedor = f.id || f.fornecedorId;
+                    const nomeFornecedor = f.nome || f.razaoSocial;
+
+                    if (idFornecedor && nomeFornecedor) {
+                        select.innerHTML += `<option value="${idFornecedor}">${nomeFornecedor}</option>`;
+                    }
                 });
             }
         } else {
-            console.error("Erro na resposta de fornecedores:", response.status);
+            console.error("Erro na API de fornecedores:", response.status);
         }
     } catch (e) {
-        console.error("Falha ao carregar fornecedores:", e);
+        console.error("Erro ao carregar fornecedores no select:", e);
     }
 }
 
-// 🔵 BOTÃO ALTERAR (PUXA OS DADOS DA ÁRVORE PARA OS INPUTS)
-function acionarAlterar() {
-    if (!produtoSelecionadoId) {
-        alert("Clique em um produto dentro de um fornecedor para selecioná-lo!");
-        return;
+
+function carregarProdutoNoFormulario(p) {
+    document.querySelectorAll(".produto-item").forEach(r => r.classList.remove("selecionado"));
+    const elemento = document.getElementById(`prod-item-${p.id}`);
+    if (elemento) elemento.classList.add("selecionado");
+
+    // Abre o container do fornecedor caso esteja fechado para destacar visualmente
+    if (elemento && elemento.parentElement) {
+        elemento.parentElement.style.display = "block";
     }
-    const item = document.querySelector(".produto-item.selecionado");
-    if (item) {
-        bloquearFormulario(false);
-        document.getElementById("nomeProduto").value = item.dataset.nome;
-        document.getElementById("selecionaFornecedor").value = item.dataset.fornecedorid;
-        document.getElementById("tipoProduto").value = item.dataset.agranel;
-        document.getElementById("precoCusto").value = item.dataset.precocusto;
-        document.getElementById("precoVenda").value = item.dataset.precovenda;
-        document.getElementById("dataValidade").value = item.dataset.datavalidade;
-        
-        // 🆕 Joga os valores de estoque do item selecionado para as caixas do formulário
-        document.getElementById("qteEntrada").value = item.dataset.qteentrada;
-        document.getElementById("estoqueAtual").value = item.dataset.estoqueatual;
-        
-        // 🔒 Regra de integridade: em alterações, o estoque atual fica travado para não ser burlado manualmente.
-        document.getElementById("estoqueAtual").disabled = true;
-        
-        calcularMargem();
-        document.getElementById("nomeProduto").focus();
-    }
+
+    produtoSelecionadoId = p.id;
+    document.getElementById("produtoId").value = p.id;
+    document.getElementById("codigoBarras").value = p.codigoBarras || "";
+    document.getElementById("nomeProduto").value = p.nome;
+    document.getElementById("selecionaFornecedor").value = p.fornecedor ? p.fornecedor.id : "";
+    document.getElementById("tipoProduto").value = String(p.aGranel);
+    document.getElementById("dataValidade").value = p.dataValidade || "";
+    document.getElementById("precoCusto").value = p.precoCusto;
+    document.getElementById("precoVenda").value = p.precoVenda;
+    document.getElementById("qteEntrada").value = p.qteEntrada;
+    document.getElementById("estoqueAtual").value = p.estoqueAtual;
+
+    document.getElementById("tituloFormulario").innerText = "Visualizando Produto";
+    calcularMargem();
+    bloquearFormulario(true);
 }
 
-// 🔴 BOTÃO EXCLUIR (Corrigido para a rota certa)
-async function acionarExcluir() {
-    if (!produtoSelecionadoId) {
-        alert("Selecione um produto primeiro!");
-        return;
-    }
-    if (confirm("Deseja excluir o produto selecionado?")) {
-        try {
-            const response = await fetch(`${API_URL}/produtos/${produtoSelecionadoId}`, {
-                method: "DELETE",
-                headers: { "Authorization": `Bearer ${token}` }
-            });
-            if (response.ok) {
-                alert("Produto excluído com sucesso!");
-                document.getElementById("formProduto").reset();
-                document.getElementById("valorMargem").textContent = "0.00";
-                bloquearFormulario(true);
-                carregarProdutos();
-            } else {
-                alert("Erro ao excluir produto.");
-            }
-        } catch (e) {
-            console.error(e);
+// 🔍 LOCALIZA O PRODUTO VIA CÓDIGO DE BARRAS DO LEITOR USB (MAGIA DO HARDWARE)
+function buscarPorCodigoBarras(codigo) {
+    if (!codigo) return;
+    const codigoLimpo = codigo.trim();
+
+    // Busca dentro do cache local atualizado
+    const produtoEncontrado = listaProdutosGeral.find(p => p.codigoBarras === codigoLimpo);
+
+    if (produtoEncontrado) {
+        carregarProdutoNoFormulario(produtoEncontrado);
+    } else {
+        // Se o código não existir, oferece atalho rápido para inclusão
+        if (confirm("Código de barras [" + codigoLimpo + "] não cadastrado. Deseja iniciar a inclusão deste produto?")) {
+            acionarIncluir();
+            document.getElementById("codigoBarras").value = codigoLimpo;
+            document.getElementById("nomeProduto").focus();
+        } else {
+            document.getElementById("codigoBarras").value = "";
+            document.getElementById("codigoBarras").focus();
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
