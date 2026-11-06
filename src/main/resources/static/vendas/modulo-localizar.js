@@ -21,47 +21,46 @@ function montarArvoreVendasCentro() {
     if (!container) { return; } 
     container.innerHTML = ""; 
 
-    // Atualiza contador do cabeçalho 
+    // Atualiza o contador mestre do cabeçalho de vendas
     const txtContador = document.getElementById("contadorProdutosCatalogo"); 
     if (txtContador) { 
         txtContador.textContent = listaProdutosGlobal.length; 
     } 
 
-    // 🔄 1. Agrupa por PRODUTO RAIZ 
+    // 🔄 1. AGRUPAMENTO INTELIGENTE POR FORNECEDOR (O Pai da Árvore)
     const hierarquia = {}; 
     listaProdutosGlobal.forEach(prod => { 
-        const raiz = prod.nome.trim().toUpperCase(); 
-        if (!hierarquia[raiz]) { 
-            hierarquia[raiz] = []; 
+        const fornecedorNome = prod.fornecedor ? prod.fornecedor.nome.trim().toUpperCase() : "PRODUTOS AVULSOS / ARTESANAIS"; 
+        if (!hierarquia[fornecedorNome]) { 
+            hierarquia[fornecedorNome] = []; 
         } 
-        hierarquia[raiz].push(prod); 
+        hierarquia[fornecedorNome].push(prod); 
     }); 
 
-    // 🔤 2. Ordena de A a Z 
-    const raizesOrdenadas = Object.keys(hierarquia).sort((a, b) => a.localeCompare(b)); 
+    // 🔤 2. Ordena os Fornecedores (ex: LORENZETTI, UNILEVER) de A a Z
+    const fornecedoresOrdenados = Object.keys(hierarquia).sort((a, b) => a.localeCompare(b, "pt-BR")); 
 
-    // 🔨 3. Monta a árvore 
-    raizesOrdenadas.forEach(produtoRaiz => { 
+    // 🔨 3. Monta a árvore física na interface do balcão
+    fornecedoresOrdenados.forEach(fornecedorPai => { 
         const divGrupo = document.createElement("div"); 
-        divGrupo.style.cssText = "margin-bottom: 6px; font-family: Arial, sans-serif;"; 
+        divGrupo.style.cssText = "margin-bottom: 8px; font-family: Arial, sans-serif;"; 
 
-        // 📁 LINHA RAIZ
+        // 📁 LINHA RAIZ: O Fornecedor Pai
         const divRaizRow = document.createElement("div"); 
-        divRaizRow.style.cssText = "display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 0; color: white;"; 
-        divRaizRow.innerHTML = `⚙️ <span style="font-weight: bold; font-size: 14px;"> ${produtoRaiz} </span> <span style="color: #ff9800; font-size: 11px;"> (${hierarquia[produtoRaiz].length} marcas) </span>`; 
+        divRaizRow.style.cssText = "display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 8px; color: white; background: rgba(255,255,255,0.02); border-radius: 4px; transition: 0.2s;"; 
+        divRaizRow.innerHTML = `📁 <span style="font-weight: bold; font-size: 13px; color: #4af37a;"> ${fornecedorPai} </span> <span style="color: #ff9800; font-size: 11px; font-weight: bold;"> (${hierarquia[fornecedorPai].length} Itens) </span>`; 
 
-        // Container dos filhos 
+        // Container dos Produtos Filhos (Sub-Raiz) 
         const divSubRaizContainer = document.createElement("div"); 
-        divSubRaizContainer.style.cssText = "display: none; padding-left: 24px; margin-top: 2px; border-left: 1px dashed rgba(255,255,255,0.15);"; 
+        divSubRaizContainer.style.cssText = "display: none; padding-left: 18px; margin-top: 4px; border-left: 1px dashed rgba(74, 243, 122, 0.2);"; 
 
-        // Abre e fecha produto raiz 
+        // Abre e fecha a pasta do fornecedor com um clique macio
         divRaizRow.addEventListener("click", () => { 
             divSubRaizContainer.style.display = divSubRaizContainer.style.display === "none" ? "block" : "none"; 
         }); 
 
-        // Varre Clientes daquele produto 
-        hierarquia[produtoRaiz].forEach(prod => { 
-            const ClienteNome = prod.Cliente ? prod.Cliente.nome : "Sem Marca"; 
+        // Varre os produtos pertencentes àquele Fornecedor Pai
+        hierarquia[fornecedorPai].forEach(prod => { 
             const tipoLabel = prod.aGranel ? "[Granel]" : "[Unid]"; 
             const precoVenda = Number(prod.precoVenda || 0); 
             const precoCusto = Number(prod.precoCusto || 0); 
@@ -69,7 +68,7 @@ function montarArvoreVendasCentro() {
             const margem = precoCusto > 0 ? (((precoVenda - precoCusto) / precoCusto) * 100).toFixed(0) : "0"; 
             const estoqueFormatado = prod.aGranel ? estoqueAtual.toFixed(3) : estoqueAtual.toFixed(0); 
 
-            // Calcula o saldo dinâmico em tempo real antes de desenhar a linha
+            // Calcula o saldo dinâmico em tempo real cruzando com o cupom da memória
             const itemJaNoCupomInicial = typeof carrinho !== "undefined" && Array.isArray(carrinho) ? carrinho.find(item => { 
                 const idItem = item.produtoId ?? item.produto?.id ?? item.id; 
                 return Number(idItem) === Number(prod.id); 
@@ -78,22 +77,22 @@ function montarArvoreVendasCentro() {
             const saldoDisponivelInicial = estoqueAtual - quantidadeJaNoCupomInicial; 
             const saldoFormatadoInicial = prod.aGranel ? saldoDisponivelInicial.toFixed(3) : saldoDisponivelInicial.toFixed(0);
 
-            // LINHA SUB-RAIZ 
+            // LINHA FILHO (O Produto cadastrado)
             const divItemFilho = document.createElement("div"); 
-            divItemFilho.style.cssText = "padding: 6px 0; font-size: 13px; color: #ecf0f1; display: flex; flex-direction: column; gap: 4px;"; 
+            divItemFilho.style.cssText = "padding: 4px 0; font-size: 13px; color: #ecf0f1; display: flex; flex-direction: column; gap: 2px;"; 
 
-            // Texto da linha 
+            // Texto descritivo da linha do produto
             const divTextoLinha = document.createElement("div"); 
-            divTextoLinha.style.cssText = "cursor: pointer; display: inline-block;"; 
-            divTextoLinha.innerHTML = `🔹 <strong>${ClienteNome}</strong> <small style="color: #ff9800;"> ${tipoLabel} </small> - <span style="color: #5eff5e; font-weight: bold;"> R$ ${precoVenda.toFixed(2)} </span> <small style="color: #bdc3c7; font-size: 11px;"> (Margem: ${margem}%) </small> <small style="color: #ffd54f; font-size: 11px; font-weight: bold;"> | Estoque: ${estoqueFormatado} | Est. Atual: <span class="txt-dinamico-estoque" style="color: #5eff5e;">${saldoFormatadoInicial}</span> </small>`; 
+            divTextoLinha.style.cssText = "cursor: pointer; display: inline-block; width: 100%; padding: 4px; border-radius: 3px;"; 
+            divTextoLinha.innerHTML = `🔹 <strong>${prod.nome}</strong> <small style="color: #ff9800;"> ${tipoLabel} </small> - <span style="color: #5eff5e; font-weight: bold;"> R$ ${precoVenda.toFixed(2)} </span> <small style="color: #bdc3c7; font-size: 11px;"> (Margem: ${margem}%) </small> <small style="color: #ffd54f; font-size: 11px; font-weight: bold;"> | Est: ${estoqueFormatado} | Disp: <span class="txt-dinamico-estoque" style="color: #5eff5e;">${saldoFormatadoInicial}</span> </small>`; 
 
-            // Menu contextual 
+            // Menu contextual de operações inferiores (Mover / Incluir)
             const divMenuBotoes = document.createElement("div"); 
             divMenuBotoes.className = "menu-botoes-pdv"; 
             divMenuBotoes.style.cssText = "display: none; gap: 6px; padding-left: 15px; margin-top: 2px; margin-bottom: 4px;"; 
             divMenuBotoes.innerHTML = ` <button class="btn" style="background: #27ae60; color: white; font-size: 11px; padding: 2px 8px; border: none; border-radius: 3px; font-weight: bold; text-transform: uppercase;"> Mover </button> <button class="btn" style="background: #7f8c8d; color: white; font-size: 11px; padding: 2px 8px; border: none; border-radius: 3px; font-weight: bold; text-transform: uppercase;" disabled> Alterar </button> <button class="btn" style="background: #7f8c8d; color: white; font-size: 11px; padding: 2px 8px; border: none; border-radius: 3px; font-weight: bold; text-transform: uppercase;" disabled> Incluir </button> `; 
 
-            // Clique no Cliente abre menu e fecha os outros 
+            // Clique abre o menu contextual do item e recolhe os demais
             divTextoLinha.addEventListener("click", evento => { 
                 evento.stopPropagation(); 
                 container.querySelectorAll(".menu-botoes-pdv").forEach(menu => { 
@@ -104,7 +103,7 @@ function montarArvoreVendasCentro() {
                 divMenuBotoes.style.display = divMenuBotoes.style.display === "flex" ? "none" : "flex"; 
             }); 
 
-            // Botão Mover 
+            // Atrela o botão mestre de movimentação para o carrinho definitivo
             const btnMoverLinha = divMenuBotoes.querySelector("button:nth-child(1)"); 
             btnMoverLinha.addEventListener("click", evento => { 
                 evento.stopPropagation(); 
@@ -112,60 +111,47 @@ function montarArvoreVendasCentro() {
                 if (!inputQtd) { return; } 
                 const quantidadeInput = prod.aGranel ? parseFloat(inputQtd.value) : parseInt(inputQtd.value, 10); 
 
-                // 1. Valida a quantidade digitada 
                 if ( !Number.isFinite(quantidadeInput) || quantidadeInput <= 0 ) { 
                     alert( "Atenção, piá! Informe uma quantidade válida maior que zero." ); 
                     return; 
                 } 
 
-                // 2. Descobre quanto deste mesmo produto já está reservado no cupom. 
                 const itemJaNoCupom = typeof carrinho !== "undefined" && Array.isArray(carrinho) ? carrinho.find(item => { 
                     const idItem = item.produtoId ?? item.produto?.id ?? item.id; 
                     return Number(idItem) === Number(prod.id); 
                 }) : null; 
                 const quantidadeJaNoCupom = Number( itemJaNoCupom?.quantidade || 0 ); 
-
-                // 3. Calcula o saldo ainda disponível 
                 const saldoDisponivel = estoqueAtual - quantidadeJaNoCupom; 
 
-                // 4. Bloqueia se a quantidade estourar o saldo disponível 
                 if (quantidadeInput > saldoDisponivel) { 
-                    alert( `Estoque insuficiente.\n\n` + `Estoque atual: ${estoqueFormatado}\n` + `Já lançado no cupom: ${quantidadeJaNoCupom}\n` + `Saldo disponível: ${saldoDisponivel}` ); 
+                    alert( `Estoque insuficiente.\n\nEstoque atual: ${estoqueFormatado}\nJá lançado: ${quantidadeJaNoCupom}\nSaldo disponível: ${saldoDisponivel}` ); 
                     return; 
                 } 
 
-                // 5. Somente agora pode entrar no cupom 
-                if (typeof adicionarProdutoAoCupom === "function") { 
-                    adicionarProdutoAoCupom( 
-                        prod.id, 
-                        `${produtoRaiz} (${ClienteNome})`, 
-                        quantidadeInput, 
-                        precoVenda, 
-                        precoCusto 
-                    ); 
+				// 5. Somente agora pode entrar no cupom com as posições corrigidas de variáveis
+				                if (typeof adicionarProdutoAoCupom === "function") { 
+				                    // Garante que a quantidade digitada (quantidadeInput) preencha o campo certo
+				                    adicionarProdutoAoCupom(
+				                        prod.id, 
+				                        prod.nome, 
+				                        quantidadeInput, 
+				                        precoVenda, 
+				                        precoCusto 
+				                    ); 
 
-                    // Salva a alteração local na memória ram
-                    prod.estoqueAtual = estoqueAtual - quantidadeInput;
+				                    // Abate localmente o saldo na memória ram para a tela atualizar
+				                    prod.estoqueAtual = estoqueAtual - quantidadeInput;
 
-                    // Atualiza o texto do "Est. Atual" na linha do catálogo (Esquerda)
-                    const txtEstoqueLinha = divTextoLinha.querySelector(".txt-dinamico-estoque");
-                    if (txtEstoqueLinha) {
-                        const novoSaldoCalculado = prod.estoqueAtual - quantidadeJaNoCupom;
-                        txtEstoqueLinha.textContent = prod.aGranel ? novoSaldoCalculado.toFixed(3) : novoSaldoCalculado.toFixed(0);
-                    }
-
-                    // 🔥 REATIVIDADE DO CUPOM (DIREITA)
-                    // Se você tiver uma função separada para renderizar/desenhar a lista da direita, chamamos ela aqui para o print atualizar na hora!
-                    if (typeof renderizarItensCupom === "function") {
-                        renderizarItensCupom(); 
-                    } else if (typeof atualizarVisualCupom === "function") {
-                        atualizarVisualCupom();
-                    }
-
-                    inputQtd.value = "1"; 
-                    divMenuBotoes.style.display = "none"; 
-                } 
-            }); 
+				                    // Atualiza dinamicamente o contador de "Disp:" na coluna da esquerda
+				                    const txtEstoqueLinha = divTextoLinha.querySelector(".txt-dinamico-estoque");
+				                    if (txtEstoqueLinha) {
+				                        const saldoAtualizado = prod.estoqueAtual;
+				                        txtEstoqueLinha.textContent = prod.aGranel ? saldoAtualizado.toFixed(3) : saldoAtualizado.toFixed(0);
+				                    }
+				                    
+				                    divMenuBotoes.style.display = "none"; // Recolhe o mini menu
+				                } 
+				            });
 
             divItemFilho.appendChild(divTextoLinha); 
             divItemFilho.appendChild(divMenuBotoes); 

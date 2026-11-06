@@ -60,6 +60,60 @@ document.addEventListener("DOMContentLoaded", () => {
     bloquearFormulario(true);
 });
 
+// 🛡️ MOTOR DE INTELIGÊNCIA: Controla a Interação Humana bloqueando ou liberando os campos financeiros
+function alternarBloqueioCampos() {
+    const origem = document.getElementById("origemCadastro").value;
+    
+    // Lista de campos que sofrem a ação da regra de negócio
+    const camposFinanceiros = [
+        "precoCusto",
+        "precoVenda",
+        "qteEntrada",
+        "estoqueAtual"
+    ];
+
+    if (origem === "COM_NF") {
+        // Cenário Oficial: Desabilita e limpa os campos para a Entrada.html assumir o controle
+        camposFinanceiros.forEach(id => {
+            const campo = document.getElementById(id);
+            if (campo) {
+                campo.disabled = true;
+                campo.required = false;
+                campo.value = "0.00"; // Reseta por segurança
+            }
+        });
+        console.log("🔒 Modo Oficial ATIVO: Preços bloqueados no Cadastro. Deixe a Entrada.html ditar os valores.");
+    } else {
+        // Cenário Artesanal Livre: Libera os campos e força a obrigatoriedade
+        camposFinanceiros.forEach(id => {
+            const campo = document.getElementById(id);
+            if (campo) {
+                campo.disabled = false;
+                campo.required = true; // Exige o preenchimento nativo
+                if(campo.value === "0.00" || campo.value === "0") campo.value = ""; // Limpa para digitação
+            }
+        });
+        console.log("🔓 Modo Artesanal ATIVO: Campos liberados e exigidos no preenchimento.");
+    }
+}
+
+// 🎯 TRAVA DE SEGURANÇA ADICIONAL NO SUBMIT DO FORMULÁRIO
+document.getElementById("formProduto")?.addEventListener("submit", function(e) {
+    const origem = document.getElementById("origemCadastro").value;
+    
+    if (origem === "SEM_NF") {
+        const custo = parseFloat(document.getElementById("precoCusto")?.value) || 0;
+        const venda = parseFloat(document.getElementById("precoVenda")?.value) || 0;
+
+        // Validação final de consistência de dados antes de disparar o POST/PUT para o Java
+        if (custo <= 0 || venda <= 0) {
+            e.preventDefault(); // Interrompe o envio para o banco MySQL
+            alert("❌ Erro de Validação:\nPara produtos artesanais/sem NF, é obrigatório informar Preço de Custo e Preço de Venda maiores que zero!");
+            document.getElementById("precoCusto").focus();
+        }
+    }
+});
+
 
 // 📦 BUSCAR PRODUTOS E MONTAR OS BLOCOS COLAPSÁVEIS COM SUB-RAIZ DE DADOS DO LOTE
 async function carregarProdutos() {
