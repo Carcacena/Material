@@ -127,6 +127,7 @@ async function carregarFornecedores() {
 carregarFornecedores();
 
 
+// 📦 BUSCA PRODUTOS FILTRADOS POR FORNECEDOR (Modo Seletivo Manual Sem Conflito de Rota)
 async function carregarProdutosPorFornecedor() {
     const fornecedorId = document.getElementById('fornecedorId').value;
     const selectProduto = document.getElementById('selectProduto');
@@ -139,6 +140,7 @@ async function carregarProdutosPorFornecedor() {
     selectProduto.innerHTML = '<option value="">Carregando produtos...</option>';
 
     try {
+        // Rota nativa corrigida para alinhar perfeitamente com o seu Back-End Java
         const response = await fetch('/produtos', {
             method: 'GET',
             headers: montarHeaders()
@@ -149,18 +151,19 @@ async function carregarProdutosPorFornecedor() {
         }
 
         const todosProdutos = await response.json();
-
-        const produtosFiltrados = todosProdutos.filter(p =>
+        
+        // Mantém o cache invisível na memória para proteção do fluxo
+        window.produtosFornecedorAtual = todosProdutos.filter(p =>
             p.fornecedor && Number(p.fornecedor.id) === Number(fornecedorId)
         );
 
-        if (produtosFiltrados.length === 0) {
+        if (window.produtosFornecedorAtual.length === 0) {
             selectProduto.innerHTML = '<option value="">Nenhum produto cadastrado para este fornecedor</option>';
             return;
         }
 
         selectProduto.innerHTML = '<option value="">Escolha o Produto...</option>';
-        produtosFiltrados.forEach(p => {
+        window.produtosFornecedorAtual.forEach(p => {
             const opt = document.createElement('option');
             opt.value = p.id;
             opt.textContent = `${p.nome} (ID: ${p.id})`;
@@ -170,6 +173,26 @@ async function carregarProdutosPorFornecedor() {
     } catch (erro) {
         console.error('Erro ao carregar produtos:', erro);
         selectProduto.innerHTML = '<option value="">Erro ao carregar produtos</option>';
+    }
+}
+// 🔌 ATALHO DO HARDWARE: Intercepta o leitor USB na Entrada e faz a seleção automática
+function buscarProdutoPorCodigoBarrasEntrada(codigo) {
+    if (!codigo || !window.produtosFornecedorAtual) return;
+    const codigoLimpo = codigo.trim();
+    
+    // Procura o produto bipado dentro da lista já filtrada do fornecedor
+    const encontrado = window.produtosFornecedorAtual.find(p => p.codigoBarras === codigoLimpo);
+    
+    if (encontrado) {
+        const selectProduto = document.getElementById('selectProduto');
+        if (selectProduto) {
+            selectProduto.value = encontrado.id;
+            // Dispara manualmente o evento de mudança para que a tela carregue os preços de custo/venda antigos
+            selectProduto.dispatchEvent(new Event('change'));
+            console.log(`🔌 Scanner localizou o item: ${encontrado.nome}`);
+        }
+    } else {
+        alert(`⚠️ Código [${codigoLimpo}] não localizado para este fornecedor. Registre o produto no cadastro primeiro ou digite manualmente.`);
     }
 }
 
@@ -233,6 +256,70 @@ async function salvarEntrada() {
         // 2. PEGA A ENTRADA QUE O JAVA ACABOU DE GRAVAR
         const entradaSalva = await response.json();
 
+        // ✅ VALIDAÇÃO IMEDIATA: Garante o ID antes de gastar processamento no loop
+        if (!entradaSalva || !entradaSalva.id) {
+            throw new Error("A entrada foi gravada, mas o servidor não retornou o ID.");
+        }
+
+        // 🔮 MAGIA: Sincroniza e atualiza os preços e estoques na ficha master de cada produto
+		// 🔮 MAGIA HÍBRIDA: Sincroniza e atualiza os preços e estoques na ficha master de cada produto
+		       for (const item of itensNota) {
+		           try {
+		               // 1. Busca os dados atuais do produto para não perder campos master
+		               const prodResp = await fetch(`${API_URL}/produtos/${item.produtoId || item.id}`, {
+		                   method: 'GET',
+		                   headers: montarHeaders()
+		               });
+
+		               if (prodResp.ok) {
+		                   const prodAtual = await prodResp.json();
+
+		                   // 2. Calcula as novas quantidades somando a entrada ao estoque antigo
+		                   const novaQteEntrada = parseInt(item.quantidade) || 0;
+		                   const novoEstoqueAtual = (parseInt(prodAtual.estoqueAtual) || 0) + novaQteEntrada;
+
+		                   // 💰 Extrai e valida os preços vindos do grid da nota de entrada
+		                   const custoInformado = parseFloat(item.precoCusto) || 0;
+		                   let vendaInformada = parseFloat(item.precoVenda) || 0;
+
+		                   // 🛡️ TRAVA DE SEGURANÇA: Se o preço de venda veio zerado da correria do balcão (manual ou scanner),
+		                   // o sistema calcula automaticamente aplicando a margem comercial de 40% sobre o custo.
+		                   if (vendaInformada <= 0 && custoInformado > 0) {
+		                       vendaInformada = custoInformado * 1.40;
+		                       console.log(`⚠️ Produto ID ${prodAtual.id} entrou zerado. Preço automático: R$ ${vendaInformada.toFixed(2)}`);
+		                   } else if (vendaInformada <= 0) {
+		                       // Se até o custo for zero, resgata o último preço de venda válido do cadastro master
+		                       vendaInformada = parseFloat(prodAtual.precoVenda) || 0.00;
+		                   }
+
+		                   // 3. Monta o payload unificado achatando o fornecedorId para bater com o Spring/MySQL
+		                   const produtoSincronizado = {
+		                       id: prodAtual.id,
+		                       nome: prodAtual.nome,
+		                       codigoBarras: prodAtual.codigoBarras || null,
+		                       aGranel: prodAtual.aGranel || false,
+		                       dataValidade: prodAtual.dataValidade || null,
+		                       precoCusto: custoInformado > 0 ? custoInformado : (parseFloat(prodAtual.precoCusto) || 0),
+		                       precoVenda: vendaInformada,
+		                       qteEntrada: novaQteEntrada,
+		                       estoqueAtual: novoEstoqueAtual,
+		                       fornecedorId: prodAtual.fornecedor ? parseInt(prodAtual.fornecedor.id) : parseInt(fornecedorId)
+		                   };
+
+		                   // 4. Dispara o PUT para atualizar o produto de forma definitiva no banco de dados
+		                   await fetch(`${API_URL}/produtos/${produtoSincronizado.id}`, {
+		                       method: 'PUT',
+		                       headers: montarHeaders(),
+		                       body: JSON.stringify(produtoSincronizado)
+		                   });
+		               }
+		           } catch (err) {
+		               console.error(`Falha ao sincronizar o produto ID ${item.produtoId}:`, err);
+		           }
+		       }
+
+
+
         if (!entradaSalva || !entradaSalva.id) {
             throw new Error(
                 "A entrada foi gravada, mas o servidor não retornou o ID."
@@ -279,126 +366,203 @@ async function salvarEntrada() {
         if (!responseImpostos.ok) {
             const erroImpostos = await responseImpostos.text();
 
-			alert(
-			        "⚠️ A Nota Fiscal foi gravada, mas houve erro ao gravar os impostos:\n" +
-			        erroImpostos
-			    );
-			    return;
-			}
-		
-			const negociacao =
-			    window.dadosNegociacaoEntrada || {};
-				
-				
-			console.log(
-			    "NEGOCIACAO ENTRADA:",
-			    negociacao
-			);
-			
-			// ======================================================
-			// 6. GERAÇÃO AUTOMÁTICA DO CONTAS A PAGAR
-			// ======================================================
+            alert(
+                "⚠️ A Nota Fiscal foi gravada, mas houve erro ao gravar os impostos:\n" +
+                erroImpostos
+            );
+            return;
+        }
 
-			if (!negociacao.parcelas ||
-			    negociacao.parcelas.length === 0) {
+        const negociacao =
+            window.dadosNegociacaoEntrada || {};
 
-			    throw new Error(
-			        "Dados financeiros da entrada não foram confirmados."
-			    );
-			}
 
-			const payloadContasPagar = {
-
-			    numeroEntrada:
-			        String(entradaSalva.id),
-
-			    fornecedorId:
-			        parseInt(fornecedorId),
-
-			    numeroNotaFiscal:
-			        parseInt(numeroNota),
-
-			    serie:
-			        serie,
-
-			    valorFinalCorrigido:
-			        Number(
-			            negociacao.valorFinalCorrigido ||
-			            impostos.valorTotalNota
-			        ),
-
-			    inpcAnualAplicado:
-			        Number(
-			            negociacao.inpcAnualAplicado || 0
-			        ),
-
-			    formaPagamento:
-			        negociacao.formaPagamento || "DINHEIRO",
-
-			    parcelas:
-			        negociacao.parcelas
-			};
-
-			console.log(
-			    "📤 CONTAS A PAGAR:",
-			    payloadContasPagar
-			);
-			const responseContasPagar =
-			    await fetch(
-			        "/contas-pagar/gerar",
-			        {
-			            method: "POST",
-			            headers: montarHeaders(),
-			            body: JSON.stringify(
-			                payloadContasPagar
-			            )
-			        }
-			    );
-
-				
-			if (!responseContasPagar.ok) {
-
-			    const erroFinanceiro =
-			        await responseContasPagar.text();
-
-			    throw new Error(
-			        "Entrada gravada, mas houve falha ao gerar Contas a Pagar: " +
-			        erroFinanceiro
-			    );
-			}
-
-			const titulosGerados =
-			    await responseContasPagar.json();
-
-			console.log(
-			    "✅ CONTAS A PAGAR GERADO:",
-			    titulosGerados
-			);
-
-			// 7. SOMENTE AGORA ENCERRA A OPERAÇÃO
-			alert(
-			    '✅ Sucesso Total!\n' +
-			    'Nota Fiscal, estoque, impostos e Contas a Pagar gravados no banco local.'
-			);
-				
-	       // 6. SOMENTE AGORA ENCERRA A OPERAÇÃO
-        alert(
-            '✅ Sucesso Total!\n' +
-            'Nota Fiscal, estoque e impostos gravados no banco local.'
+        console.log(
+            "NEGOCIACAO ENTRADA:",
+            negociacao
         );
 
-        window.location.href = '/menu/menu.html';
+        // ======================================================
+        // 6. GERAÇÃO AUTOMÁTICA DO CONTAS A PAGAR
+        // ======================================================
 
-    } catch (error) {
+        if (!negociacao.parcelas ||
+            negociacao.parcelas.length === 0) {
 
-        console.error('Erro ao gravar a entrada:', error);
+            throw new Error(
+                "Dados financeiros da entrada não foram confirmados."
+            );
+        }
 
-        alert(
-            '❌ Erro ao processar a entrada:\n' +
-            error.message
+        const payloadContasPagar = {
+
+            numeroEntrada:
+                String(entradaSalva.id),
+
+            fornecedorId:
+                parseInt(fornecedorId),
+
+            numeroNotaFiscal:
+                parseInt(numeroNota),
+
+            serie:
+                serie,
+
+            valorFinalCorrigido:
+                Number(
+                    negociacao.valorFinalCorrigido ||
+                    impostos.valorTotalNota
+                ),
+
+            inpcAnualAplicado:
+                Number(
+                    negociacao.inpcAnualAplicado || 0
+                ),
+
+            formaPagamento:
+                negociacao.formaPagamento || "DINHEIRO",
+
+            parcelas:
+                negociacao.parcelas
+        };
+
+        console.log(
+            "📤 CONTAS A PAGAR:",
+            payloadContasPagar
         );
+        const responseContasPagar =
+            await fetch(
+                "/contas-pagar/gerar",
+                {
+                    method: "POST",
+                    headers: montarHeaders(),
+                    body: JSON.stringify(
+                        payloadContasPagar
+                    )
+                }
+            );
+
+
+        if (!responseContasPagar.ok) {
+
+            const erroFinanceiro =
+                await responseContasPagar.text();
+
+            throw new Error(
+                "Entrada gravada, mas houve falha ao gerar Contas a Pagar: " +
+                erroFinanceiro
+            );
+        }
+
+        const titulosGerados = await responseContasPagar.json();
+
+        console.log(
+            "✅ CONTAS A PAGAR GERADO:",
+            titulosGerados
+        );
+
+        // 7. SOMENTE AGORA ENCERRA A OPERAÇÃO COM SUCESSO E LIMPA A TELA
+        alert(`🎉 Nota Fiscal nº ${numeroNota} registrada e estoque sincronizado com sucesso!`);
+
+        // Reseta o formulário e limpa o grid de itens da memória
+        if (typeof limparFormularioNota === "function") {
+            limparFormularioNota();
+        } else {
+            document.getElementById("formEntrada")?.reset();
+            if (typeof itensNota !== "undefined") itensNota.length = 0;
+            if (typeof atualizarGrid === "function") atualizarGrid();
+        }
+
+    } catch (erro) {
+        console.error("❌ Falha crítica no processamento da entrada:", erro);
+        alert("Erro no processamento: " + erro.message);
     }
 }
+
+// 🛒 CAPTURA OS INPUTS DA TELA E INSERE O ITEM NO GRID DA NOTA COM VALIDAÇÃO DE VENDA
+function adicionarItem() {
+    const selectProduto = document.getElementById('selectProduto');
+    const idProduto = selectProduto ? selectProduto.value : "";
+    const nomeProduto = selectProduto ? selectProduto.options[selectProduto.selectedIndex]?.text : "";
+    
+    const qtd = parseInt(document.getElementById('qtdEntrada')?.value) || 0;
+    const precoCustoItem = parseFloat(document.getElementById('precoCusto')?.value) || 0;
+    
+    // 🏷️ Captura o valor digitado no novo campo do HTML
+    const elPrecoVenda = document.getElementById('precoVendaItem');
+    const precoVendaItem = elPrecoVenda ? parseFloat(elPrecoVenda.value) || 0 : 0;
+
+    // ==========================================
+    // 🛡️ TRAVAS DE SEGURANÇA E VALIDAÇÃO (IH)
+    // ==========================================
+    if (!idProduto) {
+        alert("⚠️ Por favor, escolha um produto antes de adicionar!");
+        selectProduto.focus();
+        return;
+    }
+    if (qtd <= 0) {
+        alert("⚠️ A quantidade de entrada deve ser maior que zero!");
+        document.getElementById('qtdEntrada').focus();
+        return;
+    }
+    if (precoCustoItem <= 0) {
+        alert("⚠️ Por favor, informe o preço de custo real do item!");
+        document.getElementById('precoCusto').focus();
+        return;
+    }
+    
+    // 🛑 EXIGÊNCIA EXPLICÍTADA: Bloqueia a inserção se o operador tentar deixar a venda zerada
+    if (precoVendaItem <= 0) {
+        alert("⚠️ Exigência do Sistema:\nPara movimentações via Nota Fiscal, é obrigatório preencher o Preço de Venda do produto!");
+        elPrecoVenda.focus();
+        return;
+    }
+
+    // Cria a estrutura exata exigida pela lista global 'itensNota'
+    const novoItem = {
+        produtoId: parseInt(idProduto),
+        nome: nomeProduto,
+        quantidade: qtd,
+        precoCusto: precoCustoItem,
+        precoVenda: precoVendaItem, // Alimenta a propriedade com a digitação obrigatória
+        total: qtd * precoCustoItem
+    };
+
+    // Inicializa a lista global caso ela não tenha sido instanciada
+    if (typeof itensNota === 'undefined') window.itensNota = [];
+    itensNota.push(novoItem);
+    console.log("📦 Item adicionado ao grid provisório:", novoItem);
+
+    // Renderiza a nova linha na tabela do HTML e reseta os inputs locais de itens
+    if (typeof atualizarGrid === 'function') {
+        atualizarGrid();
+    } else {
+        // Fallback nativo: Adiciona a linha direto na tabela física caso a função global mude
+        const tbody = document.getElementById('tabelaItens')?.getElementsByTagName('tbody')[0];
+        if (tbody) {
+            const novaLinha = tbody.insertRow();
+            novaLinha.innerHTML = `
+                <td>${novoItem.nome}</td>
+                <td>${novoItem.quantidade}</td>
+                <td>R$ ${novoItem.precoCusto.toFixed(2)}</td>
+                <td>R$ ${novoItem.total.toFixed(2)}</td>
+            `;
+        }
+    }
+
+    // Limpa apenas os inputs do produto que acabou de entrar, deixando o cursor pronto para o próximo bipe
+    if (document.getElementById('precoCusto')) document.getElementById('precoCusto').value = "";
+    if (elPrecoVenda) elPrecoVenda.value = "";
+    if (document.getElementById('qtdEntrada')) document.getElementById('qtdEntrada').value = "1";
+    if (selectProduto) {
+        selectProduto.value = "";
+        selectProduto.focus();
+    }
+}
+
+
+
+
 
 // CONTROLE DO MENU: Abre ou fecha ao clicar
 function alternarMenuSuspenso() {
