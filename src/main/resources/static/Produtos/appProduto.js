@@ -34,8 +34,10 @@ if (!token) {
 }
 
 // 🌐 DISPARA O CARREGAMENTO QUANDO A TELA ABRE
+// 🌐 DISPARA O CARREGAMENTO QUANDO A TELA ABRE
 document.addEventListener("DOMContentLoaded", () => {
     carregarFornecedores();
+    carregarCategoriasNoSelect(); // 📂 INJETADO: Popula a lista de setores ao abrir
     carregarProdutos();
     document.getElementById("formProduto").addEventListener("submit", cadastrarProduto);
 
@@ -46,19 +48,93 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 🔌 Captura o Enter automático do leitor de código de barras no input dedicado
-    const campoBarras = document.getElementById("codigoBarras");
-    if (campoBarras) {
-        campoBarras.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault(); // Evita submeter o formulário antes da hora
-                buscarPorCodigoBarras(e.target.value);
-            }
-        });
-    }
+
+	// 🔌 Captura o Enter automático do leitor de código de barras no input dedicado
+	   const campoBarras = document.getElementById("codigoBarras");
+	   if (campoBarras) {
+	       campoBarras.addEventListener("keydown", (e) => {
+	           if (e.key === "Enter") {
+	               e.preventDefault(); // Evita submeter o formulário antes da hora
+	               buscarPorCodigoBarras(e.target.value);
+	           }
+	       });
+	   }
 
     bloquearFormulario(true);
 });
+
+// ======================================================
+// 🛸 MÓDULO EMBUTIDO: GERENCIADOR EXPRESSO DE CATEGORIAS
+// ======================================================
+async function carregarCategoriasNoSelect(categoriaIdSelecionada = null) {
+    try {
+        const resposta = await fetch(`${API_URL}/api/categorias`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        
+        if (resposta.ok) {
+            const categorias = await resposta.json();
+            const select = document.getElementById("selectCategoria");
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">Selecione...</option>';
+            categorias.forEach(cat => {
+                const opcao = document.createElement("option");
+                opcao.value = cat.id;
+                opcao.textContent = cat.nome.toUpperCase();
+                if (categoriaIdSelecionada && Number(cat.id) === Number(categoriaIdSelecionada)) {
+                    opcao.selected = true;
+                }
+                select.appendChild(opcao);
+            });
+        }
+    } catch (erro) {
+        console.error("Erro ao popular select de categorias:", erro);
+    }
+}
+
+window.abrirModalRapidoCategoria = function() {
+    document.getElementById("modalRapidoCategoria").style.display = "flex";
+    document.getElementById("inputNovaCategoriaNome").focus();
+};
+
+window.fecharModalRapidoCategoria = function() {
+    document.getElementById("modalRapidoCategoria").style.display = "none";
+    document.getElementById("inputNovaCategoriaNome").value = "";
+};
+
+window.salvarCategoriaInstantanea = async function() {
+    const nomeInput = document.getElementById("inputNovaCategoriaNome").value.trim();
+    if (!nomeInput) {
+        alert("Informe o nome da categoria, chefe!");
+        return;
+    }
+
+    try {
+        const resposta = await fetch(`${API_URL}/api/categorias`, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ nome: nomeInput })
+        });
+
+        if (resposta.ok) {
+            const categoriaCriada = await resposta.json();
+            fecharModalRapidoCategoria();
+            await carregarCategoriasNoSelect(categoriaCriada.id); // Recarrega e deixa selecionada!
+        } else {
+            alert("Erro ao salvar categoria no servidor.");
+        }
+    } catch (erro) {
+        console.error("Falha na requisição da categoria:", erro);
+    }
+};
+
+
+
 
 // 🛡️ MOTOR DE INTELIGÊNCIA: Controla a Interação Humana bloqueando ou liberando os campos financeiros
 function alternarBloqueioCampos() {
@@ -342,16 +418,32 @@ async function acionarExcluir() {
 async function cadastrarProduto(event) {
     event.preventDefault();
 
+    const idFornecedor = document.getElementById("selecionaFornecedor").value;
+    const idCategoria = document.getElementById("selectCategoria").value;
+
+    // 🛡️ Travas de segurança: impede o envio se faltar a amarra de um dos dois lados
+    if (!idFornecedor) {
+        alert("❌ Atenção! Selecione um fornecedor obrigatório.");
+        return;
+    }
+    if (!idCategoria) {
+        alert("❌ Atenção! Selecione uma categoria/setor obrigatório.");
+        return;
+    }
+
     const produtoDados = {
         nome: document.getElementById("nomeProduto").value,
         codigoBarras: document.getElementById("codigoBarras").value.trim() || null,
-        fornecedorId: parseInt(document.getElementById("selecionaFornecedor").value),
         aGranel: document.getElementById("tipoProduto").value === "true",
         precoCusto: parseFloat(document.getElementById("precoCusto").value),
         precoVenda: parseFloat(document.getElementById("precoVenda").value),
         dataValidade: document.getElementById("dataValidade").value || null,
         qteEntrada: parseInt(document.getElementById("qteEntrada").value) || 0,
-        estoqueAtual: parseInt(document.getElementById("estoqueAtual").value) || 0
+        estoqueAtual: parseInt(document.getElementById("estoqueAtual").value) || 0,
+        
+        // 🔗 Vinculos estruturados exigidos pelo Hibernate no Spring Boot
+        fornecedor: { id: parseInt(idFornecedor, 10) },
+        categoria: { id: parseInt(idCategoria, 10) }
     };
 
     const url = produtoSelecionadoId ? `${API_URL}/produtos/${produtoSelecionadoId}` : `${API_URL}/produtos`;
@@ -368,9 +460,13 @@ async function cadastrarProduto(event) {
         });
 
         if (response.ok) {
-            alert(produtoSelecionadoId ? "Produto alteredo!" : "Produto cadastrado!");
+            alert(produtoSelecionadoId ? "Produto alterado!" : "Produto cadastrado!");
             document.getElementById("formProduto").reset();
             document.getElementById("valorMargem").textContent = "0.00";
+            
+            // 🔄 Garante que após o reset, o select de categorias volte para o estado inicial correto
+            document.getElementById("selectCategoria").value = "";
+            
             produtoSelecionadoId = null;
             bloquearFormulario(true);
             carregarProdutos();

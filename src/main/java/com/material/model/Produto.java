@@ -41,6 +41,11 @@ public class Produto {
     @JoinColumn(name = "fornecedor_id", nullable = false)
     private Fornecedor fornecedor;
 
+    // 📂 1. NOVO RELACIONAMENTO MAPEADO COM A CATEGORIA DO PRODUTO
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private CategoriaProduto categoria;
+
     @Column(name = "estoque", nullable = false, precision = 10, scale = 3)
     private BigDecimal estoque = BigDecimal.ZERO;
 
@@ -142,6 +147,12 @@ public class Produto {
         this.fornecedor = fornecedor;
     }
 
+    // 📂 2. GETTER E SETTER DA NOVA CATEGORIA
+    public CategoriaProduto getCategoria() {
+        return categoria;
+    }
+
+  
     public BigDecimal getEstoque() {
         return estoque;
     }
@@ -164,5 +175,9 @@ public class Produto {
 
     public void setEstoqueAtual(int estoqueAtual) {
         this.estoqueAtual = estoqueAtual;
+    }
+
+    public void setCategoria(CategoriaProduto categoria) {
+        this.categoria = categoria;
     }
 }

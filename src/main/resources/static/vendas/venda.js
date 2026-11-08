@@ -14,6 +14,37 @@ const API_URL =
 window.ufOrigemSistemaInstalado = "PR"; // Sincroniza a UF padrão para o cálculo do ICMS interestadual
 window.proximaNotaFiscalPrevista = null;
 
+// Captura o modo vindo da URL: '?modo=categoria', '?modo=produto', etc.
+const urlParams = new URLSearchParams(window.location.search);
+const modoUrl = urlParams.get('modo');
+let modoVisualizacaoArvore = modoUrl || 'produto'; 
+
+async function carregarProdutosPDV() { 
+    try { 
+        const response = await fetch(`${API_URL}/produtos`, { 
+            method: "GET", 
+            headers: { "Authorization": `Bearer ${token}` } 
+        }); 
+        if (response.ok) { 
+            listaProdutosGlobal = await response.json(); 
+            
+            // 🎛️ DIRECIONAMENTO INTELIGENTE DE BOTÃO
+            if (modoVisualizacaoArvore === "categoria") {
+                // Se o operador clicou no botão por categoria, monta as pastas colapsáveis
+                montarArvoreVendasPorCategoriaColapsavel();
+            } else {
+                // Se for o botão clássico, monta a lista direta corrida de A a Z
+                montarArvoreVendasCentro(); 
+            }
+        } 
+    } catch (erro) { 
+        console.error("Erro ao carregar produtos:", erro); 
+    } 
+}
+
+
+
+
 // =========================================================================
 // CONTROLE DE AUTENTICAÇÃO JWT
 // =========================================================================
@@ -180,11 +211,10 @@ async function carregarProximaNotaNoPainel() {
                 o.origemSistemaTela === "S"
             );
             
-            if (matrizAtiva) {
-                // Trata as variações do nome do campo notafiscal (Java CamelCase vs MySQL snake_case)
-                const valorNotaFiscal = matrizAtiva.notafiscal || matrizAtiva.nota_fiscal || "";
-                const valorUf = matrizAtiva.uf || "PR";
-
+			if (matrizAtiva) {
+			               // Trata as variações do nome do campo notafiscal (Java CamelCase vs MySQL snake_case)
+			               const valorNotaFiscal = matrizAtiva.notafiscal || matrizAtiva.nota_fiscal || "";
+			               const valorUf = matrizAtiva.uf || "PR";
                 if (valorNotaFiscal) {
                     // Sincroniza a UF global para a auditoria de alíquota interestadual
                     window.ufOrigemSistemaInstalado = valorUf;

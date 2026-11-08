@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
+
 	<meta charset="UTF-8">
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<title>Mesa de Negociação - Sistema Magia</title>
+	<title>Mesa de Negociação Venda a -z - Sistema Magia</title>
 	<style>
 		body {
 			font-family: Arial, sans-serif;
@@ -23,10 +23,6 @@
 			color: white;
 			margin-bottom: 12px;
 		}
-
-		/* ======================================================
-           ESTRUTURA PRINCIPAL
-           ====================================================== */
 
 		.grid-caixa {
 			display: flex;
@@ -54,10 +50,6 @@
 			box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
 			height: 100%;
 		}
-
-		/* ======================================================
-           CAMPOS
-           ====================================================== */
 
 		.form-control,
 		.form-select {
@@ -93,11 +85,6 @@
 			color: #ff9800;
 			font-weight: bold;
 		}
-
-		/* ======================================================
-           STATUS
-           ====================================================== */
-
 		.status-badge {
 			padding: 5px 10px;
 			border-radius: 4px;
@@ -112,9 +99,6 @@
 			background: #f39c12;
 		}
 
-		/* ======================================================
-           CATÁLOGO / ÁRVORE
-           ====================================================== */
 
 		.bloco-localizar-produto {
 			display: flex;
@@ -358,12 +342,8 @@
 			color: #bdc3c7;
 			font-size: 12px;
 		}
-
-		/* ======================================================
-           CUPOM
-           ====================================================== */
-
-		.table-custom {
+         /* CUPOM*/
+  		.table-custom {
 			width: 100%;
 			margin-top: 5px;
 			color: white !important;
@@ -462,8 +442,9 @@
 		}
 
 		.btn-voltar {
-			background: #7f8c8d;
-		}
+					background: #7f8c8d;
+				} /* <-- Faltava fechar aqui */
+
 
 		.btn-carrinho {
 			background: #c0492b;
@@ -473,11 +454,6 @@
 		.btn-devolucao {
 			background: #EE82EE;
 		}
-
-		incio parte 2
-		/* ======================================================
-           RESPONSIVIDADE
-           ====================================================== */
 
 		/* ==========================================================
 		   		   📱 RESPONSIVIDADE - CELULAR VERTICAL
@@ -589,17 +565,30 @@
 				width: 100% !important;
 				margin-left: 0 !important;
 			}
-		}
 
-		table {
-			font-size: 12px;
+			table {
+				font-size: 12px;
+			}
+
+			/* ======================================================
+			           PAINEL FLUTUANTE
+			           ====================================================== */
+
+			.painel-flutuante {
+				position: fixed;
+				top: 220px;
+				right: 30px;
+				z-index: 2000;
+				width: 140px;
+				padding: 12px;
+				background: rgba(15, 25, 35, 0.93);
+				border: 2px solid rgba(255, 152, 0, 0.5);
+				border-radius: 8px;
+				box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+			}
 		}
 	</style>
 </head>
-
-
-inicio parte 3
-
 
 <body>
 
@@ -786,11 +775,6 @@ inicio parte 3
 
 	</div>
 
-
-	inicio parte 4
-
-
-
 	<!-- ⚡ FILTRO ULTRA RÁPIDO DO BALCÃO -->
 	<script>
 		function filtrarArvoreLocalmente() {
@@ -808,13 +792,6 @@ inicio parte 3
 		}
 	</script>
 
-	</div>
-	</div>
-
-	</div>
-
-	</div>
-
 	<!-- Parte 3: modal de fechamento e painel flutuante -->
 	<div id="container-fechamento-pedido"></div>
 
@@ -823,6 +800,7 @@ inicio parte 3
 
 	<!-- 💰 Financeiro da Venda -->
 	<div id="container-financeiro"></div>
+
 	<!-- 📦 SCRIPT GLOBAL INJETADO DIRETO NA MESA DE NEGOCIAÇÃO -->
 	<script>
 		// Força a função a existir na raiz global (window), impedindo erros de "not defined"
@@ -858,10 +836,6 @@ inicio parte 3
 				modal.style.setProperty("display", "none", "important");
 			}
 		};
-	</script>
-
-
-	<script>
 		async function carregarComponente(idContainer, urlArquivo) {
 			try {
 				const resposta = await fetch(urlArquivo);
@@ -873,7 +847,6 @@ inicio parte 3
 				}
 
 				const html = await resposta.text();
-
 				const container = document.getElementById(idContainer);
 
 				if (container) {
@@ -882,17 +855,15 @@ inicio parte 3
 
 			} catch (erro) {
 				console.error(erro);
-
 				const container = document.getElementById(idContainer);
-
 				if (container) {
 					container.innerHTML = `
-                        <div class="box-custom">
-                            <div class="mensagem-vazia">
-                                Não foi possível carregar este componente.
-                            </div>
-                        </div>
-                    `;
+	                        <div class="box-custom">
+	                            <div class="mensagem-vazia">
+	                                Não foi possível carregar este componente.
+	                            </div>
+	                        </div>
+	                    `;
 				}
 			}
 		}
@@ -900,16 +871,11 @@ inicio parte 3
 		async function carregarArquivoJavaScript(src) {
 			return new Promise((resolve, reject) => {
 				const script = document.createElement("script");
-
 				script.src = src;
 				script.onload = resolve;
-
 				script.onerror = () => {
-					reject(
-						new Error(`Erro ao carregar o arquivo ${src}`)
-					);
+					reject(new Error(`Erro ao carregar o arquivo ${src}`));
 				};
-
 				document.body.appendChild(script);
 			});
 		}
@@ -917,43 +883,16 @@ inicio parte 3
 		// Programa principal da Mesa de Negociação
 		async function inicializarTela() {
 			try {
-
 				// 1. Carrega os componentes HTML primeiro
 				await Promise.all([
-
-					carregarComponente(
-						"container-fechamento-pedido",
-						"/vendas/fechamento-pedido.html"
-					),
-
-					carregarComponente(
-						"container-impostos",
-						"/vendas/impostos.html"
-					),
-
-					carregarComponente(
-						"container-financeiro",
-						"/vendas/Financeiro/financeiro.html"
-					),
-
-					carregarComponente(
-						"container-financeiro",
-						"/Entradas/Financeiro/financeiro.html"
-
-					),
+					carregarComponente("container-fechamento-pedido", "/vendas/fechamento-pedido.html"),
+					carregarComponente("container-impostos", "/vendas/impostos.html"),
+					carregarComponente("container-financeiro", "/vendas/Financeiro/financeiro.html")
 				]);
-
-
-
-
 
 				console.log("Componentes HTML carregados com sucesso!");
 
-				// 2. Configura os painéis da tela
-				//configurarPainelArrastavel();
-
-				// 3. Lista de arquivos
-				//  JavaScript de lógica
+				// 2. Lista de arquivos JavaScript de lógica
 				const arquivosLogica = [
 					'/componentes-js/utils.js',
 					'/vendas/modulo-localizar.js',
@@ -964,6 +903,7 @@ inicio parte 3
 					'/vendas/carrinho-js/imprimeCarrinho.js',
 					'/vendas/modulo-fechamento.js',
 					'/vendas/Financeiro/financeiro.js',
+					'/vendas/modulo-categoria.js',
 					'/vendas/venda.js'
 				];
 
@@ -971,23 +911,8 @@ inicio parte 3
 					await carregarArquivoJavaScript(src);
 				}
 
-				const modalFinanceiro =
-					document.getElementById("modalFecharPedido");
-
-				if (modalFinanceiro &&
-					typeof dragElement === "function") {
-
-					dragElement(modalFinanceiro);
-				}
-
-				const modalImpostosArraste =
-					document.getElementById("modalImpostos");
-
-				if (modalImpostosArraste &&
-					typeof dragElement === "function") {
-
-					dragElement(modalImpostosArraste);
-				}
+				// 3. Ativa o arrasto dos painéis após os scripts carregarem
+				configurarPainelArrastavel();
 
 				// 4. Inicializa a lógica principal
 				if (typeof inicializarLogicaVenda === "function") {
@@ -995,152 +920,85 @@ inicio parte 3
 				}
 
 			} catch (erro) {
-				console.error(
-					"Erro ao inicializar a Mesa de Negociação:",
-					erro
-				);
+				console.error("Erro ao inicializar a Mesa de Negociação:", erro);
 			}
 		}
 
-
 		function configurarPainelArrastavel() {
-		    // 1. Mantém o painel do caixa/ações original se ele existir
-		    const painelCaixa = document.getElementById("painelCaixa");
-		    const headerCaixa = document.getElementById("painelCaixaHeader");
-		    if (painelCaixa && headerCaixa) {
-		        aplicarLogicaMovimento(painelCaixa, headerCaixa);
-		    }
+			const painelCaixa = document.getElementById("painelCaixa");
+			const headerCaixa = document.getElementById("painelCaixaHeader");
+			if (painelCaixa && headerCaixa) {
+				aplicarLogicaMovimento(painelCaixa, headerCaixa);
+			}
 
-		    // 2. 🥷 VIGIA MULTI-MODAL: Monitora e captura o painel de impostos e o modal de clientes
-		    const rastreadorDeTelas = new MutationObserver(() => {
-		        // Varre tags de cabeçalho na tela buscando os títulos
-		        const todosCabecalhos = document.querySelectorAll('div, h2, h3, h4, h5, span');
-		        
-		        todosCabecalhos.forEach(cabecalho => {
-		            const texto = cabecalho.textContent.trim();
+			// Vigia a tela para injetar a lógica nos modais gerados dinamicamente
+			const rastreadorDeTelas = new MutationObserver(() => {
+				const todosCabecalhos = document.querySelectorAll('div, h2, h3, h4, h5, span');
 
-		            // CASO A: Encontrou a tela de Impostos e Clientes (Painel Laranja)
-		            if (texto.includes("Impostos e Clientes") && !cabecalho.dataset.arrastavelAtivo) {
-		                cabecalho.dataset.arrastavelAtivo = "true";
-		                
-		                // Encontra o container mãe (id*="modalImpostos" ou similar)
-		                const containerImpostos = cabecalho.closest('.box-custom') || document.getElementById("modalImpostos") || cabecalho.parentElement;
-		                if (containerImpostos) {
-		                    aplicarLogicaMovimento(containerImpostos, cabecalho);
-		                }
-		            }
+				todosCabecalhos.forEach(cabecalho => {
+					const texto = cabecalho.textContent.trim();
 
-		            // CASO B: Encontrou o Modal de Seleção de Clientes ou Devolução (Modal Cinza de Trás)
-		            if ((texto.includes("Selecionar Cliente para o Pedido") || texto.includes("Selecione a Nota Fiscal para Devolução")) && !cabecalho.dataset.arrastavelAtivo) {
-		                cabecalho.dataset.arrastavelAtivo = "true";
-		                
-		                // Pega a estrutura interna do modal do Bootstrap (.modal-content ou .modal-dialog)
-		                const caixaModal = cabecalho.closest('.modal-content') || cabecalho.closest('.modal-dialog') || cabecalho.parentElement;
-		                if (caixaModal) {
-		                    aplicarLogicaMovimento(caixaModal, cabecalho);
-		                }
-		            }
-		        });
-		    });
+					if (texto.includes("Impostos e Clientes") && !cabecalho.dataset.arrastavelAtivo) {
+						cabecalho.dataset.arrastavelAtivo = "true";
+						const containerImpostos = cabecalho.closest('.box-custom') || document.getElementById("modalImpostos") || cabecalho.parentElement;
+						if (containerImpostos) {
+							aplicarLogicaMovimento(containerImpostos, cabecalho);
+						}
+					}
 
-		    // Inicializa o vigia no body inteiro para pegar injeções dinâmicas
-		    rastreadorDeTelas.observe(document.body, { childList: true, subtree: true });
+					if ((texto.includes("Selecionar Cliente para o Pedido") || texto.includes("Selecione a Nota Fiscal para Devolução")) && !cabecalho.dataset.arrastavelAtivo) {
+						cabecalho.dataset.arrastavelAtivo = "true";
+						const caixaModal = cabecalho.closest('.modal-content') || cabecalho.closest('.modal-dialog') || cabecalho.parentElement;
+						if (caixaModal) {
+							aplicarLogicaMovimento(caixaModal, cabecalho);
+						}
+					}
+
+				});
+			});
+
+			rastreadorDeTelas.observe(document.body, {childList: true, subtree: true});
 		}
 
-		// ⚙️ Função de cálculo de movimento com quebra de travas CSS do Bootstrap
+		// ⚙️ Função de cálculo de movimento com quebra de travas CSS
 		function aplicarLogicaMovimento(elementoPrincipal, elementoGatilho) {
-		    let posicaoXAnterior = 0;
-		    let posicaoYAnterior = 0;
+			let posicaoXAnterior = 0, posicaoYAnterior = 0;
 
-		    elementoGatilho.style.cursor = "move";
-		    elementoGatilho.style.setProperty("user-select", "none", "important");
+			elementoGatilho.style.cursor = "move";
+			elementoGatilho.style.setProperty("user-select", "none", "important");
+			elementoGatilho.onmousedown = iniciarArrasto;
 
-		    elementoGatilho.onmousedown = iniciarArrasto;
+			function iniciarArrasto(evento) {
+				if (evento.target.closest('button') || evento.target.closest('input') || evento.target.closest('select')) {
+					return;
+				}
+				evento.preventDefault();
+				posicaoXAnterior = evento.clientX;
+				posicaoYAnterior = evento.clientY;
 
-		    function iniciarArrasto(evento) {
-		        // Bloqueia o arrasto se o clique começar dentro de campos de digitação ou botões
-		        if (evento.target.closest('button') || evento.target.closest('input') || evento.target.closest('select')) {
-		            return;
-		        }
-		        evento.preventDefault();
+				document.onmouseup = finalizarArrasto;
+				document.onmousemove = arrastarPainel;
+			}
 
-		        posicaoXAnterior = evento.clientX;
-		        posicaoYAnterior = evento.clientY;
+			function arrastarPainel(evento) {
+				evento.preventDefault();
+				let deltaX = posicaoXAnterior - evento.clientX;
+				let deltaY = posicaoYAnterior - evento.clientY;
+				posicaoXAnterior = evento.clientX;
+				posicaoYAnterior = evento.clientY;
 
-		        // Captura a posição geométrica exata atual na tela antes de aplicar estilos absolutos
-		        const retangulo = elementoPrincipal.getBoundingClientRect();
-		        
-		        // Aplica a sequência de destravamento de CSS
-		        elementoPrincipal.style.setProperty("position", "absolute", "important");
-		        elementoPrincipal.style.setProperty("margin", "0", "important");
-		        elementoPrincipal.style.setProperty("transform", "none", "important");
-		        
-		        // Fixa o elemento na coordenada milimétrica em que ele já se encontrava aberto
-		        elementoPrincipal.style.top = `${window.scrollY + retangulo.top}px`;
-		        elementoPrincipal.style.left = `${window.scrollX + retangulo.left}px`;
+				elementoPrincipal.style.position = "absolute";
+				elementoPrincipal.style.top = (elementoPrincipal.offsetTop - deltaY) + "px";
+				elementoPrincipal.style.left = (elementoPrincipal.offsetLeft - deltaX) + "px";
+			}
 
-		        document.onmouseup = pararArrasto;
-		        document.onmousemove = arrastarPainel;
-		    }
-
-		    function arrastarPainel(evento) {
-		        evento.preventDefault();
-
-		        const deslocamentoX = posicaoXAnterior - evento.clientX;
-		        const deslocamentoY = posicaoYAnterior - evento.clientY;
-
-		        posicaoXAnterior = evento.clientX;
-		        posicaoYAnterior = evento.clientY;
-
-		        // Atualiza a posição baseada no deslocamento do cursor
-		        elementoPrincipal.style.top = `${elementoPrincipal.offsetTop - deslocamentoY}px`;
-		        elementoPrincipal.style.left = `${elementoPrincipal.offsetLeft - deslocamentoX}px`;
-		        elementoPrincipal.style.right = "auto";
-		    }
-
-		    function pararArrasto() {
-		        document.onmouseup = null;
-		        document.onmousemove = null;
-		    }
+			function finalizarArrasto() {
+				document.onmouseup = null;
+				document.onmousemove = null;
+			}
 		}
-
-
-
-
-
-
-
-		window.addEventListener(
-			"DOMContentLoaded",
-			inicializarTela
-		);
+		document.addEventListener("DOMContentLoaded", inicializarTela);
 	</script>
-
-
-
-	<!--<script src="https://jsdelivr.net"></script>
-
-		
-		<!-- 🌐 Bootstrap Híbrido direto da nuvem: Carrega primeiro e dá suporte para os módulos -->
-
-	<script src="/componentes-js/utils.js"></script>
-	<script src="/Entradas/appDevolucao.js"></script>
-	<script src="/Entradas/appDevolucao.js"></script>
-	
-	<!-- Importação do Motor de Arrasto Global do Sistema Magia -->
-	    <script src="/componentes-js/drag.js"></script>
-
-	    <!-- Ativação para as telas de Vendas -->
-	    <script>
-	        ativarArrastoGlobal([
-	            { seletorPrincipal: "#painelCaixa", seletorGatilho: "#painelCaixaHeader" },
-	            { seletorPrincipal: "#modalImpostos", seletorGatilho: "h4" },
-	            { seletorPrincipal: "#modalSelecaoNotaDevolucao", seletorGatilho: "div" },
-	            { seletorPrincipal: "#modalPainelGerencial", seletorGatilho: "div" }
-	        ]);
-	    </script>
-
-
 
 </body>
 

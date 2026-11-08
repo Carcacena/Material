@@ -4,74 +4,62 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class ProdutoDTO {
-
     private String nome;
-    private Long fornecedorId;
+    private String codigoBarras;
     private Boolean aGranel;
     private BigDecimal precoCusto;
     private BigDecimal precoVenda;
     private LocalDate dataValidade;
-    
-    // 🆕 NOVO: Variável adicionada para casar com o JSON enviado pelo front-end
+    private int qteEntrada;
     private int estoqueAtual;
 
-    // ==========================
+    // 🔗 Vincular os mapeamentos de subobjetos vindos do Front-end
+    private FornecedorIdDTO fornecedor;
+    private CategoriaIdDTO categoria;
+
+    // Subclasses auxiliares para capturar a estrutura { id: X }
+    public static class FornecedorIdDTO {
+        private Long id;
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+    }
+
+    public static class CategoriaIdDTO {
+        private Long id;
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+    }
+
+    // ==========================================
     // GETTERS E SETTERS
-    // ==========================
-    public String getNome() {
-        return nome;
-    }
+    // ==========================================
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+    public String getCodigoBarras() { return codigoBarras; }
+    public void setCodigoBarras(String codigoBarras) { this.codigoBarras = codigoBarras; }
 
-    public Long getFornecedorId() {
-        return fornecedorId;
-    }
+    public Boolean getAGranel() { return aGranel; }
+    public void setAGranel(Boolean aGranel) { this.aGranel = aGranel; }
 
-    public void setFornecedorId(Long fornecedorId) {
-        this.fornecedorId = fornecedorId;
-    }
+    public BigDecimal getPrecoCusto() { return precoCusto; }
+    public void setPrecoCusto(BigDecimal precoCusto) { this.precoCusto = precoCusto; }
 
-    public Boolean getAGranel() {
-        return aGranel;
-    }
+    public BigDecimal getPrecoVenda() { return precoVenda; }
+    public void setPrecoVenda(BigDecimal precoVenda) { this.precoVenda = precoVenda; }
 
-    public void setAGranel(Boolean aGranel) {
-        this.aGranel = aGranel;
-    }
+    public LocalDate getDataValidade() { return dataValidade; }
+    public void setDataValidade(LocalDate dataValidade) { this.dataValidade = dataValidade; }
 
-    public BigDecimal getPrecoCusto() {
-        return precoCusto;
-    }
+    public int getQteEntrada() { return qteEntrada; }
+    public void setQteEntrada(int qteEntrada) { this.qteEntrada = qteEntrada; }
 
-    public void setPrecoCusto(BigDecimal precoCusto) {
-        this.precoCusto = precoCusto;
-    }
+    public int getEstoqueAtual() { return estoqueAtual; }
+    public void setEstoqueAtual(int estoqueAtual) { this.estoqueAtual = estoqueAtual; }
 
-    public BigDecimal getPrecoVenda() {
-        return precoVenda;
-    }
+    public FornecedorIdDTO getFornecedor() { return fornecedor; }
+    public void setFornecedor(FornecedorIdDTO fornecedor) { this.fornecedor = fornecedor; }
 
-    public void setPrecoVenda(BigDecimal precoVenda) {
-        this.precoVenda = precoVenda;
-    }
-
-    public LocalDate getDataValidade() {
-        return dataValidade;
-    }
-
-    public void setDataValidade(LocalDate dataValidade) {
-        this.dataValidade = dataValidade;
-    }
-
-    // 🆕 NOVOS: Métodos de acesso para o controle de estoque
-    public int getEstoqueAtual() {
-        return estoqueAtual;
-    }
-
-    public void setEstoqueAtual(int estoqueAtual) {
-        this.estoqueAtual = estoqueAtual;
-    }
+    public CategoriaIdDTO getCategoria() { return categoria; }
+    public void setCategoria(CategoriaIdDTO categoria) { this.categoria = categoria; }
 }

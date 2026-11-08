@@ -188,8 +188,17 @@
 
 		<div class="bloco-titulo">Operação Principal</div>
 		<div class="grid-buttons">
-			<button class="btn-pdv full-width" onclick="irVendas()">⚡ Lançar Venda (PDV)</button>
+			<button class="btn-pdv full-width" onclick="irVendas()">
+				⚡ Lançar Venda - Ordem A - Z (PDV)</button>
 		</div>
+		
+		<div class="grid-buttons">
+					<button class="btn-pdv full-width" onclick="irCategoria()">
+						⚡ Lançar Venda - por Categoria (PDV)</button>
+				</div>
+				
+				
+				
 
 		<div class="bloco-titulo">Cadastros e Movimento</div>
 		<div class="grid-buttons">
@@ -231,10 +240,15 @@
 			window.location.href = "/menu/crudUsuario.html";
 		}
 
+		// ⚡ Lança o PDV na listagem corrida direta de A a Z
 		function irVendas() {
-			window.location.href = "/vendas/vendas.html";
+		    window.location.href = `../vendas/vendas.html?modo=produto`;
 		}
 
+		// 🔮 Lança o mesmo PDV estruturado em pastas colapsáveis por Categoria (Setor)
+		function irCategoria() {
+		    window.location.href = `../vendas/vendas.html?modo=categoria`;
+		}
 		// ... Restante das suas funções de navegação mantidas intactas ...
 		function irFornecedores() { window.location.href = "/Fornecedores/crudFornecedor.html"; }
 		public_profile = false; // Controle de escopo local
