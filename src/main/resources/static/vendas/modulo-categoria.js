@@ -9,7 +9,8 @@ async function carregarProdutosPorCategoria() {
 
         if (resposta.ok) {
             listaProdutosGlobal = await resposta.json();
-            montarArvoreVendasPorCategoria();
+            montarArvoreVendasPorCategoriaColapsavel();
+            // montarArvoreVendasPorCategoria();
         } else {
             console.error("Erro ao carregar produtos por categoria. Status:", resposta.status);
         }
@@ -18,6 +19,7 @@ async function carregarProdutosPorCategoria() {
     }
 }
 
+// 🌳 MÓDULO EXCLUSIVO: RENDERIZAÇÃO E FILTRO POR CATEGORIAS (SETOR)
 function montarArvoreVendasPorCategoriaColapsavel() {
     const container = document.getElementById("containerArvoreVendas");
     if (!container) { return; }
@@ -48,20 +50,57 @@ function montarArvoreVendasPorCategoriaColapsavel() {
 
         // 📁 LINHA RAIZ COLAPSADA: O Setor (Ex: CELULARES, ELÉTRICA)
         const divRaizRow = document.createElement("div");
-        divRaizRow.style.cssText = "display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 14px; color: white; background: rgba(0,0,0,0.28); border: 1px solid rgba(255, 152, 0, 0.28); border-radius: 7px; transition: 0.2s;";
-        divRaizRow.innerHTML = `📁 <span style="font-weight: bold; font-size: 13px; color: #ff9800;"> ${categoriaSetor} </span> <span style="color: #4af37a; font-size: 11px; font-weight: bold; margin-left: auto;"> (${categoriasAgrupadas[categoriaSetor].length} Itens) </span>`;
+        divRaizRow.style.cssText =
+            "display:flex;" +
+            "align-items:center;" +
+            "gap:8px;" +
+            "cursor:pointer;" +
+            "padding:10px 4px;" +
+            "width:100%;" +
+            "box-sizing:border-box;" +
+            "color:white;" +
+            "background:transparent;" +
+            "border:none;" +
+            "border-bottom:1px solid rgba(255,255,255,0.08);" +
+            "transition:0.2s;";
+        divRaizRow.innerHTML =
+            `<span class="icone-pasta" style="font-size: 14px;">📁</span>
+			           <span style="font-weight:bold; font-size:13px; color:#ffffff;">
+			              ${categoriaSetor}
+			           </span>
+			           <span style="color:#4af37a; font-size:11px; font-weight:bold; margin-left:auto;">
+			              (${categoriasAgrupadas[categoriaSetor].length} Itens)
+			           </span>`;
 
         // Container oculto para a Subraiz de produtos
         const divSubRaizContainer = document.createElement("div");
         divSubRaizContainer.style.cssText = "display: none; padding-left: 12px; margin: 4px 0 10px 18px; border-left: 2px solid rgba(255, 152, 0, 0.25);";
 
-        // Clique abre e fecha a pasta com suavidade
+        // 💡 APENAS UM EVENTO DE CLIQUE COM A LÓGICA NOVA INTEGRADA
         divRaizRow.addEventListener("click", () => {
             const estaFechado = divSubRaizContainer.style.display === "none";
+
+            // Alterna a exibição da lista de produtos
             divSubRaizContainer.style.display = estaFechado ? "block" : "none";
-            divRaizRow.style.borderColor = estaFechado ? "#ff9800" : "rgba(255, 152, 0, 0.28)";
-            divRaizRow.style.background = estaFechado ? "rgba(255, 152, 0, 0.18)" : "rgba(0, 0, 0, 0.28)";
-        });
+
+            // 📁 Muta o ícone de pasta fechada para aberta dinamicamente
+            const iconeSpan = divRaizRow.querySelector(".icone-pasta");
+            if (iconeSpan) {
+                iconeSpan.textContent = estaFechado ? "📂" : "📁";
+            }
+
+            // 🎨 Melhora o fundo ao abrir: usa um degradê suave em vez de cor sólida opaca
+            divRaizRow.style.background = estaFechado
+                ? "linear-gradient(90deg, rgba(255, 152, 0, 0.12), transparent)"
+                : "transparent";
+
+            divRaizRow.style.borderLeft = estaFechado
+                ? "3px solid #ff9800"
+                : "none";
+        }); // <-- Removido o segundo listener duplicado que estava aqui embaixo
+
+
+
 
         // Ordena os produtos de A a Z especificamente deste setor
         const produtosDaCategoria = categoriasAgrupadas[categoriaSetor].sort((a, b) => {
@@ -88,12 +127,20 @@ function montarArvoreVendasPorCategoriaColapsavel() {
             const saldoDisponivelInicial = estoqueAtual - quantidadeJaNoCupomInicial;
             const saldoFormatadoInicial = prod.aGranel ? saldoDisponivelInicial.toFixed(3) : saldoDisponivelInicial.toFixed(0);
 
+            // 🔍 Identifica se o produto está sem estoque disponível
+            const semEstoque = saldoDisponivelInicial <= 0;
+
+            // 🎨 Calibração de cores dinâmicas baseadas no estoque para ambiente de loja
+            const corFundoLinha = semEstoque ? "rgba(231, 76, 60, 0.12)" : "rgba(255,255,255,0.02)";
+            const corBordaLinha = semEstoque ? "1px solid rgba(231, 76, 60, 0.25)" : "none";
+            const corTextoDisponivel = semEstoque ? "#ff7675" : "#5eff5e";
+
             const divItemFilho = document.createElement("div");
-            divItemFilho.style.cssText = "padding: 6px 8px; margin-bottom: 6px; font-size: 13px; color: #ecf0f1; background: rgba(255,255,255,0.02); border-radius: 4px; display: flex; flex-direction: column; gap: 2px;";
+            divItemFilho.style.cssText = `padding: 6px 8px; margin-bottom: 6px; font-size: 13px; color: #ecf0f1; background: ${corFundoLinha}; border: ${corBordaLinha}; border-radius: 4px; display: flex; flex-direction: column; gap: 2px;`;
 
             const divTextoLinha = document.createElement("div");
             divTextoLinha.style.cssText = "cursor: pointer; display: inline-block; width: 100%; padding: 4px; border-radius: 3px;";
-            divTextoLinha.innerHTML = `🔹 <span style="color: #4af37a; font-weight: bold; font-size: 13.5px;">${prod.nome.toUpperCase()}</span> <small style="color: #ff9800;"> ${tipoLabel} </small> <br> <span style="color: #bdc3c7; font-size: 11px;">🏭 Fornecedor: ${fornecedorNome}</span> | <span style="color: #5eff5e; font-weight: bold;"> R$ ${precoVenda.toFixed(2)} </span> <small style="color: #bdc3c7; font-size: 11px;"> (Margem: ${margem}%) </small> <small style="color: #ffd54f; font-size: 11px; font-weight: bold;"> | Est: ${estoqueFormatado} | Disp: <span class="txt-dinamico-estoque" style="color: #5eff5e;">${saldoFormatadoInicial}</span> </small>`;
+            divTextoLinha.innerHTML = `🔹 <span style="color: #4af37a; font-weight: bold; font-size: 13.5px;">${prod.nome.toUpperCase()}</span> <small style="color: #ff9800;"> ${tipoLabel} </small> <br> <span style="color: #bdc3c7; font-size: 11px;">🏭 Fornecedor: ${fornecedorNome}</span> | <span style="color: #5eff5e; font-weight: bold;"> R$ ${precoVenda.toFixed(2)} </span> <small style="color: #bdc3c7; font-size: 11px;"> (Margem: ${margem}%) </small> <small style="color: #ffd54f; font-size: 11px; font-weight: bold;"> | Est: ${estoqueFormatado} | Disp: <span class="txt-dinamico-estoque" style="color: ${corTextoDisponivel};">${saldoFormatadoInicial}</span> </small>`;
 
             const divMenuBotoes = document.createElement("div");
             divMenuBotoes.className = "menu-botoes-pdv";
@@ -148,9 +195,6 @@ function montarArvoreVendasPorCategoriaColapsavel() {
 
 
 
-
-
-
 function montarArvoreVendasPorCategoria() {
     const container = document.getElementById("containerArvoreVendas");
     if (!container) { return; }
@@ -163,11 +207,11 @@ function montarArvoreVendasPorCategoria() {
 
     // 🔄 1. Agrupa os produtos por Categoria na memória RAM
     const categoriasAgrupadas = {};
-    
+
     listaProdutosGlobal.forEach(prod => {
         // Se o produto veio sem categoria por segurança, joga no grupo geral
         const categoriaNome = prod.categoria ? prod.categoria.nome.trim().toUpperCase() : "GERAL / NÃO CATEGORIZADO";
-        
+
         if (!categoriasAgrupadas[categoriaNome]) {
             categoriasAgrupadas[categoriaNome] = [];
         }
@@ -179,7 +223,7 @@ function montarArvoreVendasPorCategoria() {
 
     // 🔨 3. Renderiza os blocos divididos por Categoria na tela
     categoriasOrdenadas.forEach(categoria => {
-        
+
         // 🧱 Cabeçalho visual divisor de Categoria (Muito limpo, sem colapsar)
         const divDivisorCategoria = document.createElement("div");
         divDivisorCategoria.style.cssText = "padding: 6px 10px; margin: 15px 0 8px 0; font-size: 12px; font-weight: bold; color: #ff9800; background: rgba(255, 152, 0, 0.08); border-left: 4px solid #ff9800; border-radius: 2px; text-transform: uppercase; font-family: Arial, sans-serif;";
@@ -236,6 +280,7 @@ function montarArvoreVendasPorCategoria() {
 
             // Ação do botão Mover para o Cupom Fiscal
             const btnMoverLinha = divMenuBotoes.querySelector("button:nth-child(1)");
+            // btnMoverLinha.addEventListener... (mantenha sua lógica original aqui)
             btnMoverLinha.addEventListener("click", evento => {
                 evento.stopPropagation();
                 const inputQtd = document.getElementById("inputQuantidade");

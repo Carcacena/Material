@@ -86,56 +86,56 @@
 		}
 
 		/* Painel Flutuante do Menu */
+		/* --- CONFIGURAÇÃO DO MENU FLUTUANTE LATERAL REFINADO --- */
 		.painel-flutuante {
-			position: fixed;
-			top: 220px;
-			right: 40px;
-			width: 145px;
-			color: white !important;
-			background: rgba(15, 25, 35, 0.9);
-			border: 2px solid #ff9800;
-			outline: 1px solid rgba(255, 255, 255, 0.2);
-			border-radius: 8px;
-			padding: 12px;
-			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
-			z-index: 2000;
+		    position: fixed !important;
+		    right: 20px !important;      /* Fixa a 20px de distância da borda direita */
+		    top: 50% !important;         /* Move para a metade da altura da tela */
+		    transform: translateY(-50%); /* Centraliza verticalmente de forma perfeita */
+		    z-index: 1000;               /* Garante que ele fique acima de fundos, mas sem cobrir tabelas */
+		    width: 170px;                /* Define uma largura ideal para os botões */
+		    background: #1e272e;         /* Cor escura combinando com o tema do sistema */
+		    border-radius: 8px;
+		    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+		    overflow: hidden;
 		}
 
 		.painel-header {
-			padding-bottom: 8px;
-			text-align: center;
-			color: #ff9800;
-			border-bottom: 1px dashed rgba(255, 152, 0, 0.4);
-			margin-bottom: 12px;
-			font-size: 11px;
-			font-weight: bold;
-			text-transform: uppercase;
-			letter-spacing: 1.5px;
-			cursor: move;
+		    background: #11171a;
+		    padding: 8px;
+		    text-align: center;
+		    font-size: 11px;
+		    font-weight: bold;
+		    letter-spacing: 1px;
+		    color: #ffb74d; /* Cor laranja de destaque do sistema */
+		    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		    cursor: move; /* Mantém o indicador visual de que ele pode ser arrastado se tiver JS */
 		}
 
 		.painel-corpo {
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
+		    padding: 8px;
+		    display: flex;
+		    flex-direction: column;
+		    gap: 6px; /* Espaçamento simétrico entre os botões */
 		}
 
+		/* Estilização padronizada para os botões internos do menu */
 		.btn-menu-vertical {
-			width: 100%;
-			padding: 8px 0;
-			border: none;
-			border-radius: 4px;
-			color: white;
-			font-weight: bold;
-			font-size: 12px;
-			text-transform: uppercase;
-			text-align: center;
-			cursor: pointer;
+		    width: 100%;
+		    padding: 8px 10px;
+		    font-size: 12px;
+		    font-weight: bold;
+		    text-transform: uppercase;
+		    border: none;
+		    border-radius: 4px;
+		    cursor: pointer;
+		    text-decoration: none; /* Garante que a tag <a> não venha com sublinhado */
+		    transition: all 0.2s ease;
 		}
 
 		.btn-menu-vertical:hover {
-			transform: scale(1.03);
-			filter: brightness(1.15);
+		    filter: brightness(1.15);
+		    transform: translateX(-2px); /* Efeito sutil ao passar o mouse, empurrando para a esquerda */
 		}
 
 		.btn-incluir {
@@ -251,15 +251,6 @@
 						        </div>
 						    </div>
 						</div>
-						
-						
-
-						
-						
-						
-						
-						
-						
 						
 						
 						

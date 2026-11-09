@@ -93,7 +93,7 @@
 			padding: 7px 6px;
 			font-size: 12px;
 			font-weight: bold;
-			color: white;
+			color: #ffffff; /* Padrão de texto claro para a maioria dos botões */
 			cursor: pointer;
 			transition: all 0.22s ease;
 			display: flex;
@@ -105,7 +105,7 @@
 
 		button:hover {
 			transform: translateY(-1px);
-			filter: brightness(1.05);
+			filter: brightness(1.12);
 			box-shadow: 0 5px 9px rgba(0, 0, 0, 0.3);
 		}
 
@@ -117,10 +117,17 @@
 			grid-column: span 2;
 		}
 
+		/* ESTILOS DE CORES DOS BOTÕES */
 		.btn-pdv {
 			background: linear-gradient(135deg, #2e7d32, #388e3c);
 			border: 1px solid rgba(124, 255, 128, 0.2);
 			font-size: 12.5px;
+		}
+		
+		.btn-pdv-lilas { 
+			background: linear-gradient(135deg, #a755ff, #6d1fe6); 
+			border: 1px solid rgba(220, 180, 255, 0.3); 
+			font-size: 12.5px; 
 		}
 
 		.btn-laranja {
@@ -143,9 +150,16 @@
 			background: linear-gradient(135deg, #6f42c1, #5e35b1);
 		}
 
+		/* Ajustado: Texto alterado para escuro para dar contraste com o fundo claro/gelo */
 		.btn-gelo {
-			background: linear-gradient(135deg, rgb(180, 185, 190), #4b5563);
-			color: #ffffff;
+			background: linear-gradient(135deg, #e0e4e8, #b0b8c0);
+			color: #1a202c;
+		}
+
+		/* Customização para a cor Papel Picado (Fundo Claro -> Texto Escuro) */
+		.btn-papelpicado {
+			background: linear-gradient(135deg, #d8d3ca, #c7c1b7);
+			color: #2d3748; 
 		}
 
 		.btn-sair {
@@ -153,6 +167,7 @@
 			margin-top: 2px;
 		}
 
+		/* COMPONENTES DE INFORMAÇÃO */
 		.info {
 			margin-top: 10px;
 			padding-top: 8px;
@@ -173,6 +188,9 @@
 			.box {
 				padding: 14px 12px 10px;
 			}
+			button {
+				padding: 9px 6px; /* Aumenta a área de toque ligeiramente em telas mobile */
+			}
 		}
 	</style>
 </head>
@@ -189,16 +207,12 @@
 		<div class="bloco-titulo">Operação Principal</div>
 		<div class="grid-buttons">
 			<button class="btn-pdv full-width" onclick="irVendas()">
-				⚡ Lançar Venda - Ordem A - Z (PDV)</button>
+				⚡ Lançar Venda - Ordem A - Z (PDV)
+			</button>
+			<button class="btn-pdv-lilas full-width" onclick="irCategoria()">
+				⚡ Lançar Venda - por Categoria (PDV)
+			</button>
 		</div>
-		
-		<div class="grid-buttons">
-					<button class="btn-pdv full-width" onclick="irCategoria()">
-						⚡ Lançar Venda - por Categoria (PDV)</button>
-				</div>
-				
-				
-				
 
 		<div class="bloco-titulo">Cadastros e Movimento</div>
 		<div class="grid-buttons">
@@ -219,7 +233,8 @@
 		<div class="grid-buttons">
 			<button class="btn-azul full-width" onclick="irRelatorios()">📊 Relatórios Gerenciais (PDF)</button>
 			<button class="btn-cinza full-width" onclick="irOrigemSistema()">🛠️ Origem do Sistema</button>
-			<button class="btn-cinza full-width" onclick="irUsuario()">👤 Cadastro Usuário</button>
+			<button class="btn-papelpicado full-width" onclick="irUsuario()">👤 Cadastro Usuário</button>
+			<button class="btn-pdv-lilas full-width" onclick="irImagens()">🖼️ Upload de Imagens - Introdução</button>
 			<button class="btn-sair full-width" onclick="sair()">❌ Sair do Sistema</button>
 		</div>
 
@@ -235,28 +250,26 @@
 			window.location.href = "/login.html";
 		}
 
-		// 🚀 NAVEGAÇÃO
-		function irUsuario(){
+		// 🚀 NAVEGAÇÃO / ROTAS
+		function irUsuario() {
 			window.location.href = "/menu/crudUsuario.html";
 		}
 
-		// ⚡ Lança o PDV na listagem corrida direta de A a Z
 		function irVendas() {
-		    window.location.href = `../vendas/vendas.html?modo=produto`;
+			window.location.href = `../vendas/vendas.html?modo=produto`;
 		}
 
-		// 🔮 Lança o mesmo PDV estruturado em pastas colapsáveis por Categoria (Setor)
 		function irCategoria() {
-		    window.location.href = `../vendas/vendas.html?modo=categoria`;
+			window.location.href = `../vendas/vendas.html?modo=categoria`;
 		}
-		// ... Restante das suas funções de navegação mantidas intactas ...
-		function irFornecedores() { window.location.href = "/Fornecedores/crudFornecedor.html"; }
-		public_profile = false; // Controle de escopo local
+
 		function irProdutos() { window.location.href = "/Produtos/crudProduto.html"; }
-		function irClientes() { window.location.href = "/Clientes/crudCliente.html"; }
 		function irEntradas() { window.location.href = "/Entradas/entradaProduto.html"; }
+		function irClientes() { window.location.href = "/Clientes/crudCliente.html"; }
+		function irFornecedores() { window.location.href = "/Fornecedores/crudFornecedor.html"; }
 		function irOrigemSistema() { window.location.href = "/OrigemSistema/crudOrigemSistema.html"; }
 		function irRelatorios() { window.location.href = "/relatorios/painelRelatorios.html"; }
+		function irImagens() { window.location.href = "/Imagens/uploadImagens.html"; } // Certifique-se de vincular a rota correta aqui se necessário
 
 		// 💰 FINANCEIRO
 		function irContasReceber() { window.location.href = "/vendas/Financeiro/contasReceber/contasReceber.html"; }

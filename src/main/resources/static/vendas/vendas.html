@@ -3,14 +3,13 @@
 <head>
 
 	<meta charset="UTF-8">
-
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 	<title>Mesa de Negociação Venda a -z - Sistema Magia</title>
+	
 	<style>
 		body {
 			font-family: Arial, sans-serif;
-			background: linear-gradient(135deg, #2c3e50, #4caf50);
+			background: linear-gradient(135deg, #17202a, #273746, #1f3a2f);
 			color: white;
 			min-height: 100vh;
 			padding: 25px;
@@ -18,6 +17,48 @@
 			user-select: none;
 		}
 
+		/* Melhora o contraste do texto interno dos blocos de status do topo */
+		/* 1. Melhora drasticamente a leitura dos números dentro dos contadores superiores */
+		.itens-status-box, 
+		div[class*="itens"] span, 
+		div[class*="qtde"] span,
+		div[class*="nota"] span,
+		div[class*="serie"] span {
+		    color: #ffffff !important; /* Força o texto interno a ficar branco puro */
+		    font-weight: 800 !important; /* Deixa o número em negrito bem marcado */
+		    font-size: 15px !important; /* Aumenta ligeiramente para destacar o valor */
+		    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9); /* Cria uma sombra preta atrás do texto para dar leitura */
+		}
+
+		/* 2. Destaca as legendas pequenas dos contadores (Ex: ITENS, QTDE) */
+		div[class*="itens"] small, 
+		div[class*="qtde"] small,
+		div[class*="nota"] small,
+		div[class*="serie"] small,
+		.contador-legenda {
+		    color: #b8c7d0 !important; /* Muda o cinza escuro apagado por um cinza claro/azuladinho */
+		    font-weight: bold;
+		    letter-spacing: 0.5px;
+		}
+
+		/* 3. Traz mais nitidez para as informações secundárias do produto (Fornecedor, Margem, Est, Disp) */
+		.lista-produtos small,
+		div[style*="color"] text,
+		span:contains("Fornecedor:") {
+		    color: #cbd5e1 !important; /* Substitui o cinza apagado por um tom claro e nítido (Slate 300) */
+		}
+
+		/* 4. Realça o aviso do rodapé (Nenhum produto pego) sobre o fundo escuro */
+		#status-carrinho-rodape,
+		.aviso-vazio {
+		    color: #94a3b8 !important; /* Cinza claro bem perceptível */
+		    font-weight: 500;
+		    letter-spacing: 0.3px;
+		}
+		
+		
+		
+		
 		h2,
 		h4 {
 			color: white;
@@ -85,6 +126,7 @@
 			color: #ff9800;
 			font-weight: bold;
 		}
+		
 		.status-badge {
 			padding: 5px 10px;
 			border-radius: 4px;
@@ -98,7 +140,6 @@
 			color: black;
 			background: #f39c12;
 		}
-
 
 		.bloco-localizar-produto {
 			display: flex;
@@ -194,17 +235,22 @@
 			align-items: center;
 			gap: 10px;
 			width: 100%;
+			max-width: 260px; /* Mantém a barra curta pela metade */
 			padding: 12px 14px;
 			margin-top: 6px;
-			color: white;
-			background: rgba(0, 0, 0, 0.28);
-			border: 1px solid rgba(255, 152, 0, 0.28);
+			
+			/* 🎯 MUDANÇA AQUI: Fundo branco e texto preto grafite */
+			background: #ffffff !important; 
+			color: #1c2833 !important; 
+			
+			border: 1px solid rgba(0, 0, 0, 0.12);
 			border-radius: 7px;
 			cursor: pointer;
 			text-align: left;
 			font-weight: bold;
 			transition: 0.2s ease;
 		}
+
 
 		.produto-header:hover,
 		.fornecedor-header:hover {
@@ -247,26 +293,27 @@
 
 		.produtos-lista {
 			display: none;
-			margin: 4px 0 10px 18px;
-			padding-left: 12px;
+			margin: 6px 0 10px 14px;
+			padding-left: 16px; /* Recuo hierárquico das pastas de produtos */
 			border-left: 2px solid rgba(255, 152, 0, 0.25);
 		}
 
 		.produto-item {
 			position: relative;
 			display: block;
-			margin-top: 6px;
-			padding: 11px 12px;
+			margin-top: 8px;
+			padding: 12px 14px;
 			background: rgba(255, 255, 255, 0.035);
-			border: 1px solid transparent;
+			border: 1px solid rgba(255, 255, 255, 0.05);
 			border-radius: 6px;
 			cursor: pointer;
 			transition: 0.18s ease;
 		}
 
 		.produto-item:hover {
-			transform: translateX(3px);
+			transform: translateX(4px);
 			background: rgba(255, 255, 255, 0.075);
+			border-color: rgba(255, 152, 0, 0.3);
 		}
 
 		.produto-item.selecionado {
@@ -288,7 +335,8 @@
 		}
 
 		.produto-fornecedor {
-			color: white;
+			color: #ffffff;
+			font-weight: 600;
 		}
 
 		.produto-tipo {
@@ -299,23 +347,24 @@
 
 		.produto-preco {
 			white-space: nowrap;
-			padding: 4px 9px;
-			color: white;
-			background: #278c4c;
-			border-radius: 12px;
-			font-size: 12px;
+			padding: 5px 12px;
+			color: #ffffff;
+			background: linear-gradient(135deg, #2e7d32, #1b5e20);
+			border-radius: 14px;
+			font-size: 13.5px;
 			font-weight: bold;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 		}
 
 		.produto-linha-detalhes {
-			margin-top: 5px;
-			color: #bdc3c7;
-			font-size: 11px;
-			line-height: 1.5;
+			margin-top: 6px;
+			color: #b2bfc7;
+			font-size: 12px;
+			line-height: 1.6; /* Leitura muito mais fluida e espaçada */
 		}
 
 		.produto-margem {
-			color: #74e68c;
+			color: #81c784; /* Tom pastel para não cansar a vista */
 			font-weight: bold;
 		}
 
@@ -342,11 +391,15 @@
 			color: #bdc3c7;
 			font-size: 12px;
 		}
-         /* CUPOM*/
-  		.table-custom {
+
+		/* ======================================================
+           CUPOM (TABELA E TOTALIZADORES)
+           ====================================================== */
+		.table-custom {
 			width: 100%;
 			margin-top: 5px;
 			color: white !important;
+			border-collapse: collapse;
 		}
 
 		.table-custom th {
@@ -354,6 +407,8 @@
 			color: #ff9800 !important;
 			background: rgba(0, 0, 0, 0.3) !important;
 			border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+			font-size: 12px;
+			text-transform: uppercase;
 		}
 
 		.item-linha {
@@ -361,25 +416,38 @@
 		}
 
 		.item-linha td {
-			padding: 10px 6px;
+			padding: 10px 8px;
+			font-size: 13px;
 		}
+
+		/* Classes de Alinhamento Comercial Padrão */
+		.text-left { text-align: left; }
+		.text-center { text-align: center; }
+		.text-right { text-align: right; }
 
 		.total-caixa {
 			margin-top: 10px;
-			padding: 12px;
+			padding: 14px;
 			color: #5eff5e;
-			background: rgba(0, 0, 0, 0.3);
+			background: rgba(0, 0, 0, 0.4);
 			border: 1px solid rgba(94, 255, 94, 0.3);
 			border-radius: 6px;
 			text-align: right;
-			font-size: 28px;
+			font-size: 32px;
 			font-weight: bold;
+			transition: all 0.25s ease;
+		}
+
+		/* Estado do carrinho zerado (Apaga o verde berrante quando vazio) */
+		.total-zerado {
+			color: #7f8c8d !important;
+			background: rgba(0, 0, 0, 0.2) !important;
+			border: 1px solid rgba(255, 255, 255, 0.08) !important;
 		}
 
 		/* ======================================================
            PAINEL FLUTUANTE
            ====================================================== */
-
 		.painel-flutuante {
 			position: fixed;
 			top: 220px;
@@ -429,168 +497,67 @@
 			filter: brightness(1.15);
 		}
 
-		.btn-incluir {
+		.btn-cores-menu-crud {
 			background: #27ae60;
 		}
+		
+		@media (max-width: 900px) {
 
-		.btn-fechar {
-			background: #e67e22;
+		    .grid-caixa {
+		        flex-direction: column;
+		    }
+
+		    .grid-caixa > .box-custom {
+		        width: 100%;
+		        min-width: 0;
+		        box-sizing: border-box;
+		    }
+
+		    .arvore-produtos {
+		        max-height: 430px;
+		    }
 		}
-
-		.btn-excluir {
-			background: #c0392b;
-		}
-
-		.btn-voltar {
-					background: #7f8c8d;
-				} /* <-- Faltava fechar aqui */
-
-
-		.btn-carrinho {
-			background: #c0492b;
-		}
-
-
-		.btn-devolucao {
-			background: #EE82EE;
-		}
-
-		/* ==========================================================
-		   		   📱 RESPONSIVIDADE - CELULAR VERTICAL
-		   		   ========================================================== */
-		@media (max-width: 768px) {
-
-			html,
-			body {
-				width: 100%;
-				max-width: 100%;
-				margin: 0;
-				padding: 0;
-				overflow-x: hidden;
-			}
-
-			body {
-				padding: 8px;
-				box-sizing: border-box;
-			}
-
-			.container {
-				width: 100%;
-				max-width: 100%;
-				margin: 0;
-				padding: 12px;
-				box-sizing: border-box;
-			}
-
-			/* Campos ficam um embaixo do outro */
-			.row {
-				flex-direction: column;
-				width: 100%;
-				gap: 10px;
-			}
-
-			.col {
-				width: 100%;
-				min-width: 0 !important;
-				box-sizing: border-box;
-			}
-
-			input,
-			select,
-			button {
-				max-width: 100%;
-				box-sizing: border-box;
-			}
-
-			/* Tabela de itens */
-			.painel-itens-nota {
-				width: 100%;
-				max-width: 100%;
-				overflow-x: auto;
-			}
-
-			#tabelaItens {
-				min-width: 550px;
-			}
-
-			/* Botão flutuante AÇÕES */
-			.botao-flutuante-nota {
-				right: 10px;
-				bottom: 10px;
-			}
-
-			/* Menu flutuante */
-			.menu-flutuante-nota {
-				left: 10px !important;
-				right: 10px !important;
-				bottom: 70px;
-				width: auto !important;
-				max-width: none !important;
-				box-sizing: border-box;
-			}
-
-			/* Modal de devolução */
-			#modalSelecaoNotaDevolucao .modal-content {
-				width: calc(100% - 20px) !important;
-				margin: 5vh auto !important;
-				padding: 15px !important;
-				box-sizing: border-box;
-			}
-
-			/* Modal de impostos */
-			#modalImpostos {
-				top: 10px !important;
-				left: 10px !important;
-				right: 10px !important;
-				width: auto !important;
-				max-height: calc(100vh - 20px) !important;
-				box-sizing: border-box;
-			}
-
-			/* Painel gerencial */
-			#modalPainelGerencial {
-				top: 10px !important;
-				left: 10px !important;
-				right: 10px !important;
-				width: auto !important;
-				max-height: calc(100vh - 20px) !important;
-				box-sizing: border-box;
-			}
-
-			#modalPainelGerencial table {
-				min-width: 650px;
-			}
-
-			#btnFiltrarEntradas {
-				width: 100% !important;
-				margin-left: 0 !important;
-			}
-
-			table {
-				font-size: 12px;
-			}
-
-			/* ======================================================
-			           PAINEL FLUTUANTE
-			           ====================================================== */
-
-			.painel-flutuante {
-				position: fixed;
-				top: 220px;
-				right: 30px;
-				z-index: 2000;
-				width: 140px;
-				padding: 12px;
-				background: rgba(15, 25, 35, 0.93);
-				border: 2px solid rgba(255, 152, 0, 0.5);
-				border-radius: 8px;
-				box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-			}
-		}
+		
 	</style>
 </head>
 
-<body>
+<body> <!-- Abre o body aqui -->
+
+	<style>
+		/* --- CALIBRAÇÃO DE LUMINOSIDADE PARA AMBIENTE DE LOJA --- */
+		body {
+			background: linear-gradient(135deg, #1e293b, #0f172a) !important; /* Fundo de página nítido e corporativo */
+			min-height: 100vh;
+		}
+
+		/* --- LADO ESQUERDO: Painel de Produtos (Cinza Médio Confortável) --- */
+		.bloco-produtos-loja { 
+			background: linear-gradient(135deg, #475569, #334155) !important; /* Tons que eliminam o reflexo do monitor */
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			border-radius: 8px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		}
+
+		/* --- LADO DIREITO: Painel do Cupom (Visão IH: Mais claro e iluminado) --- */
+		.bloco-cupom-loja {
+			background: linear-gradient(135deg, #64748b, #475569) !important; /* Tom superior para criar hierarquia visual */
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 8px;
+			box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+		}
+
+		/* Garantia de leitura em ambiente muito iluminado para os textos dos painéis */
+		.bloco-produtos-loja, .bloco-cupom-loja {
+			color: #ffffff !important;
+		}
+
+		/* Caixa do Total Geral (Onde brilha o valor em verde) */
+		.caixa-total-destaque {
+			background: #0f172a !important; /* Fundo ultra escuro isolado para destacar o LED verde */
+			border: 2px solid #22c55e !important;
+			border-radius: 6px;
+		}
+	</style>
 
 	<div class="container-fluid">
 
