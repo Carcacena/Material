@@ -78,23 +78,24 @@ public class SecurityConfig {
                
                // 🌟 2. Arquivos visuais e estáticos liberados para o navegador desenhar a tela 
                .requestMatchers( 
-                   "/", 
-                   "/*.html", 
-                   "/*.js", 
-                   "/*.css", 
-                   "/*.png", 
-                   "/*.jpg", 
-                   "/*.mp3", 
-                   "/mp3/**", 
-                   "/favicon.ico", 
-                   "/error", 
-                   "/componentes-js/**"
-               ).permitAll() 
+            	                "/", 
+                               "/*.html", 
+                               "/*.js", 
+                               "/*.css", 
+                               "/*.png", 
+                               "/*.jpg", 
+                               "/*.mp3", 
+                               "/mp3/**", 
+                               "/favicon.ico", 
+                               "/error", 
+                               "/componentes-js/**"
+                   ).permitAll() 
                
                // 🌟 3. Rotas públicas do sistema e pastas de recursos estáticos (HTML/JS/CSS)
                .requestMatchers("/carrinho/public/pedido/**").permitAll() // Exceção do PDF público
                .requestMatchers(
                    "/menu/**", // Pasta com HTML e JS do menu integrados
+                   "/imagens/**", 
                    "/Entradas/**", 
                    "/Fornecedores/**", 
                    "/Clientes/**", 

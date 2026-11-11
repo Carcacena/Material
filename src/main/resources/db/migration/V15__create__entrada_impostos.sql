@@ -13,27 +13,27 @@ CREATE TABLE entrada_impostos (
     -- SEM_FRETE = retirada / sem transporte cobrado
     tipo_frete VARCHAR(20) NULL,
 
-    base_calculo_icms DECIMAL(12,2),
+    base_calculo_icms DECIMAL(8,2),
 
-    valor_icms DECIMAL(12,2),
+    valor_icms DECIMAL(8,2),
 
-    base_calculo_icms_st DECIMAL(12,2),
+    base_calculo_icms_st DECIMAL(8,2),
 
-    valor_icms_st DECIMAL(12,2),
+    valor_icms_st DECIMAL(8,2),
 
-    valor_total_produtos DECIMAL(12,2),
+    valor_total_produtos DECIMAL(8,2),
 
-    valor_frete DECIMAL(12,2),
+    valor_frete DECIMAL(8,2),
 
-    valor_seguro DECIMAL(12,2),
+    valor_seguro DECIMAL(8,2),
 
-    valor_desconto DECIMAL(12,2),
+    valor_desconto DECIMAL(8,2),
 
-    outras_despesas_acessorias DECIMAL(12,2),
+    outras_despesas_acessorias DECIMAL(8,2),
 
-    valor_ipi DECIMAL(12,2),
+    valor_ipi DECIMAL(8,2),
 
-    valor_total_nota DECIMAL(12,2),
+    valor_total_nota DECIMAL(8,2),
 
 
     -- Uma entrada possui um único bloco de impostos

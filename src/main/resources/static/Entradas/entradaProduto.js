@@ -1,4 +1,13 @@
 // 🌟 Carrega os fornecedores do banco assim que a página abre
+
+const API_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:8080"
+        : window.location.origin;
+
+
+
 async function carregarFornecedores() {
 
     const selectFornecedor =
@@ -485,12 +494,22 @@ function adicionarItem() {
     const idProduto = selectProduto ? selectProduto.value : "";
     const nomeProduto = selectProduto ? selectProduto.options[selectProduto.selectedIndex]?.text : "";
     
+    // Função auxiliar para limpar formatação brasileira (ex: "1.250,50" -> 1250.50)
+    const limparNumero = (valorStr) => {
+        if (!valorStr) return 0;
+        let limpo = String(valorStr).trim();
+        if (limpo.includes(',')) {
+            limpo = limpo.replace(/\./g, '').replace(',', '.');
+        }
+        return parseFloat(limpo) || 0;
+    };
+
     const qtd = parseInt(document.getElementById('qtdEntrada')?.value) || 0;
-    const precoCustoItem = parseFloat(document.getElementById('precoCusto')?.value) || 0;
+    const precoCustoItem = limparNumero(document.getElementById('precoCusto')?.value);
     
     // 🏷️ Captura o valor digitado no novo campo do HTML
     const elPrecoVenda = document.getElementById('precoVendaItem');
-    const precoVendaItem = elPrecoVenda ? parseFloat(elPrecoVenda.value) || 0 : 0;
+    const precoVendaItem = elPrecoVenda ? limparNumero(elPrecoVenda.value) : 0;
 
     // ==========================================
     // 🛡️ TRAVAS DE SEGURANÇA E VALIDAÇÃO (IH)
@@ -500,20 +519,20 @@ function adicionarItem() {
         selectProduto.focus();
         return;
     }
-    if (qtd <= 0) {
-        alert("⚠️ A quantidade de entrada deve ser maior que zero!");
+    if (qtd <= 0 || qtd > 999999) {
+        alert("⚠️ A quantidade de entrada deve ser entre 1 e 999.999!");
         document.getElementById('qtdEntrada').focus();
         return;
     }
-    if (precoCustoItem <= 0) {
-        alert("⚠️ Por favor, informe o preço de custo real do item!");
+    if (precoCustoItem <= 0 || precoCustoItem > 999999.99) {
+        alert("⚠️ Por favor, informe um preço de custo válido (entre R$ 0,01 e R$ 999.999,99)!");
         document.getElementById('precoCusto').focus();
         return;
     }
     
-    // 🛑 EXIGÊNCIA EXPLICÍTADA: Bloqueia a inserção se o operador tentar deixar a venda zerada
-    if (precoVendaItem <= 0) {
-        alert("⚠️ Exigência do Sistema:\nPara movimentações via Nota Fiscal, é obrigatório preencher o Preço de Venda do produto!");
+    // 🛑 EXIGÊNCIA EXPLICÍTADA: Bloqueia a inserção se o operador tentar deixar a venda zerada ou acima do teto
+    if (precoVendaItem <= 0 || precoVendaItem > 999999.99) {
+        alert("⚠️ Exigência do Sistema:\nInforme um Preço de Venda válido (entre R$ 0,01 e R$ 999.999,99)!");
         elPrecoVenda.focus();
         return;
     }
@@ -524,8 +543,8 @@ function adicionarItem() {
         nome: nomeProduto,
         quantidade: qtd,
         precoCusto: precoCustoItem,
-        precoVenda: precoVendaItem, // Alimenta a propriedade com a digitação obrigatória
-        total: qtd * precoCustoItem
+        precoVenda: precoVendaItem,
+        total: Number((qtd * precoCustoItem).toFixed(2))
     };
 
     // Inicializa a lista global caso ela não tenha sido instanciada
@@ -537,15 +556,16 @@ function adicionarItem() {
     if (typeof atualizarGrid === 'function') {
         atualizarGrid();
     } else {
-        // Fallback nativo: Adiciona a linha direto na tabela física caso a função global mude
+        // Fallback nativo formatado para valores altos
         const tbody = document.getElementById('tabelaItens')?.getElementsByTagName('tbody')[0];
         if (tbody) {
+            const fmtMoeda = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             const novaLinha = tbody.insertRow();
             novaLinha.innerHTML = `
                 <td>${novoItem.nome}</td>
-                <td>${novoItem.quantidade}</td>
-                <td>R$ ${novoItem.precoCusto.toFixed(2)}</td>
-                <td>R$ ${novoItem.total.toFixed(2)}</td>
+                <td style="text-align: right;">${novoItem.quantidade.toLocaleString('pt-BR')}</td>
+                <td style="text-align: right;">${fmtMoeda(novoItem.precoCusto)}</td>
+                <td style="text-align: right;">${fmtMoeda(novoItem.total)}</td>
             `;
         }
     }
@@ -559,7 +579,6 @@ function adicionarItem() {
         selectProduto.focus();
     }
 }
-
 
 
 

@@ -35,10 +35,29 @@ public class ProdutoService {
     }
 
     public Produto salvarNovo(ProdutoDTO dto) {
-        if (dto.getPrecoVenda() == null || dto.getPrecoCusto() == null || 
-            dto.getPrecoVenda().compareTo(dto.getPrecoCusto()) < 0) {
-            throw new IllegalArgumentException("Erro de consistência comercial: Preço de venda menor que o preço de custo!");
-        }
+       // if (dto.getPrecoVenda() == null || dto.getPrecoCusto() == null || 
+       //     dto.getPrecoVenda().compareTo(dto.getPrecoCusto()) < 0) {
+       //     throw new IllegalArgumentException("Erro de consistência comercial: Preço de venda menor que o preço de custo!");
+       // }
+    	
+    	if (dto.getPrecoCusto() == null) {
+    	    throw new IllegalArgumentException(
+    	        "Preço de custo não foi enviado."
+    	    );
+    	}
+
+    	if (dto.getPrecoVenda() == null) {
+    	    throw new IllegalArgumentException(
+    	        "Preço de venda não foi enviado."
+    	    );
+    	}
+
+    	if (dto.getPrecoVenda().compareTo(dto.getPrecoCusto()) < 0) {
+    	    throw new IllegalArgumentException(
+    	        "Preço de venda menor que o preço de custo."
+    	    );
+    	}
+    	
 
         // Poka-Yoke: Valida se os subobjetos não vieram nulos do front antes de buscar o ID
         if (dto.getFornecedor() == null || dto.getFornecedor().getId() == null) {
@@ -108,5 +127,3 @@ public class ProdutoService {
         produtoRepository.deleteById(id);
     }
 }
-
- 

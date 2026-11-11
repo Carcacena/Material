@@ -65,11 +65,13 @@ public class EntradaService {
             itemEntrada.setProduto(produto);
             itemEntrada.setQuantidade(itemDTO.getQuantidade());
             itemEntrada.setPrecoCusto(itemDTO.getPrecoCusto());
+            itemEntrada.setPrecoVenda(itemDTO.getPrecoVenda());
             itensDaEntrada.add(itemEntrada);
 
             // 4. ATUALIZAÇÃO DO ESTOQUE DO PRODUTO
-            produto.setPrecoCusto(itemDTO.getPrecoCusto()); // Atualiza o custo com o valor da nota
-
+            //produto.setPrecoCusto(itemDTO.getPrecoCusto()); // Atualiza o custo com o valor da nota
+            produto.setPrecoCusto(itemDTO.getPrecoCusto());
+            produto.setPrecoVenda(itemDTO.getPrecoVenda());
             // No seu banco, aGranel usa '0' ou '1'. No Java tratamos como Boolean.
             if (Boolean.TRUE.equals(produto.getAGranel())) {
                 BigDecimal qtdAdicionar = BigDecimal.valueOf(itemDTO.getQuantidade());
@@ -97,9 +99,7 @@ public class EntradaService {
         entradaMovimentoService.registrarEntrada(entradaSalva);
 
         return entradaSalva;
-        
-        
-         
+          
     }
     
     @Transactional

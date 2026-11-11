@@ -514,47 +514,38 @@
 
 			</div>
 			
-			  
-			
-			<select id="selectNotasAtivas"
-			        class="form-control"
-			        style="width:100%; padding:8px; margin-top:5px;"
-			        onchange="buscarItensDaNotaSelecionada(this.value)">
-
-			    <option value="">
-			        -- Escolha uma Nota Fiscal --
-			    </option>
-
-			</select>
-
-
-
-			<div style="margin:20px 0;">
-				<label><b>Selecione a Nota:</b></label>
-				<select id="selectNotasAtivas" class="form-control" style="width:100%; padding:8px; margin-top:5px;"
-					onchange="buscarItensDaNotaSelecionada(this.value)">
-					<option value="">-- Escolha uma Nota Fiscal --</option>
-				</select>
-			</div>
-
+			<!-- Seletor único e limpo -->
+						<div style="margin: 15px 0;">
+							<label for="selectNotasAtivas" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">
+								Selecione a Nota:
+							</label>
+							<select id="selectNotasAtivas" class="form-control" style="width:100%; padding:8px; border-radius: 6px; border: 1px solid #cbd5e1;"
+								onchange="buscarItensDaNotaSelecionada(this.value)">
+								<option value="">-- Escolha uma Nota Fiscal --</option>
+							</select>
+						</div>
 			<!-- Área para exibir os itens da nota selecionada -->
 			<div id="areaItensNota" style="display:none;">
-				<h4>Produtos desta Nota:</h4>
-				<table class="table" style="width:100%; border-collapse:collapse; margin-top:10px;">
+				<h4 style="margin-bottom: 8px; color: #1e293b;">Produtos desta Nota:</h4>
+				<table class="table" style="width:100%; border-collapse:collapse; table-layout: fixed;">
 					<thead>
-						<tr style="background:#f4f4f4; text-align:left;">
-							<th style="padding:8px;"><input type="checkbox" id="checkTodosProdutos"
-									onclick="marcarTodosProdutos(this)"></th>
-							<th style="padding:8px;">Produto</th>
-							<th style="padding:8px;">Qtd Entrada</th>
-							<th style="padding:8px;">Preço Custo</th>
+						<tr style="background:#e67e22; color:#ffffff; text-align:left;">
+							<th style="padding:10px 8px; width: 40px; text-align: center;">
+								<input type="checkbox" id="checkTodosProdutos" onclick="marcarTodosProdutos(this)">
+							</th>
+							<th style="padding:10px 8px; width: auto;">Produto</th>
+							<th style="padding:10px 8px; width: 120px; text-align: right;">Qtd Entrada</th>
+							<th style="padding:10px 8px; width: 140px; text-align: right;">Preço Custo</th>
 						</tr>
 					</thead>
 					<tbody id="corpoTabelaItensDevolucao">
 						<!-- Gerado dinamicamente via JS -->
 					</tbody>
 				</table>
+			</div>
 
+
+			
 				<div style="margin-top:20px; text-align:right;">
 					<button class="btn-roxo" style="padding:10px 20px; cursor:pointer;"
 						onclick="processarLoteSelecionado()">

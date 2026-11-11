@@ -46,6 +46,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!produtoSelecionadoId) {
             document.getElementById("estoqueAtual").value = document.getElementById("qteEntrada").value;
         }
+		
+		// Substitua pelo nome exato da sua função que bloqueia/preenche os zeros
+		   if (typeof atualizarCamposOrigem === "function") {
+		       atualizarCamposOrigem();
+		   }	
+		
     });
 
 
@@ -368,13 +374,24 @@ function calcularMargem() {
 
 // 🟢 BOTÃO INCLUIR DO MENU (Afinado para limpar o formulário completo)
 function acionarIncluir() {
+
     produtoSelecionadoId = null;
+
     document.getElementById("formProduto").reset();
+
     document.getElementById("tituloFormulario").innerText = "Cadastrar Produto";
+
     document.getElementById("valorMargem").textContent = "0.00";
-    document.querySelectorAll(".produto-item").forEach(r => r.classList.remove("selecionado"));
+
+    document.querySelectorAll(".produto-item")
+        .forEach(r => r.classList.remove("selecionado"));
+
     bloquearFormulario(false);
-    document.getElementById("codigoBarras").focus(); // Foco inicial direto no código de barras
+
+    // Reaplica a regra COM_NF / SEM_NF
+    alternarBloqueioCampos();
+
+    document.getElementById("codigoBarras").focus();
 }
 
 // 🟡 BOTÃO ALTERAR DO MENU FLUTUANTE
@@ -435,9 +452,12 @@ async function cadastrarProduto(event) {
         nome: document.getElementById("nomeProduto").value,
         codigoBarras: document.getElementById("codigoBarras").value.trim() || null,
         aGranel: document.getElementById("tipoProduto").value === "true",
-        precoCusto: parseFloat(document.getElementById("precoCusto").value),
-        precoVenda: parseFloat(document.getElementById("precoVenda").value),
-        dataValidade: document.getElementById("dataValidade").value || null,
+		precoCusto: parseFloat(document.getElementById("precoCusto").value) || 0,
+		precoVenda: parseFloat(document.getElementById("precoVenda").value) || 0,
+		
+		// precoCusto: parseFloat(document.getElementById("precoCusto").value),
+        //precoVenda: parseFloat(document.getElementById("precoVenda").value),
+  //      dataValidade: document.getElementById("dataValidade").value || null,
         qteEntrada: parseInt(document.getElementById("qteEntrada").value) || 0,
         estoqueAtual: parseInt(document.getElementById("estoqueAtual").value) || 0,
         
@@ -563,6 +583,5 @@ function buscarPorCodigoBarras(codigo) {
         }
     }
 }
-
 
 

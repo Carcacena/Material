@@ -6,12 +6,24 @@ public class ItemEntradaDTO {
     private Long produtoId;
     private Integer quantidade;
     private BigDecimal precoCusto;
-
+    private BigDecimal precoVenda;
+    
+    public BigDecimal getPrecoVenda() {
+        return precoVenda;
+    }
+    
+    public void setPrecoVenda(BigDecimal precoVenda) {
+        this.precoVenda = precoVenda;
+    }
     // Getters e Setters
     public Long getProdutoId() { return produtoId; }
     public void setProdutoId(Long produtoId) { this.produtoId = produtoId; }
     public Integer getQuantidade() { return quantidade; }
     public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
     public BigDecimal getPrecoCusto() { return precoCusto; }
-    public void setPrecoCusto(BigDecimal precoCusto) { this.precoCusto = precoCusto; }
+    public void setPrecoCusto(BigDecimal precoCusto) { this.precoCusto = precoCusto;
+   
+  
+    
+    }
 }
