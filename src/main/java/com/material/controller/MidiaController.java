@@ -24,9 +24,13 @@ public class MidiaController {
 
     //private final String DIRETORIO_DESTINO = "src/main/resources/static/imagem_introducao/";
    
-	private final String DIRETORIO_DESTINO =
-	        "target/classes/static/imagem_introducao/";
+	//private final String DIRETORIO_DESTINO =
+	//        "target/classes/static/imagem_introducao/";
 	
+	private final String DIRETORIO_DESTINO =
+	        System.getenv("RAILWAY_VOLUME_MOUNT_PATH") != null
+	                ? System.getenv("RAILWAY_VOLUME_MOUNT_PATH") + "/imagem_introducao/"
+	                : "target/classes/static/imagem_introducao/";
 	private final ImagemIntroducaoRepository repository;
 
     public MidiaController(ImagemIntroducaoRepository repository) {
@@ -88,21 +92,40 @@ public class MidiaController {
         return ResponseEntity.ok(repository.findAllByOrderByDataCadastroDesc());
     }
 
-    // 🗑️ Endpoint opcional para excluir imagem do banco e da pasta
+ // 🗑️ Endpoint opcional para excluir imagem do banco e da pasta
     @DeleteMapping("/introducao/{id}")
     public ResponseEntity<?> excluirImagem(@PathVariable Long id) {
+
         return repository.findById(id).map(img -> {
+
             try {
-               // Path caminhoFisico = Paths.get("src/main/resources/static" + img.getCaminho());
-            	Path caminhoFisico =
-            	        Paths.get("target/classes/static" + img.getCaminho());
-            	Files.deleteIfExists(caminhoFisico);
+
+                String base =
+                        System.getenv("RAILWAY_VOLUME_MOUNT_PATH") != null
+                                ? System.getenv("RAILWAY_VOLUME_MOUNT_PATH")
+                                : "target/classes/static";
+
+                Path caminhoFisico =
+                        Paths.get(base + img.getCaminho());
+
+                Files.deleteIfExists(caminhoFisico);
+
                 repository.delete(img);
-                return ResponseEntity.ok(Map.of("mensagem", "Imagem removida com sucesso!"));
+
+                return ResponseEntity.ok(
+                        Map.of("mensagem", "Imagem removida com sucesso!")
+                );
+
             } catch (IOException e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("erro", "Erro ao apagar arquivo físico: " + e.getMessage()));
+
+                return ResponseEntity
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of(
+                                "erro",
+                                "Erro ao apagar arquivo físico: " + e.getMessage()
+                        ));
             }
+
         }).orElse(ResponseEntity.notFound().build());
     }
 }
