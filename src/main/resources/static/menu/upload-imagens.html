@@ -1,222 +1,243 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Catalogação de Perfumes - Sistema Magia</title>
-	<!-- 🔗 Conecta com o gerenciador global de tokens do seu utils.js -->
-	<script src="../componentes-js/utils.js"></script>
+	<title>Upload de Imagens - Sistema Magia</title>
+
 	<style>
-		* { box-sizing: border-box; }
-		body {
-			margin: 0; min-height: 100vh; font-family: Arial, sans-serif; color: #ffffff;
-			display: flex; justify-content: center; align-items: center;
-			background: radial-gradient(circle at top left, rgba(76, 175, 80, 0.12), transparent 30%), linear-gradient(135deg, #17202a, #273746, #1f3a2f);
-			padding: 15px;
+		* {
+			box-sizing: border-box;
 		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			font-family: Arial, sans-serif;
+			color: #ffffff;
+			display: flex;
+			justify-content: center;
+			align-items: flex-start;
+			background: linear-gradient(135deg, #1e293b, #0f172a);
+			padding: 25px 15px;
+		}
+
 		.box {
-			width: 100%; max-width: 380px; background: rgba(0, 0, 0, 0.75); border-radius: 12px;
-			padding: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55); position: relative;
+			width: 100%;
+			max-width: 520px;
+			background: linear-gradient(135deg, #334155, #1e293b);
+			border-radius: 12px;
+			padding: 20px;
+			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+			position: relative;
 			overflow: hidden;
 		}
+
 		.box::before {
-			content: ""; position: absolute; top: 0; left: 14px; right: 14px; height: 3px;
+			content: "";
+			position: absolute;
+			top: 0;
+			left: 14px;
+			right: 14px;
+			height: 3px;
+			border-radius: 10px;
 			background: linear-gradient(90deg, #4caf50, #ff9800, #03a9f4);
 		}
-		.cabecalho { text-align: center; margin-bottom: 12px; }
-		.cabecalho h2 { margin: 2px 0; font-size: 16px; color: #4caf50; }
-		.cabecalho .subtitulo { font-size: 10px; color: #b8c7d0; }
-		.form-grupo { margin-bottom: 10px; }
-		label { display: block; font-size: 10px; text-transform: uppercase; color: #ffb74d; margin-bottom: 4px; font-weight: bold; }
-		
-		/* Área de seleção e pré-visualização da imagem */
-		.upload-area {
-			width: 100%; background: rgba(255, 255, 255, 0.08); border: 1px dashed rgba(255, 255, 255, 0.25);
-			border-radius: 6px; padding: 12px 6px; text-align: center; cursor: pointer;
-			transition: border-color 0.2s, background 0.2s;
-		}
-		.upload-area:hover {
-			border-color: #4caf50; background: rgba(255, 255, 255, 0.12);
-		}
-		.upload-texto { font-size: 11px; color: #b8c7d0; }
-		.preview-img {
-			max-width: 100%; max-height: 120px; border-radius: 6px; margin-top: 8px;
-			display: none; margin-left: auto; margin-right: auto; border: 1px solid rgba(255, 255, 255, 0.15);
+
+		.cabecalho {
+			text-align: center;
+			margin-bottom: 16px;
 		}
 
-		/* Barra de progresso da catalogação */
-		.progresso-container {
-			display: none; margin-top: 12px; background: rgba(255, 255, 255, 0.05);
-			padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);
-		}
-		.progresso-topo {
-			display: flex; justify-content: space-between; font-size: 10px;
-			color: #ffb74d; font-weight: bold; margin-bottom: 5px;
-		}
-		.barra-fundo {
-			width: 100%; height: 8px; background: rgba(255, 255, 255, 0.12);
-			border-radius: 4px; overflow: hidden;
-		}
-		.barra-preenchimento {
-			height: 100%; width: 0%;
-			background: linear-gradient(90deg, #4caf50, #03a9f4);
-			transition: width 0.15s ease;
+		.cabecalho h2 {
+			margin: 4px 0;
+			font-size: 18px;
+			color: #4af37a;
 		}
 
-		.grid-acoes { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 14px; }
+		.cabecalho .subtitulo {
+			font-size: 11px;
+			color: #cbd5e1;
+		}
+
+		.campo-grupo {
+			margin-bottom: 12px;
+		}
+
+		label {
+			display: block;
+			font-size: 11px;
+			text-transform: uppercase;
+			letter-spacing: 0.6px;
+			color: #ffb74d;
+			font-weight: bold;
+			margin-bottom: 5px;
+		}
+
+		input[type="text"],
+		input[type="file"] {
+			width: 100%;
+			padding: 9px 10px;
+			border-radius: 6px;
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			background: #0f172a;
+			color: #ffffff;
+			font-size: 13px;
+		}
+
+		input[type="text"]::placeholder {
+			color: #94a3b8;
+		}
+
+		.area-preview {
+			background: rgba(15, 23, 42, 0.7);
+			border: 1px dashed rgba(255, 255, 255, 0.25);
+			border-radius: 8px;
+			padding: 12px;
+			text-align: center;
+			margin-bottom: 12px;
+			min-height: 150px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+
+		#imgPreview {
+			max-width: 100%;
+			max-height: 220px;
+			border-radius: 6px;
+			display: none;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+		}
+
+		#statusArquivo {
+			margin-top: 8px;
+			font-size: 12px;
+			color: #cbd5e1;
+		}
+
+		.botoes-acao {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			margin-top: 10px;
+		}
+
 		button {
-			width: 100%; border: none; border-radius: 6px; padding: 8px 6px; font-size: 12px;
-			font-weight: bold; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;
+			width: 100%;
+			border: none;
+			border-radius: 6px;
+			padding: 10px;
+			font-size: 13px;
+			font-weight: bold;
+			color: #ffffff;
+			cursor: pointer;
+			transition: all 0.2s ease;
 		}
-		button:disabled { opacity: 0.6; cursor: not-allowed; }
-		.btn-enviar { background: linear-gradient(135deg, #198754, #157347); }
-		.btn-voltar { background: linear-gradient(135deg, #56606d, #4b5563); }
-		.info { margin-top: 12px; padding-top: 8px; font-size: 10px; color: #9fb0ba; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+
+		button:hover {
+			filter: brightness(1.1);
+			transform: translateY(-1px);
+		}
+
+		.btn-enviar {
+			background: linear-gradient(135deg, #2e7d32, #388e3c);
+		}
+
+		.btn-voltar {
+			background: linear-gradient(135deg, #56606d, #4b5563);
+		}
+
+		/* Galeria de imagens já cadastradas no MySQL */
+		.galeria-secao {
+			margin-top: 18px;
+			padding-top: 14px;
+			border-top: 1px solid rgba(255, 255, 255, 0.12);
+		}
+
+		.grid-galeria {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+			gap: 10px;
+			margin-top: 8px;
+		}
+
+		.card-foto {
+			background: #0f172a;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			border-radius: 6px;
+			padding: 6px;
+			text-align: center;
+		}
+
+		.card-foto img {
+			width: 100%;
+			height: 85px;
+			object-fit: cover;
+			border-radius: 4px;
+		}
+
+		.card-foto .titulo-foto {
+			font-size: 11px;
+			color: #e2e8f0;
+			margin: 5px 0;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.btn-excluir-foto {
+			background: #d63031;
+			padding: 4px 6px;
+			font-size: 10px;
+			border-radius: 4px;
+		}
 	</style>
 </head>
+
 <body>
+
 	<div class="box">
 		<div class="cabecalho">
-			<h2>🧴 Catalogação de Perfumes</h2>
-			<div class="subtitulo">Reconhecimento e Registro Visual de Fragrâncias</div>
+			<h2>🖼️ Imagens de Introdução</h2>
+			<div class="subtitulo">Painel de Mídia - Material de Construção</div>
 		</div>
 
-		<div class="form-grupo">
-			<label>Imagem do Perfume</label>
-			<div class="upload-area" onclick="document.getElementById('arquivoPerfume').click()">
-				<div class="upload-texto" id="textoArquivo">📁 Clique para selecionar a imagem</div>
-				<img id="previewImagem" class="preview-img" alt="Prévia do Perfume">
+		<div class="campo-grupo">
+			<label for="tituloImagem">Título ou Descrição da Imagem</label>
+			<input type="text" id="tituloImagem" maxlength="150" placeholder="Ex: Banner Fachada da Loja ou Oferta do Mês">
+		</div>
+
+		<div class="campo-grupo">
+			<label for="inputArquivoImagem">Selecionar Arquivo (.PNG, .JPG ou .WEBP)</label>
+			<input type="file" id="inputArquivoImagem" accept="image/png, image/jpeg, image/webp">
+		</div>
+
+		<div class="area-preview">
+			<img id="imgPreview" alt="Pré-visualização da imagem">
+			<div id="statusArquivo">Nenhuma imagem selecionada.</div>
+		</div>
+
+		<div class="botoes-acao">
+			<button id="btnEnviarImagem" class="btn-enviar" onclick="enviarImagemIntroducao()">
+				📤 Enviar e Gravar Imagem
+			</button>
+			<button class="btn-voltar" onclick="voltarMenu()">
+				⬅️ Voltar ao Menu
+			</button>
+		</div>
+
+		<div class="galeria-secao">
+			<label>Imagens Cadastradas (Ativas antes do Login)</label>
+			<div id="gridGaleria" class="grid-galeria">
+				<!-- Preenchido dinamicamente pelo appUploadImagens.js -->
 			</div>
-			<input type="file" id="arquivoPerfume" accept="image/*" style="display: none;" onchange="aoSelecionarImagem(event)">
 		</div>
-
-		<div class="progresso-container" id="boxProgresso">
-			<div class="progresso-topo">
-				<span id="statusCatalogacao">Catalogando perfume...</span>
-				<span id="porcentagemTexto">0%</span>
-			</div>
-			<div class="barra-fundo">
-				<div class="barra-preenchimento" id="barraProgresso"></div>
-			</div>
-		</div>
-
-		<div class="grid-acoes">
-			<button class="btn-enviar" id="btnEnviar" onclick="enviarImagemPerfume()">🚀 Enviar e Catalogar Imagem</button>
-			<button class="btn-voltar" onclick="voltarMenu()">⬅️ Voltar ao Menu</button>
-		</div>
-
-		<div class="info">Análise visual via processamento inteligente 🛡️</div>
 	</div>
 
-	<script>
-		document.addEventListener("DOMContentLoaded", () => {
-			const token = obterTokenSeguro();
-			if (!token) { window.location.href = "/login.html"; return; }
-		});
-
-		function aoSelecionarImagem(event) {
-			const arquivo = event.target.files[0];
-			const textoArquivo = document.getElementById("textoArquivo");
-			const preview = document.getElementById("previewImagem");
-			const boxProgresso = document.getElementById("boxProgresso");
-
-			boxProgresso.style.display = "none";
-
-			if (arquivo) {
-				textoArquivo.textContent = `🖼️ ${arquivo.name}`;
-				const leitor = new FileReader();
-				leitor.onload = (e) => {
-					preview.src = e.target.result;
-					preview.style.display = "block";
-				};
-				leitor.readAsDataURL(arquivo);
-			} else {
-				textoArquivo.textContent = "📁 Clique para selecionar a imagem";
-				preview.style.display = "none";
-			}
-		}
-
-		function enviarImagemPerfume() {
-			const inputArquivo = document.getElementById("arquivoPerfume");
-			const arquivo = inputArquivo.files[0];
-
-			if (!arquivo) {
-				alert("Por favor, selecione a imagem de um perfume primeiro.");
-				return;
-			}
-
-			const token = obterTokenSeguro();
-			const btnEnviar = document.getElementById("btnEnviar");
-			const boxProgresso = document.getElementById("boxProgresso");
-			const barraProgresso = document.getElementById("barraProgresso");
-			const porcentagemTexto = document.getElementById("porcentagemTexto");
-			const statusCatalogacao = document.getElementById("statusCatalogacao");
-
-			// Prepara a interface para o envio
-			btnEnviar.disabled = true;
-			boxProgresso.style.display = "block";
-			barraProgresso.style.width = "0%";
-			porcentagemTexto.textContent = "0%";
-			statusCatalogacao.textContent = "Enviando e catalogando...";
-			statusCatalogacao.style.color = "#ffb74d";
-
-			const formData = new FormData();
-			formData.append("imagem", arquivo);
-
-			// XMLHttpRequest permite ler o progresso real de upload (%)
-			const xhr = new XMLHttpRequest();
-			xhr.open("POST", "/api/perfumes/catalogar", true);
-			xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-
-			xhr.upload.onprogress = function (evento) {
-				if (evento.lengthComputable) {
-					// Vai até 90% durante o envio do arquivo e aguarda o processamento final
-					const percentual = Math.min(90, Math.round((evento.loaded / evento.total) * 90));
-					barraProgresso.style.width = `${percentual}%`;
-					porcentagemTexto.textContent = `${percentual}%`;
-					if (percentual === 90) {
-						statusCatalogacao.textContent = "Catalogando dados do perfume...";
-					}
-				}
-			};
-
-			xhr.onload = function () {
-				btnEnviar.disabled = false;
-				if (xhr.status >= 200 && xhr.status < 300) {
-					barraProgresso.style.width = "100%";
-					porcentagemTexto.textContent = "100%";
-					statusCatalogacao.textContent = "✅ Perfume catalogado com sucesso!";
-					statusCatalogacao.style.color = "#4caf50";
-				} else {
-					statusCatalogacao.textContent = "❌ Erro ao catalogar imagem.";
-					statusCatalogacao.style.color = "#ff5252";
-				}
-			};
-
-			xhr.onerror = function () {
-				btnEnviar.disabled = false;
-				statusCatalogacao.textContent = "❌ Falha de conexão com o servidor.";
-				statusCatalogacao.style.color = "#ff5252";
-			};
-
-			xhr.send(formData);
-		}
-
-		function voltarMenu() { window.location.href = "/menu/menu.html"; }
-	</script>
-	
-	</script>
-		<script src="/menu/appUploadImagens.js"></script>
-		
-		
-		
-		
-		
-		
-		
-		
-	
-	
-	
+	<script src="/menu/appUploadImagens.js"></script>
 </body>
+
 </html>

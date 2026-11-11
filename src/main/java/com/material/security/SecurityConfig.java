@@ -75,6 +75,7 @@ public class SecurityConfig {
                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
                .requestMatchers("/auth/**").permitAll() 
                .requestMatchers("/api/auth/**", "/public/**").permitAll() 
+               .requestMatchers(HttpMethod.GET, "/api/midia/introducao").permitAll()
                
                // 🌟 2. Arquivos visuais e estáticos liberados para o navegador desenhar a tela 
                .requestMatchers( 
@@ -92,22 +93,21 @@ public class SecurityConfig {
                    ).permitAll() 
                
                // 🌟 3. Rotas públicas do sistema e pastas de recursos estáticos (HTML/JS/CSS)
+               .requestMatchers("/api/midia/**", "/imagem_introducao/**").permitAll()
                .requestMatchers("/carrinho/public/pedido/**").permitAll() // Exceção do PDF público
                .requestMatchers(
-                   "/menu/**", // Pasta com HTML e JS do menu integrados
-                   "/imagens/**", 
-                   "/Entradas/**", 
-                   "/Fornecedores/**", 
-                   "/Clientes/**", 
-                   "/Produtos/**",
-                   "/relatorios/**", 
-                   "/vendas/**",
-                   "/OrigemSistema/**",
-                   "/css/**",
-                   "/js/**"
-                   // ⚠️ Se os seus controllers privados usam "/api/...", remova a linha abaixo:
-                   // "/api/**" 
-               ).permitAll()   
+                       "/menu/**", // Pasta com HTML e JS do menu integrados
+                       "/imagens/**", 
+                       "/Entradas/**", 
+                       "/Fornecedores/**", 
+                       "/Clientes/**", 
+                       "/Produtos/**",
+                       "/relatorios/**", 
+                       "/vendas/**",
+                       "/OrigemSistema/**",
+                       "/css/**",
+                       "/js/**"
+                   ).permitAll()
 
                // 🔒 4. Bloqueia as rotas específicas do sistema (Exige autenticação/Token JWT)
 

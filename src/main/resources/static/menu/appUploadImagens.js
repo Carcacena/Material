@@ -1,7 +1,14 @@
-// 🖼️ MÓDULO DE UPLOAD DE IMAGENS - SISTEMA MAGIA
-// Caminho: /MaterialConstrucao/src/main/resources/static/menu/appUploadImagens.js
+// 🖼️ MÓDULO DE UPLOAD DE IMAGENS DE INTRODUÇÃO - SISTEMA MAGIA
 
-const token = localStorage.getItem("token");
+function obterToken() {
+    return localStorage.getItem("token") || 
+           localStorage.getItem("jwtToken") || 
+           localStorage.getItem("authToken") || 
+           sessionStorage.getItem("token");
+}
+
+// ✅ Corrigido: Agora usa a função obterToken() criada logo acima
+const token = obterToken();
 if (!token) {
     window.location.href = "/login.html";
 }
@@ -9,42 +16,11 @@ if (!token) {
 const API_URL = window.location.origin;
 let arquivoSelecionado = null;
 
-// 🚀 INICIALIZAÇÃO AO CARREGAR A TELA
 document.addEventListener("DOMContentLoaded", () => {
-    carregarProdutosParaSelect();
     configurarEventosUpload();
+    carregarGaleriaIntroducao();
 });
 
-// 1. Carrega os produtos cadastrados no <select> para vincular a imagem
-async function carregarProdutosParaSelect() {
-    const selectProduto = document.getElementById("selectProdutoImagem");
-    if (!selectProduto) return;
-
-    try {
-        const resposta = await fetch(`${API_URL}/produtos`, {
-            method: "GET",
-            headers: { "Authorization": `Bearer ${token}` }
-        });
-
-        if (resposta.ok) {
-            const produtos = await resposta.json();
-            selectProduto.innerHTML = '<option value="">-- Selecione o Produto para Vincular a Foto --</option>';
-            
-            produtos
-                .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
-                .forEach(prod => {
-                    const option = document.createElement("option");
-                    option.value = prod.id;
-                    option.textContent = `${prod.nome.toUpperCase()} (ID: ${prod.id})`;
-                    selectProduto.appendChild(option);
-                });
-        }
-    } catch (erro) {
-        console.error("Erro ao carregar lista de produtos:", erro);
-    }
-}
-
-// 2. Configura a pré-visualização instantânea e travas de tamanho/tipo
 function configurarEventosUpload() {
     const inputArquivo = document.getElementById("inputArquivoImagem");
     const imgPreview = document.getElementById("imgPreview");
@@ -59,99 +35,112 @@ function configurarEventosUpload() {
             return;
         }
 
-        // 🛡️ Trava 1: Valida se é realmente imagem (JPG, PNG, WEBP)
         const tiposPermitidos = ["image/jpeg", "image/png", "image/webp"];
         if (!tiposPermitidos.includes(file.type)) {
-            alert("⚠️ Formato inválido! Escolha apenas imagens JPG, PNG ou WEBP.");
+            alert("⚠️ Formato inválido! Escolha apenas imagens PNG, JPG ou WEBP.");
             limparSelecao();
             return;
         }
 
-        // 🛡️ Trava 2: Limite de 5MB para não pesar o servidor/banco
-        const tamanhoMaximoMB = 5 * 1024 * 1024;
-        if (file.size > tamanhoMaximoMB) {
-            alert("⚠️ A imagem ultrapassa o limite máximo de 5MB. Escolha uma foto mais leve.");
+        if (file.size > 5 * 1024 * 1024) {
+            alert("⚠️ A imagem ultrapassa o limite máximo de 5MB.");
             limparSelecao();
             return;
         }
 
         arquivoSelecionado = file;
 
-        // Exibe a miniatura na hora na tela antes mesmo de enviar
-        if (imgPreview) {
-            const leitor = new FileReader();
-            leitor.onload = (e) => {
-                imgPreview.src = e.target.result;
-                imgPreview.style.display = "block";
-            };
-            leitor.readAsDataURL(file);
-        }
+        const leitor = new FileReader();
+        leitor.onload = (e) => {
+            imgPreview.src = e.target.result;
+            imgPreview.style.display = "block";
+        };
+        leitor.readAsDataURL(file);
 
-        if (textoStatus) {
-            const tamanhoKB = (file.size / 1024).toFixed(1);
-            textoStatus.textContent = `✅ Arquivo pronto: ${file.name} (${tamanhoKB} KB)`;
-            textoStatus.style.color = "#4af37a";
-        }
+        const tamanhoKB = (file.size / 1024).toFixed(1);
+        textoStatus.textContent = `✅ Arquivo pronto: ${file.name} (${tamanhoKB} KB)`;
+        textoStatus.style.color = "#4af37a";
     });
 }
 
-// 3. Envia a imagem via MultipartFormData para o Spring Boot
-async function enviarImagemProduto() {
-    const selectProduto = document.getElementById("selectProdutoImagem");
-    const produtoId = selectProduto ? selectProduto.value : "";
+async function enviarImagemIntroducao() {
     const btnEnviar = document.getElementById("btnEnviarImagem");
-
-    if (!produtoId) {
-        alert("⚠️ Por favor, selecione qual produto vai receber esta imagem!");
-        if (selectProduto) selectProduto.focus();
-        return;
-    }
+    const textoStatus = document.getElementById("statusArquivo");
+    const inputTitulo = document.getElementById("tituloImagem");
 
     if (!arquivoSelecionado) {
-        alert("⚠️ Selecione uma imagem no computador antes de enviar!");
+        alert("⚠️ Selecione uma imagem (.png ou .jpg) antes de enviar!");
         return;
     }
 
-    // ⚠️ Não definir 'Content-Type' manual no headers quando usar FormData (o navegador define o boundary sozinho)
     const formData = new FormData();
     formData.append("arquivo", arquivoSelecionado);
-    formData.append("produtoId", produtoId);
+    formData.append("titulo", inputTitulo ? inputTitulo.value.trim() : "");
 
     try {
-        if (btnEnviar) {
-            btnEnviar.disabled = true;
-            btnEnviar.textContent = "⏳ Enviando imagem...";
-        }
+        btnEnviar.disabled = true;
+        btnEnviar.textContent = "⏳ Enviando para o servidor...";
 
-        // Endpoint padrão sugerido para o Controller Java (@PostMapping("/produtos/{id}/imagem"))
-        const resposta = await fetch(`${API_URL}/produtos/${produtoId}/imagem`, {
+        // ✅ Sem headers manuais: evita bloqueio do JwtFilter em requisições multipart
+        const resposta = await fetch(`${API_URL}/api/midia/upload`, {
             method: "POST",
-            headers: {
-                "Authorization": `Bearer ${token}`
-            },
             body: formData
         });
 
         if (resposta.ok) {
-            alert("✅ Imagem enviada e vinculada ao produto com sucesso!");
+            const dados = await resposta.json();
+            alert(`✅ ${dados.mensagem}`);
+            if (inputTitulo) inputTitulo.value = "";
             limparSelecao();
-            if (selectProduto) selectProduto.value = "";
+            carregarGaleriaIntroducao();
         } else {
-            const erroTexto = await resposta.text();
-            alert(`❌ Falha ao salvar imagem no servidor:\n${erroTexto || "Status " + resposta.status}`);
+            const erro = await resposta.json().catch(() => ({ erro: "Status " + resposta.status }));
+            textoStatus.textContent = `❌ Erro: ${erro.erro || "Falha no servidor"}`;
+            textoStatus.style.color = "#ff7675";
         }
     } catch (erro) {
-        console.error("Erro na requisição de upload:", erro);
-        alert("❌ Erro de conexão com o servidor ao enviar a imagem.");
+        console.error("Erro na requisição:", erro);
+        textoStatus.textContent = "❌ Falha de conexão com o servidor.";
+        textoStatus.style.color = "#ff7675";
     } finally {
-        if (btnEnviar) {
-            btnEnviar.disabled = false;
-            btnEnviar.textContent = "📤 Salvar Imagem do Produto";
-        }
+        btnEnviar.disabled = false;
+        btnEnviar.textContent = "📤 Enviar e Gravar Imagem";
     }
 }
 
-// 4. Limpa o preview e reseta o input file
+async function carregarGaleriaIntroducao() {
+    const grid = document.getElementById("gridGaleria");
+    if (!grid) return;
+
+    try {
+        const resposta = await fetch(`${API_URL}/api/midia/introducao`);
+        if (resposta.ok) {
+            const lista = await resposta.json();
+            grid.innerHTML = "";
+
+            if (lista.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; font-size: 12px; color: #94a3b8; text-align: center;">Nenhuma imagem cadastrada ainda.</div>';
+                return;
+            }
+
+            lista.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "card-foto";
+                card.innerHTML = `
+                    <img src="${item.caminho}" alt="${item.titulo || 'Imagem'}">
+                    <div class="titulo-foto" title="${item.titulo || ''}">${item.titulo || item.nomeArquivo}</div>
+                    <button class="btn-excluir-foto" onclick="excluirImagemIntroducao(${item.id})">🗑️ Excluir</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    } catch (erro) {
+        console.error("Erro ao carregar galeria:", erro);
+    }
+}
+
+
+
 function limparSelecao() {
     arquivoSelecionado = null;
     const inputArquivo = document.getElementById("inputArquivoImagem");
@@ -168,8 +157,28 @@ function limparSelecao() {
         textoStatus.style.color = "#cbd5e1";
     }
 }
+async function excluirImagemIntroducao(id) {
+    if (!confirm("Deseja realmente remover esta imagem?")) return;
 
-// 5. Navegação de retorno ao menu central
+    try {
+        // ✅ Sem headers manuais para evitar erro 401 no filtro JWT
+        const resposta = await fetch(`${API_URL}/api/midia/introducao/${id}`, {
+            method: "DELETE"
+        });
+
+        if (resposta.ok) {
+            carregarGaleriaIntroducao();
+        } else {
+            alert("❌ Não foi possível excluir a imagem.");
+        }
+    } catch (erro) {
+        console.error("Erro ao excluir:", erro);
+    }
+}
+
+
+
+
 function voltarMenu() {
     window.location.href = "/menu/menu.html";
 }

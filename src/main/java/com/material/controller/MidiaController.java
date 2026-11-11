@@ -1,5 +1,7 @@
 package com.material.controller;
 
+import com.material.model.ImagemIntroducao;
+import com.material.repository.ImagemIntroducaoRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +12,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,47 +22,87 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 public class MidiaController {
 
-    // Caminho da pasta física estática dentro do projeto Material
-    private final String DIRETORIO_DESTINO = "src/main/resources/static/menu/imagens/";
+    //private final String DIRETORIO_DESTINO = "src/main/resources/static/imagem_introducao/";
+   
+	private final String DIRETORIO_DESTINO =
+	        "target/classes/static/imagem_introducao/";
+	
+	private final ImagemIntroducaoRepository repository;
 
+    public MidiaController(ImagemIntroducaoRepository repository) {
+        this.repository = repository;
+    }
+
+    // 📤 Endpoint de Upload + Gravação no MySQL
     @PostMapping("/upload")
-    public ResponseEntity<?> fazerUpload(@RequestParam("arquivo") MultipartFile arquivo) {
+    public ResponseEntity<?> fazerUpload(
+            @RequestParam("arquivo") MultipartFile arquivo,
+            @RequestParam(value = "titulo", required = false) String titulo) {
         try {
             if (arquivo.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("erro", "O arquivo enviado está vazio."));
             }
 
-            // Garante que a pasta static/imagens/produtos exista no disco
             File diretorio = new File(DIRETORIO_DESTINO);
             if (!diretorio.exists()) {
                 diretorio.mkdirs();
             }
 
-            // Pega a extensão original do arquivo (.png, .jpg, .webp)
             String nomeOriginal = arquivo.getOriginalFilename();
             String extensao = "";
             if (nomeOriginal != null && nomeOriginal.contains(".")) {
                 extensao = nomeOriginal.substring(nomeOriginal.lastIndexOf("."));
             }
 
-            // Gera um nome único por UUID para evitar sobrescrever outra foto
             String novoNome = UUID.randomUUID().toString() + extensao;
-
-            // Salva fisicamente o arquivo na pasta
             Path caminhoCompleto = Paths.get(DIRETORIO_DESTINO + novoNome);
             Files.write(caminhoCompleto, arquivo.getBytes());
 
-            // URL relativa de retorno para exibir na tela ou salvar no MySQL
-            String urlRelativa = "/imagens/produtos/" + novoNome;
+            String urlRelativa = "/imagem_introducao/" + novoNome;
+
+            // 💾 Grava o registro na tabela imagem_introducao
+            ImagemIntroducao registro = new ImagemIntroducao();
+            registro.setTitulo((titulo != null && !titulo.trim().isEmpty()) ? titulo.trim() : nomeOriginal);
+            registro.setNomeArquivo(novoNome);
+            registro.setCaminho(urlRelativa);
+            registro.setDataCadastro(LocalDateTime.now());
+
+            ImagemIntroducao salvo = repository.save(registro);
 
             return ResponseEntity.ok(Map.of(
-                "url", urlRelativa,
-                "mensagem", "Upload físico realizado com sucesso!"
+                "id", salvo.getId(),
+                "titulo", salvo.getTitulo(),
+                "url", salvo.getCaminho(),
+                "mensagem", "Imagem salva e registrada no banco com sucesso!"
             ));
 
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("erro", "Falha de gravação: " + e.getMessage()));
         }
+    }
+
+    // 📋 Endpoint para listar as imagens cadastradas (usado no painel e na introdução)
+    @GetMapping("/introducao")
+    public ResponseEntity<List<ImagemIntroducao>> listarImagensIntroducao() {
+        return ResponseEntity.ok(repository.findAllByOrderByDataCadastroDesc());
+    }
+
+    // 🗑️ Endpoint opcional para excluir imagem do banco e da pasta
+    @DeleteMapping("/introducao/{id}")
+    public ResponseEntity<?> excluirImagem(@PathVariable Long id) {
+        return repository.findById(id).map(img -> {
+            try {
+               // Path caminhoFisico = Paths.get("src/main/resources/static" + img.getCaminho());
+            	Path caminhoFisico =
+            	        Paths.get("target/classes/static" + img.getCaminho());
+            	Files.deleteIfExists(caminhoFisico);
+                repository.delete(img);
+                return ResponseEntity.ok(Map.of("mensagem", "Imagem removida com sucesso!"));
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("erro", "Erro ao apagar arquivo físico: " + e.getMessage()));
+            }
+        }).orElse(ResponseEntity.notFound().build());
     }
 }
