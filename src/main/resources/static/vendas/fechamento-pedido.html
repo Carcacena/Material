@@ -1,58 +1,190 @@
-<!-- ⚙️ BOTÃO FIXO NA TELA (Sempre disponível e chamando a função direto) -->
-<button id="btnAbrirPainelCaixa" type="button" onclick="togglePainelDoCaixaDirect()"
-	style="position: fixed; top: 90px; right: 25px; z-index: 1999; background: #ff9800; color: #111; border: none; border-radius: 6px; padding: 8px 13px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-	⚙️ AÇÕES
-</button>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Vendas</title>
+    <!-- Link completo do Bootstrap 5 -->
+    <link href="https://jsdelivr.net" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #2c3e50, #4caf50);
+            color: white;
+            min-height: 100vh;
+            padding: 30px 20px;
+            margin: 0;
+            user-select: none;
+        }
+        .box-custom {
+            background: rgba(0, 0, 0, 0.45);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+        }
+        h2, h4 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: #ff9800;
+            box-shadow: none;
+        }
+        .form-select option {
+            background: #2c3e50;
+            color: white;
+        }
 
-<!-- 🛠️ MENU CRUD VERTICAL FLUTUANTE -->
-<div id="painelCaixa" class="painel-flutuante"
-	style="display: none; position: fixed; top: 140px; right: 25px; z-index: 1998; background: #2c3e50; border: 2px solid #ff9800; border-radius: 8px; padding: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        /* Estilização da Tabela */
+        .table-custom {
+            color: white !important;
+            background: transparent !important;
+        }
+        .table-custom th {
+            background: rgba(0, 0, 0, 0.6) !important;
+            color: #ff9800 !important;
+            font-weight: bold;
+            border-bottom: 2px solid #ff9800 !important;
+            text-transform: uppercase;
+            font-size: 12px;
+            padding: 12px;
+        }
+        .table-custom td {
+            background: rgba(0, 0, 0, 0.25) !important;
+            color: white !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            padding: 12px;
+            vertical-align: middle;
+        }
+        .table-custom tr:hover td {
+            background: rgba(255, 255, 255, 0.08) !important;
+            cursor: pointer;
+        }
+        .table-custom tr.selecionado td {
+            background: rgba(255, 152, 0, 0.25) !important;
+            border-bottom: 1px solid #ff9800 !important;
+            font-weight: bold;
+        }
 
-	<!-- TOPO DO CRUD COM O BOTÃO X -->
-	<div id="painelCaixaHeader" class="painel-header"
-		style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255, 152, 0, 0.4); padding-bottom: 8px; margin-bottom: 10px;">
-		<span style="color: #ff9800; font-weight: bold; font-family: monospace;">::: CRUD CAIXA :::</span>
-		<!-- Botão X Vermelho que também executa a mesma função direta -->
-		<button type="button" onclick="document.getElementById('painelCaixa').style.display='none'"
-			style="background: #e74c3c; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; padding: 4px 9px; line-height: 1;">
-		</button>
-	</div>
+        /* Painel Flutuante */
+        .painel-flutuante {
+            position: fixed;
+            right: 25px;
+            top: 140px;
+            z-index: 1998;
+            width: 220px;
+            background: #1e272e;
+            border: 2px solid #ff9800;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+        .painel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed rgba(255, 152, 0, 0.4);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+            cursor: move;
+        }
+        .painel-corpo {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-	<div class="painel-corpo" style="display: flex; flex-direction: column; gap: 8px;">
+        /* Estilo base dos botões do menu */
+        .btn-menu-vertical {
+            width: 100%;
+            padding: 9px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
 
-		<button class="btn-menu-vertical btn-cores-menu-crud" onclick="deixarPedidoPendente()">Orçamento (F2)</button>
+        /* MAGIA DAS CORES ALTERNADAS */
+        /* Botões Ímpares (1º, 3º, 5º...) -> LILÁS */
+        .painel-corpo .btn-menu-vertical:nth-child(odd) {
+            background: #9b59b6;
+            color: #ffffff;
+        }
 
-		<button class="btn-menu-vertical btn-cores-menu-crud" onclick="abrirPainelFechamento()">Fechar Pedido (F10)</button>
+        /* Botões Pares (2º, 4º, 6º...) -> BRANCO */
+        .painel-corpo .btn-menu-vertical:nth-child(even) {
+            background: #ffffff;
+            color: #1e272e;
+        }
 
-		<button class="btn-menu-vertical btn-cores-menu-crud" onclick="limparTelaCupom()">Limpar Cupom</button>
+        /* Efeito ao passar o mouse */
+        .btn-menu-vertical:hover {
+            transform: translateX(-3px);
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.6);
+        }
+        .painel-corpo .btn-menu-vertical:nth-child(odd):hover {
+            background: #8e44ad; /* Lilás mais escuro no hover */
+        }
+        .painel-corpo .btn-menu-vertical:nth-child(even):hover {
+            background: #ecf0f1; /* Branco levemente cinza no hover */
+        }
+    </style>
+</head>
+<body>
 
-		<button class="btn-menu-vertical btn-cores-menu-crud" onclick="pesquisaCarrinho()">Pesquisa Carrinho</button>
+    <!-- BOTÃO FIXO NA TELA -->
+    <button id="btnAbrirPainelCaixa" type="button" onclick="togglePainelDoCaixaDirect()" 
+            style="position: fixed; top: 90px; right: 25px; z-index: 1999; background: #ff9800; color: #111; border: none; border-radius: 6px; padding: 8px 13px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+        ⚙️ AÇÕES
+    </button>
 
+    <!-- MENU CRUD VERTICAL FLUTUANTE -->
+    <div id="painelCaixa" class="painel-flutuante" style="display: none;">
+        
+        <!-- TOPO DO CRUD COM O BOTÃO X -->
+        <div id="painelCaixaHeader" class="painel-header">
+            <span style="color: #ff9800; font-weight: bold; font-family: monospace;">::: CRUD CAIXA :::</span>
+            <button type="button" onclick="togglePainelDoCaixaDirect()" 
+                    style="background: #e74c3c; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; padding: 4px 8px; line-height: 1;">
+                X
+            </button>
+        </div>
 
-		<button type="button" class="btn btn-success fw-bold" onclick="confirmarFaturamentoDefinitivo()"
-			style="padding: 10px 20px;">
-			CONFIRMAR FATURAMENTO (F10)
-		</button>
+        <!-- Todos os botões usam apenas a classe base .btn-menu-vertical -->
+        <div class="painel-corpo">
+            <button type="button" class="btn-menu-vertical" onclick="deixarPedidoPendente()">Orçamento (F2)</button>
+            <button type="button" class="btn-menu-vertical" onclick="abrirPainelFechamento()">Fechar Pedido (F10)</button>
+            <button type="button" class="btn-menu-vertical" onclick="limparTelaCupom()">Limpar Cupom</button>
+            <button type="button" class="btn-menu-vertical" onclick="pesquisaCarrinho()">Pesquisa Carrinho</button>
+            <button type="button" class="btn-menu-vertical" onclick="confirmarFaturamentoDefinitivo()">Confirmar Faturamento (F10)</button>
+            <button type="button" class="btn-menu-vertical" onclick="window.location.href='/menu/menu.html'"><u>V</u>oltar</button>
+        </div>
+    </div>
 
-		<button class="btn-menu-vertical btn-cores-menu-crud" onclick="window.location.href='/menu/menu.html'">
-			<u>V</u>oltar
-		</button>
+    <script>
+        window.togglePainelDoCaixaDirect = function () {
+            const painel = document.getElementById("painelCaixa");
+            if (!painel) return;
 
-	</div>
-</div>
+            if (painel.style.display === "none" || painel.style.display === "") {
+                painel.style.setProperty("display", "block", "important");
+            } else {
+                painel.style.setProperty("display", "none", "important");
+            }
+        };
+    </script>
 
-<!-- 📦 SCRIPT GLOBAL INJETADO DIRETO NA MESA DE NEGOCIAÇÃO -->
-<script>
-	// Força a função a existir na raiz global (window), impedindo erros de "not defined"
-	window.togglePainelDoCaixaDirect = function () {
-		const painel = document.getElementById("painelCaixa");
-		if (!painel) return;
-
-		// Pega o estilo real e alterna sem frescura
-		if (painel.style.display === "none") {
-			painel.style.setProperty("display", "block", "important");
-		} else {
-			painel.style.setProperty("display", "none", "important");
-		}
-	};
-</script>
+</body>
+</html>
