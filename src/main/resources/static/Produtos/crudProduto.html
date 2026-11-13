@@ -188,11 +188,11 @@
 			<h2 class="m-0">🌿 Gerenciamento de Produtos</h2>
 		</div>
 
-		<!-- GRID PRINCIPAL: Coloca o formulário e a árvore na mesma linha horizontal -->
-		<div class="row g-4" style="display: flex; flex-direction: row; width: 100%; gap: 20px; align-items: start;">
+		<!-- GRID PRINCIPAL -->
+		<div class="row g-4" style="display: flex; flex-direction: row; flex-wrap: wrap; width: 100%; gap: 20px; align-items: start;">
 
-			<!-- COLUNA DA ESQUERDA: Formulário de Cadastro Compacto -->
-			<div class="col-xl-4 col-lg-5" style="min-width: 350px;">
+			<!-- COLUNA 1: Formulário de Cadastro Principal -->
+			<div style="width: 380px; flex-shrink: 0;">
 				<div class="box-custom">
 					<h4 id="tituloFormulario">Cadastrar Produto</h4>
 					<form id="formProduto">
@@ -200,14 +200,14 @@
 
 						<!-- 0. Código de Barras -->
 						<div class="mb-3">
-							<label for="codigoBarras" class="form-label" style="font-weight: bold;">Código de
-								Barras</label>
+							<label for="codigoBarras" class="form-label" style="font-weight: bold;">Código de Barras</label>
 							<input type="text" class="form-control" id="codigoBarras"
 								placeholder="Passe o leitor ou digite o código" style="padding: 10px;">
 						</div>
 
+						<!-- Origem do Cadastro -->
 						<div class="mb-3">
-							<label class="form-label">Origem do Cadastro</label>
+							<label class="form-label" style="font-weight: bold;">Origem do Cadastro</label>
 							<select class="form-select" id="origemCadastro" onchange="alternarBloqueioCampos()"
 								style="padding: 10px;">
 								<option value="COM_NF">Entrada por Nota Fiscal (Bloqueia Preços)</option>
@@ -217,18 +217,16 @@
 
 						<!-- 1. Nome do Produto -->
 						<div class="mb-3">
-							<label for="nomeProduto" class="form-label" style="font-weight: bold;">Nome do
-								Produto</label>
+							<label for="nomeProduto" class="form-label" style="font-weight: bold;">Nome do Produto</label>
 							<input type="text" class="form-control" id="nomeProduto" required
 								placeholder="Ex: Tijolo Baiano" style="padding: 10px;">
 						</div>
 
-						<!-- 2. Fornecedor com Botão Rápido -->
+						<!-- 2. Fornecedor -->
 						<div class="mb-3">
-							<label for="selecionaFornecedor" class="form-label"
-								style="font-weight: bold;">Fornecedor</label>
+							<label for="selecionaFornecedor" class="form-label" style="font-weight: bold;">Fornecedor</label>
 							<div class="d-flex gap-2">
-								<select class="form-select" id="selecionaFornecedor" required style="padding: 10px;">
+								<select class="form-select" id="selecionaFornecedor" required style="padding: 10px; flex: 1;">
 									<option value="">Selecione...</option>
 								</select>
 								<button type="button" class="btn btn-primary fw-bold"
@@ -237,83 +235,118 @@
 							</div>
 						</div>
 
+						<!-- Categoria / Setor -->
 						<div class="mb-3">
-							<label class="form-label">Categoria / Setor</label>
+							<label class="form-label" style="font-weight: bold;">Categoria / Setor</label>
 							<div style="display: flex; gap: 8px; align-items: center;">
-								<select id="selectCategoria" class="form-select" style="flex: 1;">
+								<select id="selectCategoria" class="form-select" style="flex: 1; padding: 10px;">
 									<option value="">Carregando categorias...</option>
 								</select>
 								<button type="button" class="btn"
-									style="background: #ff9800; color: black; font-weight: bold; padding: 6px 12px; border-radius: 4px; border: none;"
+									style="background: #ff9800; color: black; font-weight: bold; padding: 10px 14px; border-radius: 4px; border: none;"
 									onclick="abrirModalRapidoCategoria()">[ + ]</button>
 							</div>
 						</div>
 
-
-						<!-- 🛸 MODAL RÁPIDO: Cadastro Instantâneo de Categorias -->
-						<div id="modalRapidoCategoria"
-							style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center;">
-							<div class="box-custom"
-								style="width: 320px; border: 1px solid #ff9800; padding: 20px; background: #2c3e50; border-radius: 8px;">
-								<h5 style="color: #ff9800; margin-top: 0;">⚡ Nova Categoria</h5>
-								<div class="mb-3">
-									<label class="form-label" style="font-size: 12px;">Nome do Setor</label>
-									<input type="text" id="inputNovaCategoriaNome" class="form-control"
-										placeholder="Ex: ELÉTRICA, TINTAS">
-								</div>
-								<div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 15px;">
-									<button type="button" class="btn"
-										style="background: #7f8c8d; color: white; padding: 4px 10px; border: none; border-radius: 4px; font-size: 12px;"
-										onclick="fecharModalRapidoCategoria()">Cancelar</button>
-									<button type="button" class="btn"
-										style="background: #27ae60; color: white; padding: 4px 10px; border: none; border-radius: 4px; font-size: 12px; font-weight: bold;"
-										onclick="salvarCategoriaInstantanea()">Salvar</button>
-								</div>
-							</div>
-						</div>
-
-
 						<!-- 3. Tipo Venda e Validade -->
-						<div class="row g-2 mb-3">
-							<div class="col-6">
-								<label for="tipoProduto" class="form-label" style="font-weight: bold;">Tipo
-									Venda</label>
-								<select class="form-select" id="tipoProduto" style="padding: 10px;">
+						<div style="display: flex; gap: 10px; margin-bottom: 10px;">
+							<div style="flex: 1;">
+								<label for="tipoProduto" class="form-label" style="font-weight: bold;">Tipo Venda</label>
+								<select class="form-select" id="tipoProduto" style="padding: 10px; width: 100%;">
 									<option value="false">Unidade</option>
 									<option value="true">A Granel</option>
 								</select>
 							</div>
-
-
+							<div style="flex: 1;">
+								<label for="validade" class="form-label" style="font-weight: bold;">Validade</label>
+								<input type="date" class="form-control" id="validade" style="padding: 10px; width: 100%;">
+							</div>
 						</div>
-						<!-- Campo Validade (Permanece sempre visível) -->
-						<div class="campo-grupo">
-							<label>Validade</label>
-							<input type="date" id="validade">
+
+						<button type="submit" id="btnSalvar" class="btn btn-warning w-100 mt-2 fw-bold text-dark"
+							style="display:none; padding: 12px;">Confirmar Operação</button>
+					</form>
+				</div>
+			</div>
+
+			<!-- COLUNA 2: CAIXA HORIZONTAL ARTESANAL (Ao lado direito da caixa escura principal) -->
+			<div id="blocoValoresArtesanal" style="display: none; flex: 1; min-width: 400px; max-width: 560px;">
+				<div class="box-custom" style="border: 1px solid rgba(255, 152, 0, 0.5);">
+					<h4 style="color: #ff9800; font-size: 16px; border-bottom: 1px dashed rgba(255,152,0,0.4); padding-bottom: 8px;">
+						💰 Valores & Entrada Inicial (Artesanal)
+					</h4>
+
+					<div style="display: flex; flex-direction: row; gap: 12px; margin-bottom: 15px;">
+						<div style="flex: 1;">
+							<label for="precoCusto" class="form-label" style="font-weight: bold; font-size: 13px;">Preço Custo</label>
+							<input type="number" step="0.01" class="form-control" id="precoCusto" form="formProduto"
+								placeholder="0.00" style="padding: 10px; width: 100%;" oninput="calcularMargem()">
 						</div>
-				</div>
-				<!-- 4. Preço Custo e Preço Venda -->
-				<div class="row g-2 mb-3">
-					<div class="col-6">
-						<label for="precoCusto" class="form-label" style="font-weight: bold;">Preço
-							Custo</label>
-						<input type="number" step="0.01" class="form-control" id="precoCusto" required
-							placeholder="0.00" style="padding: 10px;" oninput="calcularMargem()">
-					</div>
-					<div class="col-6">
-						<label for="precoVenda" class="form-label" style="font-weight: bold;">Preço
-							Venda</label>
-						<input type="number" step="0.01" class="form-control" id="precoVenda" required
-							placeholder="0.00" style="padding: 10px;" oninput="calcularMargem()">
-					</div>
-				</div>
 
-				<div class="mb-3 p-2 font-weight-bold"
-					style="background: rgba(255,152,0,0.1); border-radius: 4px; text-align: center; font-size: 14px;">
-					Margem de Lucro Atual: <span id="valorMargem"
-						style="color: #5eff5e; font-size: 16px; font-weight: bold;">0.00</span>%
-				</div>
+						<div style="flex: 1;">
+							<label for="precoVenda" class="form-label" style="font-weight: bold; font-size: 13px;">Preço Venda</label>
+							<input type="number" step="0.01" class="form-control" id="precoVenda" form="formProduto"
+								placeholder="0.00" style="padding: 10px; width: 100%;" oninput="calcularMargem()">
+						</div>
 
+						<div style="flex: 1;">
+							<label for="qteEntrada" class="form-label" style="font-weight: bold; font-size: 13px;">Qtd Entrada</label>
+							<input type="number" class="form-control" id="qteEntrada" form="formProduto"
+								placeholder="0" style="padding: 10px; width: 100%;">
+						</div>
+
+						<!-- Estoque Atual oculto visualmente, mantendo o ID intacto para o JS -->
+						<div style="display: none;">
+							<input type="number" id="estoqueAtual" form="formProduto" value="0">
+						</div>
+					</div>
+
+					<div class="p-2 fw-bold"
+						style="background: rgba(255,152,0,0.12); border-radius: 6px; text-align: center; font-size: 14px;">
+						Margem de Lucro Atual: <span id="valorMargem"
+							style="color: #5eff5e; font-size: 17px; font-weight: bold;">0.00</span>%
+					</div>
+				</div>
+			</div>
+			<!-- 🛸 PAINEL FLUTUANTE EXCLUSIVO: CRUD DE CATEGORIA EM MEMÓRIA -->
+			<div id="modalRapidoCategoria"
+			    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 3000; align-items: center; justify-content: center;">
+			    <div style="width: 280px; background: #1e272e; border: 2px solid #ff9800; border-radius: 8px; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+			        
+			        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255, 152, 0, 0.4); padding-bottom: 8px; margin-bottom: 12px;">
+			            <span id="tituloModalCategoria" style="color: #ff9800; font-weight: bold; font-family: monospace; font-size: 13px;">::: CRUD CATEGORIA :::</span>
+			            <button type="button" onclick="fecharModalRapidoCategoria()" style="background: #e74c3c; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; padding: 3px 8px;">X</button>
+			        </div>
+
+			        <input type="hidden" id="categoriaEdicaoId">
+
+			        <div style="margin-bottom: 12px;">
+			            <label style="font-size: 11px; color: #ffb74d; font-weight: bold; display: block; margin-bottom: 4px;">NOME DO SETOR / CATEGORIA:</label>
+			            <input type="text" id="inputNovaCategoriaNome" class="form-control" placeholder="Ex: ELÉTRICA, TINTAS" style="padding: 8px; font-size: 13px;">
+			        </div>
+
+			        <div style="display: flex; flex-direction: column; gap: 7px;">
+			            <button type="button" onclick="prepararNovaCategoria()" style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #9b59b6; color: #ffffff;">
+			                Nova Categoria
+			            </button>
+			            <button type="button" onclick="salvarCategoriaInstantanea()" style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #ffffff; color: #1e272e;">
+			                Confirmar na Memória
+			            </button>
+			            <button type="button" id="btnExcluirCategoria" onclick="excluirCategoriaSelecionada()" style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #9b59b6; color: #ffffff;">
+			                Excluir Categoria
+			            </button>
+			            <button type="button" onclick="fecharModalRapidoCategoria()" style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #ffffff; color: #1e272e;">
+			                Fechar
+			            </button>
+			        </div>
+			    </div>
+			</div>
+				
+				
+				
+				
+				
+				
 				<!-- 6. Controle de Estoques Unificado -->
 				<div class="row g-2 mb-3">
 					<div class="col-6">
@@ -370,6 +403,31 @@
 			<a class="btn-menu-vertical btn-voltar text-center lh-lg" href="/menu/menu.html">Voltar</a>
 		</div>
 	</div>
+	
+	<!-- ⚙️ BOTÃO FIXO NA TELA -->
+		<button id="btnAbrirPainelProduto" type="button" onclick="togglePainelProdutoDirect()"
+			style="position: fixed; top: 90px; right: 25px; z-index: 1999; background: #ff9800; color: #111; border: none; border-radius: 6px; padding: 8px 13px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+			⚙️ AÇÕES
+		</button>
+
+		<div id="painelProduto" class="painel-flutuante" style="display: none;">
+			<div id="painelProdutoHeader" class="painel-header">
+				<span style="color: #ff9800; font-weight: bold; font-family: monospace;">::: CRUD PRODUTO :::</span>
+				<button type="button" onclick="togglePainelProdutoDirect()"
+					style="background: #e74c3c; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; padding: 4px 8px; line-height: 1;">
+					X
+				</button>
+			</div>
+
+			<div class="painel-corpo">
+				<button type="button" id="btnMenuIncluir" class="btn-menu-vertical" onclick="acionarIncluir()">Incluir (F2)</button>
+				<button type="button" id="btnMenuAlterar" class="btn-menu-vertical" onclick="acionarAlterar()">Alterar (F3)</button>
+				<button type="button" id="btnMenuExcluir" class="btn-menu-vertical" onclick="acionarExcluir()">Excluir (Del)</button>
+				<button type="button" id="btnMenuGravar" class="btn-menu-vertical" onclick="document.getElementById('btnSalvar').click()">Gravar Produto (F10)</button>
+				<button type="button" id="btnMenuCancelar" class="btn-menu-vertical" onclick="acionarCancelar()">Cancelar (Esc)</button>
+				<button type="button" id="btnMenuVoltar" class="btn-menu-vertical" onclick="window.location.href='/menu/menu.html'"><u>V</u>oltar</button>
+			</div>
+		</div>
 
 	<!-- Script de Arrasto do Menu Flutuante -->
 	<script>

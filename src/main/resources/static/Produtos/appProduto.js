@@ -37,6 +37,7 @@ if (!token) {
 // 🌐 DISPARA O CARREGAMENTO QUANDO A TELA ABRE
 document.addEventListener("DOMContentLoaded", () => {
     carregarFornecedores();
+	
     carregarCategoriasNoSelect(); // 📂 INJETADO: Popula a lista de setores ao abrir
     carregarProdutos();
     document.getElementById("formProduto").addEventListener("submit", cadastrarProduto);
@@ -100,53 +101,184 @@ async function carregarCategoriasNoSelect(categoriaIdSelecionada = null) {
     }
 }
 
-window.abrirModalRapidoCategoria = function() {
-    document.getElementById("modalRapidoCategoria").style.display = "flex";
-    document.getElementById("inputNovaCategoriaNome").focus();
+window.abrirModalRapidoCategoria = function () {
+    const modal = document.getElementById("modalRapidoCategoria");
+    const select = document.getElementById("selectCategoria");
+    const inputNome = document.getElementById("inputNovaCategoriaNome");
+    const inputId = document.getElementById("categoriaEdicaoId");
+    const btnExcluir = document.getElementById("btnExcluirCategoria");
+    const titulo = document.getElementById("tituloModalCategoria");
+
+    if (!modal || !inputNome) return;
+
+    inputNome.disabled = false;
+
+    if (select && select.value) {
+        if (inputId) inputId.value = select.value;
+        inputNome.value = select.options[select.selectedIndex].text;
+        if (titulo) titulo.textContent = "::: EDITAR CATEGORIA :::";
+        if (btnExcluir) btnExcluir.style.display = "block";
+    } else {
+        if (inputId) inputId.value = "";
+        inputNome.value = "";
+        if (titulo) titulo.textContent = "::: NOVA CATEGORIA :::";
+        if (btnExcluir) btnExcluir.style.display = "none";
+    }
+
+    modal.style.display = "flex";
+    inputNome.focus();
 };
 
 window.fecharModalRapidoCategoria = function() {
     document.getElementById("modalRapidoCategoria").style.display = "none";
     document.getElementById("inputNovaCategoriaNome").value = "";
+    document.getElementById("categoriaEdicaoId").value = "";
 };
+window.salvarCategoriaInstantanea = function () {
+    const inputNome = document.getElementById("inputNovaCategoriaNome");
+    const inputId = document.getElementById("categoriaEdicaoId");
+    const nomeTexto = inputNome.value.trim().toUpperCase();
+    const idEdicao = inputId && inputId.value ? Number(inputId.value) : null;
 
-window.salvarCategoriaInstantanea = async function() {
-    const nomeInput = document.getElementById("inputNovaCategoriaNome").value.trim();
-    if (!nomeInput) {
+    if (!nomeTexto) {
         alert("Informe o nome da categoria, chefe!");
+        inputNome.focus();
         return;
     }
 
+    if (!Array.isArray(window.categoriasMemoria)) {
+        window.categoriasMemoria = (typeof categoriasMemoria !== "undefined") ? categoriasMemoria : [];
+    }
+    if (typeof contadorIdTemp === "undefined") {
+        window.contadorIdTemp = -1;
+    }
+
+    // Procura se já existe na memória (seja ORIGINAL do banco ou NOVA criada agora)
+    const existente = window.categoriasMemoria.find(c => 
+        c.status !== "EXCLUIDA" && 
+        c.nome.trim().toUpperCase() === nomeTexto && 
+        Number(c.id) !== idEdicao
+    );
+
+    if (existente) {
+        // Em vez de duplicar, apenas seleciona a que já está na memória e fecha
+        renderizarSelectCategorias(existente.id);
+        fecharModalRapidoCategoria();
+        return;
+    }
+
+    let idSelecionarDepois = idEdicao;
+
+    if (idEdicao) {
+        const item = window.categoriasMemoria.find(c => Number(c.id) === idEdicao);
+        if (item) {
+            item.nome = nomeTexto;
+            if (item.status === "ORIGINAL") item.status = "ALTERADA";
+        }
+    } else {
+        const novoIdTemp = contadorIdTemp--;
+        window.categoriasMemoria.push({
+            id: novoIdTemp,
+            nome: nomeTexto,
+            status: "NOVA"
+        });
+        idSelecionarDepois = novoIdTemp;
+    }
+
+    renderizarSelectCategorias(idSelecionarDepois);
+    fecharModalRapidoCategoria();
+};
+window.excluirCategoriaSelecionada = async function() {
+    const idEdicao = document.getElementById("categoriaEdicaoId").value;
+    if (!idEdicao) return;
+
+    if (!confirm("Tem certeza que deseja excluir esta categoria?")) return;
+
     try {
-        const resposta = await fetch(`${API_URL}/api/categorias`, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({ nome: nomeInput })
+        const resposta = await fetch(`${API_URL}/api/categorias/${idEdicao}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
         });
 
         if (resposta.ok) {
-            const categoriaCriada = await resposta.json();
             fecharModalRapidoCategoria();
-            await carregarCategoriasNoSelect(categoriaCriada.id); // Recarrega e deixa selecionada!
+            await carregarCategoriasNoSelect();
         } else {
-            alert("Erro ao salvar categoria no servidor.");
+            alert("Não foi possível excluir. Verifique se existem produtos vinculados a esta categoria.");
         }
     } catch (erro) {
-        console.error("Falha na requisição da categoria:", erro);
+        console.error("Erro ao excluir categoria:", erro);
     }
 };
+
+// ======================================================
+// 🎨 RENDERIZADOR DO SELECT DE CATEGORIAS (MEMÓRIA -> TELA)
+// ======================================================
+window.renderizarSelectCategorias = function (idParaSelecionar = null) {
+    const select = document.getElementById("selectCategoria");
+    if (!select) return;
+
+    const listaMem = Array.isArray(window.categoriasMemoria) ? window.categoriasMemoria : [];
+    const valorAtual = idParaSelecionar !== null ? idParaSelecionar : select.value;
+
+    select.innerHTML = '<option value="">Selecione...</option>';
+
+    listaMem
+        .filter(cat => cat.status !== "EXCLUIDA")
+        .forEach(cat => {
+            const opcao = document.createElement("option");
+            opcao.value = cat.id;
+            opcao.textContent = cat.nome;
+            if (valorAtual !== "" && Number(cat.id) === Number(valorAtual)) {
+                opcao.selected = true;
+            }
+            select.appendChild(opcao);
+        });
+};
+
+// Atualiza a função inicial para abastecer sempre window.categoriasMemoria
+window.carregarCategoriasNoSelect = async function (categoriaIdSelecionada = null) {
+    try {
+        const resposta = await fetch(`${API_URL}/api/categorias`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (resposta.ok) {
+            const listaBanco = await resposta.json();
+            window.categoriasMemoria = listaBanco.map(cat => ({
+                id: cat.id,
+                nome: cat.nome.toUpperCase(),
+                status: "ORIGINAL"
+            }));
+            renderizarSelectCategorias(categoriaIdSelecionada);
+        }
+    } catch (erro) {
+        console.error("Erro ao popular select de categorias:", erro);
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 // 🛡️ MOTOR DE INTELIGÊNCIA: Controla a Interação Humana bloqueando ou liberando os campos financeiros
+// 🛡️ MOTOR DE INTELIGÊNCIA: Mostra a caixa horizontal apenas no modo Artesanal
 function alternarBloqueioCampos() {
     const origem = document.getElementById("origemCadastro").value;
-    
-    // Lista de campos que sofrem a ação da regra de negócio
+    const blocoValores = document.getElementById("blocoValoresArtesanal");
+
     const camposFinanceiros = [
         "precoCusto",
         "precoVenda",
@@ -155,27 +287,29 @@ function alternarBloqueioCampos() {
     ];
 
     if (origem === "COM_NF") {
-        // Cenário Oficial: Desabilita e limpa os campos para a Entrada.html assumir o controle
+        // Esconde a caixa lateral horizontal e zera os valores nos bastidores
+        if (blocoValores) blocoValores.style.display = "none";
+
         camposFinanceiros.forEach(id => {
             const campo = document.getElementById(id);
             if (campo) {
                 campo.disabled = true;
                 campo.required = false;
-                campo.value = "0.00"; // Reseta por segurança
+                campo.value = "0";
             }
         });
-        console.log("🔒 Modo Oficial ATIVO: Preços bloqueados no Cadastro. Deixe a Entrada.html ditar os valores.");
     } else {
-        // Cenário Artesanal Livre: Libera os campos e força a obrigatoriedade
+        // Exibe a caixa lateral horizontal ao lado da caixa escura principal
+        if (blocoValores) blocoValores.style.display = "block";
+
         camposFinanceiros.forEach(id => {
             const campo = document.getElementById(id);
             if (campo) {
                 campo.disabled = false;
-                campo.required = true; // Exige o preenchimento nativo
-                if(campo.value === "0.00" || campo.value === "0") campo.value = ""; // Limpa para digitação
+                campo.required = (id !== "estoqueAtual"); // Estoque atual acompanha qteEntrada
+                if (campo.value === "0.00" || campo.value === "0") campo.value = "";
             }
         });
-        console.log("🔓 Modo Artesanal ATIVO: Campos liberados e exigidos no preenchimento.");
     }
 }
 
@@ -431,45 +565,51 @@ async function acionarExcluir() {
     }
 }
 
-// 💾 SALVAR / ALTERAR PRODUTO (Payload enviado ao Java totalmente atualizado com Código de Barras)
+// 💾 SALVAR / ALTERAR PRODUTO (Com Sincronização de Categorias em Memória)
 async function cadastrarProduto(event) {
     event.preventDefault();
 
     const idFornecedor = document.getElementById("selecionaFornecedor").value;
-    const idCategoria = document.getElementById("selectCategoria").value;
+    const idCategoriaSelecionada = document.getElementById("selectCategoria").value;
 
     // 🛡️ Travas de segurança: impede o envio se faltar a amarra de um dos dois lados
     if (!idFornecedor) {
         alert("❌ Atenção! Selecione um fornecedor obrigatório.");
         return;
     }
-    if (!idCategoria) {
+    if (!idCategoriaSelecionada) {
         alert("❌ Atenção! Selecione uma categoria/setor obrigatório.");
         return;
     }
 
-    const produtoDados = {
-        nome: document.getElementById("nomeProduto").value,
-        codigoBarras: document.getElementById("codigoBarras").value.trim() || null,
-        aGranel: document.getElementById("tipoProduto").value === "true",
-		precoCusto: parseFloat(document.getElementById("precoCusto").value) || 0,
-		precoVenda: parseFloat(document.getElementById("precoVenda").value) || 0,
-		
-		// precoCusto: parseFloat(document.getElementById("precoCusto").value),
-        //precoVenda: parseFloat(document.getElementById("precoVenda").value),
-  //      dataValidade: document.getElementById("dataValidade").value || null,
-        qteEntrada: parseInt(document.getElementById("qteEntrada").value) || 0,
-        estoqueAtual: parseInt(document.getElementById("estoqueAtual").value) || 0,
-        
-        // 🔗 Vinculos estruturados exigidos pelo Hibernate no Spring Boot
-        fornecedor: { id: parseInt(idFornecedor, 10) },
-        categoria: { id: parseInt(idCategoria, 10) }
-    };
-
-    const url = produtoSelecionadoId ? `${API_URL}/produtos/${produtoSelecionadoId}` : `${API_URL}/produtos`;
-    const metodo = produtoSelecionadoId ? "PUT" : "POST";
-
     try {
+        // 🧠 PASSO 1: Efetiva no MySQL tudo o que foi feito no mini-CRUD de Categorias em memória
+        // Se a categoria selecionada era NOVA (ID negativo), devolve o ID oficial gerado pelo MySQL
+        const idCategoriaReal = await sincronizarCategoriasComBanco();
+
+        if (!idCategoriaReal) {
+            alert("❌ Erro ao sincronizar a categoria selecionada com o servidor.");
+            return;
+        }
+
+        // 📦 PASSO 2: Monta o objeto do Produto usando o idCategoriaReal
+        const produtoDados = {
+            nome: document.getElementById("nomeProduto").value,
+            codigoBarras: document.getElementById("codigoBarras").value.trim() || null,
+            aGranel: document.getElementById("tipoProduto").value === "true",
+            precoCusto: parseFloat(document.getElementById("precoCusto").value) || 0,
+            precoVenda: parseFloat(document.getElementById("precoVenda").value) || 0,
+            qteEntrada: parseInt(document.getElementById("qteEntrada").value) || 0,
+            estoqueAtual: parseInt(document.getElementById("estoqueAtual").value) || 0,
+            
+            // 🔗 Vínculos estruturados exigidos pelo Hibernate no Spring Boot
+            fornecedor: { id: parseInt(idFornecedor, 10) },
+            categoria: { id: parseInt(idCategoriaReal, 10) }
+        };
+
+        const url = produtoSelecionadoId ? `${API_URL}/produtos/${produtoSelecionadoId}` : `${API_URL}/produtos`;
+        const metodo = produtoSelecionadoId ? "PUT" : "POST";
+
         const response = await fetch(url, {
             method: metodo,
             headers: {
@@ -484,8 +624,8 @@ async function cadastrarProduto(event) {
             document.getElementById("formProduto").reset();
             document.getElementById("valorMargem").textContent = "0.00";
             
-            // 🔄 Garante que após o reset, o select de categorias volte para o estado inicial correto
-            document.getElementById("selectCategoria").value = "";
+            // 🔄 Recarrega a memória de categorias limpa direto do banco e reseta a seleção
+            await carregarCategoriasNoSelect("");
             
             produtoSelecionadoId = null;
             bloquearFormulario(true);
@@ -500,8 +640,6 @@ async function cadastrarProduto(event) {
         alert("Falha de comunicação ao salvar produto.");
     }
 }
-// 📦 CARREGAR LISTA DE FORNECEDORES NO DROP-DOWN (Corrigido para bater com a API)
-
 async function carregarFornecedores() {
     try {
         // 🚀 Ajustado de /fornecedores para /api/fornecedores para alinhar com o Spring Boot
@@ -583,5 +721,164 @@ function buscarPorCodigoBarras(codigo) {
         }
     }
 }
+
+
+// ======================================================
+// ⚙️ CONTROLADOR DO NOVO MENU FLUTUANTE CRUD PRODUTO
+// ======================================================
+
+// 1. Abrir e fechar o painel pelo botão ⚙️ AÇÕES ou pelo X
+window.togglePainelProdutoDirect = function () {
+    const painel = document.getElementById("painelProduto");
+    if (!painel) return;
+
+    if (painel.style.display === "none" || painel.style.display === "") {
+        painel.style.setProperty("display", "block", "important");
+    } else {
+        painel.style.setProperty("display", "none", "important");
+    }
+};
+
+// 2. Função Cancelar (Limpa o formulário e trava os campos novamente)
+window.acionarCancelar = function () {
+    const form = document.getElementById("formProduto");
+    if (form) form.reset();
+
+    if (typeof produtoSelecionadoId !== "undefined") {
+        produtoSelecionadoId = null;
+    }
+
+    const inputId = document.getElementById("produtoId");
+    if (inputId) inputId.value = "";
+
+    const titulo = document.getElementById("tituloFormulario");
+    if (titulo) titulo.textContent = "Cadastrar Produto";
+
+    const margem = document.getElementById("valorMargem");
+    if (margem) margem.textContent = "0.00";
+
+    if (typeof bloquearFormulario === "function") {
+        bloquearFormulario(true);
+    }
+};
+
+// 3. Tornar o painel arrastável pela barra laranja
+(function iniciarArrastePainelProduto() {
+    const painel = document.getElementById("painelProduto");
+    const cabecalho = document.getElementById("painelProdutoHeader");
+    if (!painel || !cabecalho) return;
+
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+    cabecalho.onmousedown = function (e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        document.onmouseup = function () {
+            document.onmouseup = null;
+            document.onmousemove = null;
+        };
+
+        document.onmousemove = function (e) {
+            e.preventDefault();
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            painel.style.top = (painel.offsetTop - pos2) + "px";
+            painel.style.left = (painel.offsetLeft - pos1) + "px";
+            painel.style.right = "auto";
+        };
+    };
+})();
+
+// 4. Atalhos de Teclado do CRUD (F2, F3, F10, Esc, Delete)
+document.addEventListener("keydown", function (e) {
+    // F2 -> Incluir
+    if (e.key === "F2") {
+        e.preventDefault();
+        if (typeof acionarIncluir === "function") acionarIncluir();
+    }
+    // F3 -> Alterar
+    else if (e.key === "F3") {
+        e.preventDefault();
+        if (typeof acionarAlterar === "function") acionarAlterar();
+    }
+    // F10 -> Gravar Produto
+    else if (e.key === "F10") {
+        e.preventDefault();
+        document.getElementById("btnSalvar")?.click();
+    }
+    // Escape -> Cancelar operação
+    else if (e.key === "Escape") {
+        e.preventDefault();
+        acionarCancelar();
+    }
+    // Delete -> Excluir (só dispara se o cursor não estiver digitando dentro de um campo)
+    else if (e.key === "Delete" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "SELECT") {
+        e.preventDefault();
+        if (typeof acionarExcluir === "function") acionarExcluir();
+    }
+});
+
+// ======================================================
+// 🔄 SINCRONIZAÇÃO FINAL DAS CATEGORIAS EM MEMÓRIA COM O BANCO
+// ======================================================
+async function sincronizarCategoriasComBanco() {
+    const select = document.getElementById("selectCategoria");
+    let idCategoriaEscolhida = select ? Number(select.value) : null;
+
+    // Pega a lista em memória (seja via variável local ou window)
+    const listaMem = (typeof categoriasMemoria !== "undefined" && categoriasMemoria.length > 0) 
+        ? categoriasMemoria 
+        : (window.categoriasMemoria || []);
+
+    // A) Processa as EXCLUIDAS
+    for (const cat of listaMem.filter(c => c.status === "EXCLUIDA")) {
+        await fetch(`${API_URL}/api/categorias/${cat.id}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+    }
+
+    // B) Processa as ALTERADAS
+    for (const cat of listaMem.filter(c => c.status === "ALTERADA")) {
+        await fetch(`${API_URL}/api/categorias/${cat.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ nome: cat.nome })
+        });
+    }
+
+    // C) Processa as NOVAS e troca o ID temporário negativo pelo ID real gerado no MySQL
+    for (const cat of listaMem.filter(c => c.status === "NOVA")) {
+        const resp = await fetch(`${API_URL}/api/categorias`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ nome: cat.nome })
+        });
+
+        if (resp.ok) {
+            const criadaNoBanco = await resp.json();
+            if (idCategoriaEscolhida === cat.id) {
+                idCategoriaEscolhida = criadaNoBanco.id;
+            }
+        } else {
+            const erroCat = await resp.text();
+            console.error("Erro ao gravar nova categoria:", resp.status, erroCat);
+            throw new Error("Falha ao criar categoria: " + erroCat);
+        }
+    }
+
+    // Se por algum motivo ainda sobrou um ID negativo, barra antes de mandar pro Java
+    if (idCategoriaEscolhida < 0) {
+        throw new Error("A categoria nova não recebeu um ID válido do servidor.");
+    }
+
+    return idCategoriaEscolhida;
+}
+
+
 
 

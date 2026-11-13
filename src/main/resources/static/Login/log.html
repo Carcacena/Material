@@ -13,25 +13,21 @@
             height: 100vh; 
             overflow: hidden; 
             color: white; 
-            background-color: #1e3a5f; /* Azul médio iluminado */
-            background-repeat: no-repeat; 
-            background-position: center center; 
-            background-attachment: fixed; 
-            background-size: cover; 
+            background-color: #1e3a5f;
             display: flex;
             justify-content: center;
             align-items: center;
+            user-select: none;
         }
 
-        /* 📋 PAINEL DE LOGS (Baseado no seu .login-box) */
         .logs-container {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.88);
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.12);
-            width: 90%;
-            max-width: 900px;
-            height: 82vh;
+            width: 92%;
+            max-width: 980px;
+            height: 84vh;
             backdrop-filter: blur(8px);
             display: flex;
             flex-direction: column;
@@ -57,11 +53,13 @@
         .controles {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
         }
 
-        input {
+        input[type="text"] {
             flex: 1;
+            min-width: 220px;
             padding: 10px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 6px;
@@ -70,33 +68,51 @@
             outline: none;
         }
 
-        input::placeholder { color: #94a3b8; }
-        input:focus { border-color: #4af37a; }
+        input[type="text"]::placeholder { color: #94a3b8; }
+        input[type="text"]:focus { border-color: #4af37a; }
 
         button {
-            padding: 10px 18px;
+            padding: 10px 15px;
             border: none;
             border-radius: 6px;
-            background: #4CAF50;
-            color: white;
             font-weight: bold;
             cursor: pointer;
-            transition: filter 0.2s;
+            transition: all 0.2s;
+            font-size: 13px;
         }
 
         button:hover { filter: brightness(1.15); }
 
-        /* 📜 ÁREA DE ROLAGEM DOS LOGS */
+        .btn-atualizar { background: #4CAF50; color: white; }
+        .btn-excluir-sel { background: #e67e22; color: #111; display: none; }
+        .btn-esvaziar { background: #c0392b; color: white; }
+        .btn-voltar { background: #475569; color: white; }
+
+        .lista-cabecalho {
+            display: grid;
+            grid-template-columns: 35px 155px 95px 135px 1fr;
+            gap: 10px;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.45);
+            border-radius: 6px 6px 0 0;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: none;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #ff9800;
+        }
+
         .logs-lista {
             flex: 1;
             overflow-y: auto;
-            background: rgba(2, 6, 23, 0.5);
-            border-radius: 8px;
-            padding: 10px;
+            background: rgba(2, 6, 23, 0.55);
+            border-radius: 0 0 8px 8px;
+            padding: 6px;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Estilização da barra de rolagem */
         .logs-lista::-webkit-scrollbar { width: 8px; }
         .logs-lista::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); border-radius: 8px; }
         .logs-lista::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
@@ -104,23 +120,37 @@
 
         .log-item {
             display: grid;
-            grid-template-columns: 150px 100px 140px 1fr;
-            gap: 12px;
+            grid-template-columns: 35px 155px 95px 135px 1fr;
+            gap: 10px;
             align-items: center;
-            padding: 10px 12px;
+            padding: 9px 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             font-size: 13px;
             font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.15s;
         }
 
         .log-item:last-child { border-bottom: none; }
-        .log-item:hover { background: rgba(255, 255, 255, 0.04); }
+        .log-item:hover { background: rgba(255, 255, 255, 0.06); }
+
+        .log-item.selecionado {
+            background: rgba(56, 189, 248, 0.22) !important;
+            border-left: 3px solid #38bdf8;
+        }
+
+        .chk-log {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #ff9800;
+        }
 
         .log-data { color: #94a3b8; font-size: 12px; }
         .log-usuario { color: #e2e8f0; font-weight: bold; }
         .log-desc { color: #cbd5e1; }
 
-        /* Badges de tipo de Log */
         .badge {
             padding: 3px 8px;
             border-radius: 4px;
@@ -129,9 +159,7 @@
             text-align: center;
             text-transform: uppercase;
         }
-        .tipo-info { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
         .tipo-sucesso { background: rgba(74, 243, 122, 0.2); color: #4af37a; border: 1px solid rgba(74, 243, 122, 0.4); }
-        .tipo-alerta { background: rgba(250, 204, 21, 0.2); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.4); }
         .tipo-erro { background: rgba(248, 113, 113, 0.2); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); }
 
         footer { 
@@ -140,10 +168,10 @@
             color: #94a3b8; padding: 8px 0; font-size: 0.8rem; z-index: 4; 
         }
 
-        /* 📱 MOBILE */
         @media (max-width: 768px) {
-            .logs-container { width: 95%; height: 85vh; padding: 15px; }
-            .log-item { grid-template-columns: 1fr; gap: 4px; }
+            .logs-container { width: 95%; height: 88vh; padding: 15px; }
+            .lista-cabecalho { display: none; }
+            .log-item { grid-template-columns: 30px 1fr; gap: 4px; }
         }
     </style>
 </head>
@@ -151,124 +179,45 @@
 
     <div class="logs-container">
         <div class="logs-header">
-            <h2>📋 REGISTRO DE LOGS DO SISTEMA</h2>
-            <span id="contadorLogs" style="font-size: 12px; color: #94a3b8;">0 registros</span>
+            <h2>🗑️ LIXEIRA / AUDITORIA DE LOGS DO SISTEMA</h2>
+            <span id="contadorLogs" style="font-size: 12px; color: #94a3b8;">0 registro(s)</span>
         </div>
 
         <div class="controles">
             <input type="text" id="campoBusca" placeholder="Filtrar por usuário, ação ou detalhe..." onkeyup="filtrarLogs()">
-            <button onclick="carregarLogs()">🔄 Atualizar</button>
+            <button id="btnExcluirSelecionados" class="btn-excluir-sel" onclick="excluirSelecionados()">🗑️ Excluir Selecionados (0)</button>
+            <button class="btn-atualizar" onclick="carregarLogs()">🔄 Atualizar</button>
+            <button class="btn-esvaziar" onclick="esvaziarLixeira()">🧹 Esvaziar Lixeira</button>
+            <button class="btn-voltar" onclick="window.location.href='/menu/menu.html'">Voltar</button>
+        </div>
+
+        <div class="lista-cabecalho">
+            <div><input type="checkbox" id="chkSelecionarTodos" class="chk-log" title="Marcar/Desmarcar Todos" onclick="alternarTodos(this)"></div>
+            <div>Data / Hora</div>
+            <div>Status</div>
+            <div>Usuário</div>
+            <div>Ação / Detalhe</div>
         </div>
 
         <div class="logs-lista" id="listaLogs">
-            <!-- Os logs serão inseridos aqui pelo JavaScript -->
+            <!-- Os logs serão inseridos aqui pelo appLog.js -->
         </div>
     </div>
 
     <footer>Sistema Material de Construção - Magia Absoluta</footer>
 
-    <script>
-        // Dados de exemplo (Substitua depois pela chamada fetch() do seu banco/API)
-      
-		let dadosLogs = [];
-
-		function obterToken() {
-
-		    const armazenado = localStorage.getItem("token");
-
-		    if (!armazenado) {
-		        return null;
-		    }
-
-		    try {
-		        const objeto = JSON.parse(armazenado);
-		        return objeto.token || armazenado;
-		    } catch (e) {
-		        return armazenado.replace(/^"+|"+$/g, "");
-		    }
-		}
-			
-			
-      
-
-        function renderizarLogs(lista) {
-            const container = document.getElementById("listaLogs");
-            const contador = document.getElementById("contadorLogs");
-            container.innerHTML = "";
-            contador.innerText = `${lista.length} registro(s)`;
-
-            if (lista.length === 0) {
-                container.innerHTML = `<div style="text-align:center; color:#94a3b8; padding: 20px;">Nenhum log encontrado.</div>`;
-                return;
-            }
-
-            lista.forEach(log => {
-                const item = document.createElement("div");
-                item.className = "log-item";
-                
-				const tipo = log.sucesso ? "sucesso" : "erro";
-
-				item.innerHTML = `
-				    <span class="log-data">${log.dataHora}</span>
-				    <span class="badge tipo-${tipo}">${tipo}</span>
-				    <span class="log-usuario">@${log.usuario || "sistema"}</span>
-				    <span class="log-desc">${log.acao} - ${log.detalhe || ""}</span>
-				`;
-                container.appendChild(item);
-            });
-        }
-
-		function filtrarLogs() {
-
-		    const termo =
-		        document.getElementById("campoBusca").value.toLowerCase();
-
-		    const filtrados = dadosLogs.filter(log =>
-
-		        (log.usuario || "").toLowerCase().includes(termo) ||
-		        (log.acao || "").toLowerCase().includes(termo) ||
-		        (log.detalhe || "").toLowerCase().includes(termo) ||
-		        String(log.dataHora || "").toLowerCase().includes(termo)
-
-		    );
-
-		    renderizarLogs(filtrados);
-		}
-
-		async function carregarLogs() {
-
-		    try {
-
-		        const token = obterToken();
-
-		        const resposta = await fetch("/api/logs", {
-		            method: "GET",
-		            headers: {
-		                "Authorization": `Bearer ${token}`
-		            }
-		        });
-
-		        if (!resposta.ok) {
-		            throw new Error("Não foi possível carregar os logs.");
-		        }
-
-		        dadosLogs = await resposta.json();
-
-		        renderizarLogs(dadosLogs);
-
-		    } catch (erro) {
-
-		        console.error("Erro ao carregar logs:", erro);
-
-		        document.getElementById("listaLogs").innerHTML =
-		            `<div style="text-align:center; color:#f87171; padding:20px;">
-		                Erro ao carregar os logs.
-		             </div>`;
-		    }
-		}
-
-        // Inicia exibindo os logs
-        carregarLogs();
-    </script>
+    <script src="appLog.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
