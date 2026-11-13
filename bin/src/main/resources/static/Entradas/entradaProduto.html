@@ -1,0 +1,913 @@
+<html lang="pt-BR">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- Adicionado para melhor adaptação em telas menores -->
+	<title>Entrada de Produto (Nota Fiscal)</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background: #2e5339;
+			color: white;
+			padding: 20px;
+		}
+
+		.container {
+			max-width: 800px;
+			margin: 0 auto;
+			background: #1e3525;
+			padding: 20px;
+			border-radius: 8px;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+		}
+
+		h2 {
+			border-bottom: 2px solid #e67e22;
+			padding-bottom: 10px;
+			color: #4af37a;
+			margin-top: 0;
+		}
+
+		.row {
+			display: flex;
+			gap: 15px;
+			margin-bottom: 15px;
+		}
+
+		.col {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+		}
+
+		label {
+			font-weight: bold;
+			margin-bottom: 5px;
+			color: #e67e22;
+			font-size: 14px;
+		}
+
+		input,
+		select {
+			padding: 8px;
+			border-radius: 4px;
+			border: none;
+			font-size: 14px;
+			color: #333;
+			background: #fff;
+		}
+
+		.btn-salvar {
+			background: #e67e22;
+			color: white;
+			padding: 12px;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-weight: bold;
+			margin-top: 15px;
+			width: 100%;
+			font-size: 16px;
+		}
+
+		.btn-salvar:hover {
+			background: #d35400;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 15px;
+			background: #25422e;
+		}
+
+		th,
+		td {
+			padding: 10px;
+			border: 1px solid #1e3525;
+			text-align: left;
+		}
+
+		th {
+			background: #e67e22;
+			color: white;
+		}
+
+		.painel-itens-nota {
+			max-height: 220px;
+			overflow-y: auto;
+			overflow-x: auto;
+			/* Garante que a tabela não quebre para os lados se tiver muitas colunas */
+			margin-top: 15px;
+			border: 1px solid #e67e22;
+			border-radius: 4px;
+		}
+
+		.botao-flutuante-nota {
+			position: fixed;
+			bottom: 20px;
+			right: 20px;
+			background: #e67e22;
+			color: white;
+			padding: 14px 18px;
+			border-radius: 12px;
+			font-weight: bold;
+			cursor: pointer;
+			box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+			z-index: 9999;
+			border: 2px solid #ffb347;
+			transition: 0.3s;
+		}
+
+		.botao-flutuante-nota:hover {
+			transform: scale(1.05);
+			background: #ff9800;
+		}
+
+		.menu-flutuante-nota {
+			position: fixed;
+			bottom: 75px;
+			right: 20px;
+			width: 280px;
+			background: #1c2b22;
+			border: 2px solid #f39c12;
+			border-radius: 14px;
+			padding: 12px;
+			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+			z-index: 9999;
+			display: none;
+		}
+
+		.menu-header-nota {
+			text-align: center;
+			color: #f39c12;
+			font-weight: bold;
+			margin-bottom: 10px;
+			border-bottom: 1px dashed #f39c12;
+			padding-bottom: 8px;
+			font-size: 15px;
+		}
+
+		.btn-menu-nota {
+			width: 100%;
+			margin: 8px 0;
+			padding: 12px;
+			border: none;
+			border-radius: 8px;
+			color: white;
+			font-size: 15px;
+			font-weight: bold;
+			cursor: pointer;
+			transition: 0.3s;
+		}
+
+		.btn-menu-nota:hover {
+			transform: scale(1.02);
+		}
+
+		/* Classes de cores mantidas conforme seu envio */
+		.btn-verde {
+			background: #2ecc71;
+		}
+
+		.btn-vermelho {
+			background: #e74c3c;
+		}
+
+		.btn-azul {
+			background: #3b5998;
+		}
+
+		.btn-cinza {
+			background: #7f8c8d;
+		}
+
+		.btn-roxo {
+			background: #9b59b6;
+		}
+
+		.btn-marrom {
+			background: #795548;
+		}
+
+		.btn-verde {
+			background: #2ecc71;
+		}
+
+		.btn-gelo {
+			background: #ecf0f1;
+		}
+		/* ==========================================================
+			   📱 RESPONSIVIDADE - CELULAR VERTICAL
+			   ========================================================== */
+			@media (max-width: 768px) {
+
+				html,
+				body {
+					width: 100%;
+					max-width: 100%;
+					margin: 0;
+					padding: 0;
+					overflow-x: hidden;
+				}
+
+				body {
+					padding: 8px;
+					box-sizing: border-box;
+				}
+
+				.container {
+					width: 100%;
+					max-width: 100%;
+					margin: 0;
+					padding: 12px;
+					box-sizing: border-box;
+				}
+
+				/* Campos ficam um embaixo do outro */
+				.row {
+					flex-direction: column;
+					width: 100%;
+					gap: 10px;
+				}
+
+				.col {
+					width: 100%;
+					min-width: 0 !important;
+					box-sizing: border-box;
+				}
+
+				input,
+				select,
+				button {
+					max-width: 100%;
+					box-sizing: border-box;
+				}
+
+				/* Tabela de itens */
+				.painel-itens-nota {
+					width: 100%;
+					max-width: 100%;
+					overflow-x: auto;
+				}
+
+				#tabelaItens {
+					min-width: 550px;
+				}
+
+				/* Botão flutuante AÇÕES */
+				.botao-flutuante-nota {
+					right: 10px;
+					bottom: 10px;
+				}
+
+				/* Menu flutuante */
+				.menu-flutuante-nota {
+					left: 10px !important;
+					right: 10px !important;
+					bottom: 70px;
+					width: auto !important;
+					max-width: none !important;
+					box-sizing: border-box;
+				}
+
+				/* Modal de devolução */
+				#modalSelecaoNotaDevolucao .modal-content {
+					width: calc(100% - 20px) !important;
+					margin: 5vh auto !important;
+					padding: 15px !important;
+					box-sizing: border-box;
+				}
+
+				/* Modal de impostos */
+				#modalImpostos {
+					top: 10px !important;
+					left: 10px !important;
+					right: 10px !important;
+					width: auto !important;
+					max-height: calc(100vh - 20px) !important;
+					box-sizing: border-box;
+				}
+
+				/* Painel gerencial */
+				#modalPainelGerencial {
+					top: 10px !important;
+					left: 10px !important;
+					right: 10px !important;
+					width: auto !important;
+					max-height: calc(100vh - 20px) !important;
+					box-sizing: border-box;
+				}
+
+				#modalPainelGerencial table {
+					min-width: 650px;
+				}
+
+				#btnFiltrarEntradas {
+					width: 100% !important;
+					margin-left: 0 !important;
+				}
+			}	
+	</style>
+</head> <!-- Fechamento correto da tag head -->
+
+<body> <!-- Abertura correta do corpo da página -->
+
+	<div class="container">
+		<h2>📦 Registrar Entrada de Mercadoria (Manual)</h2>
+
+		<!-- Dados Gerais da Nota -->
+		<div class="row">
+			<div class="col">
+				<label>Número da Nota Fiscal</label>
+				<input type="text" id="numeroNota" placeholder="Ex: 019995">
+			</div>
+			<div class="col">
+				<label>Série</label>
+				<input type="text" id="serie" placeholder="Ex: 001">
+			</div>
+			<div class="col">
+				<label>Chave de Acesso (44 dígitos)</label>
+				<input type="text" id="chaveAcesso" maxlength="44" placeholder="Digite os 44 números do DANFE">
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col">
+				<label>Fornecedor</label>
+				<select id="fornecedorId" onchange="carregarProdutosPorFornecedor()">
+					<option value="">Carregando fornecedores...</option>
+				</select>
+			</div>
+			<div class="col">
+				<label>Data de Recebimento</label>
+				<input type="date" id="dataRecebimento">
+			</div>
+		</div>
+
+		<h2>🛒 Itens da Nota</h2>
+
+		<!-- Seção de Adição de Itens -->
+		<!-- Seção de Adição de Itens -->
+		<div class="row" style="background: #25422e; padding: 10px; border-radius: 4px;">
+			<div class="col" style="flex: 2; min-width: 0;">
+				<label>Produto</label>
+				<select id="selectProduto" style="width: 100%; max-width: 100%; box-sizing: border-box;">
+					<option value="">Selecione o Fornecedor primeiro...</option>
+				</select>
+			</div>
+			<div class="col">
+				<label>Qtd. Entrada</label>
+				<input type="number" id="qtdEntrada" value="1" min="1">
+			</div>
+			<div class="col">
+				<label>Preço Custo (R$)</label>
+				<input type="number" id="precoCusto" step="0.01" placeholder="0.00">
+			</div>
+			<div class="col" style="display: flex; justify-content: flex-end; align-items: flex-end;">
+				<button type="button" onclick="adicionarItem()"
+					style="background: #4af37a; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; color: #1e3525;">
+					+ Add
+				</button>
+			</div>
+		</div>
+
+		<!-- Tabela de Itens Adicionados -->
+		<div class="painel-itens-nota">
+			<table id="tabelaItens">
+				<thead>
+					<tr>
+						<th>Produto</th>
+						<th>Qtd</th>
+						<th>Preço Custo Unit.</th>
+						<th>Total</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Botão Adicional de Custos -->
+		<button type="button" class="btn-salvar" id="btnImpostos" onclick="abrirModalImpostos()"
+			style="background: #7f8c8d; cursor: pointer; margin-top: 10px;">
+			Impostos + Frete
+		</button>
+	</div> <!-- Fim da div class="container" (Apenas 1 fechamento necessário aqui) -->
+
+	<!-- 🟩 MODELAGEM HORIZONTAL E FLUTUANTE DAS AÇÕES (Removida de dentro do container para corrigir posicionamento) -->
+
+	<!-- BOTÃO FLUTUANTE -->
+	<div id="botaoMenuNota" class="botao-flutuante-nota" onclick="toggleMenuNota()">
+		⚙ AÇÕES
+	</div>
+
+
+
+	<!-- ========================================== -->
+	<!-- 🧭 MENU FLUTUANTE DE CONTROLE DA NOTA      -->
+	<!-- ========================================== -->
+	<div id="menuFlutuanteNota" class="menu-flutuante-nota">
+
+		<!-- Cabeçalho alinhado com o botão de Fechar -->
+		<div class="menu-header-nota">
+			<span>::: CONTROLE DA NOTA :::</span>
+			<button type="button" class="btn-fechar-menu" onclick="toggleMenuNota()">X</button>
+		</div>
+
+		<!-- Botões de Ação do Menu -->
+		<button class="btn-menu-nota btn-verde" onclick="salvarEntrada()">
+			💾 Gravar Nota Fiscal (Status 1)
+		</button>
+
+		<button class="btn-menu-nota btn-vermelho" onclick="cancelarOperacao()">
+			❌ Cancelar e Limpar Tela
+		</button>
+
+		<button class="btn-menu-nota btn-cinza" onclick="window.location.href='/Produtos/crudProduto.html'">
+			📦 Produtos
+		</button>
+
+		<button class="btn-menu-nota btn-azul" onclick="window.location.href='/Fornecedores/crudFornecedor.html'">
+			🚚 Fornecedores
+		</button>
+
+		<!-- O botão de devolução agora abre o Painel Gerencial de Notas -->
+		<button class="btn-menu-nota btn-roxo" onclick="abrirPainelGerencial()">
+			🔄 Painel de Devoluções / Estornos
+		</button>
+	</div>
+
+	<!-- ========================================== -->
+	<!-- 🔄 MODAL SELETORA DE NOTAS (ISOLADA FORA DO MENU) -->
+	<!-- ========================================== -->
+	<div id="modalSelecaoNotaDevolucao" class="modal"
+		style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5);">
+		<div class="modal-content"
+			style="background:#fff; margin:10% auto; padding:20px; width:60%; border-radius:8px; box-shadow: 0px 4px 15px rgba(0,0,0,0.2); position: relative;">
+
+			<!-- 🔴 BOTÃO X ATUALIZADO: Forçado no topo direito com cor visível -->
+			<span onclick="fecharModalDevolucao()"
+				style="position: absolute; top: 15px; right: 20px; cursor:pointer; font-size:28px; font-weight:bold; color: #ff4a4a; line-height: 1;">&times;</span>
+
+			<h3 style="color: #333; margin-top: 0;">🔄 Selecione a Nota Fiscal para Devolução</h3>
+			<p style="color:#666;">Apenas notas com Status 1 (Ativas) são listadas abaixo:</p>
+			<!-- Dropdown ou Tabela de Notas vindas do Java -->
+
+			<!-- ========================================== -->
+			<!-- 🔎 FILTRO DAS NOTAS POR PERÍODO            -->
+			<!-- ========================================== -->
+
+			<div style="
+			    display:grid;
+			    grid-template-columns:1fr 1fr auto;
+			    gap:8px;
+			    align-items:end;
+			    margin:15px 0;
+			">
+
+				<div>
+					<label style="color:#333;">
+						<b>Data Inicial:</b>
+					</label>
+
+					<input type="date" id="dataInicioDevolucao" style="
+			                   width:100%;
+			                   padding:7px;
+			                   box-sizing:border-box;
+			               ">
+				</div>
+
+
+				<div>
+					<label style="color:#333;">
+						<b>Data Final:</b>
+					</label>
+
+					<input type="date" id="dataFimDevolucao" style="
+			                   width:100%;
+			                   padding:7px;
+			                   box-sizing:border-box;
+			               ">
+				</div>
+
+
+				<button type="button" onclick="filtrarNotasDevolucao()" style="
+			                padding:8px 14px;
+			                background:#e67e22;
+			                color:white;
+			                border:none;
+			                border-radius:4px;
+			                cursor:pointer;
+			                font-weight:bold;
+			            ">
+
+					🔎 Buscar
+
+				</button>
+
+			</div>
+			
+			  
+			
+			<select id="selectNotasAtivas"
+			        class="form-control"
+			        style="width:100%; padding:8px; margin-top:5px;"
+			        onchange="buscarItensDaNotaSelecionada(this.value)">
+
+			    <option value="">
+			        -- Escolha uma Nota Fiscal --
+			    </option>
+
+			</select>
+
+
+
+			<div style="margin:20px 0;">
+				<label><b>Selecione a Nota:</b></label>
+				<select id="selectNotasAtivas" class="form-control" style="width:100%; padding:8px; margin-top:5px;"
+					onchange="buscarItensDaNotaSelecionada(this.value)">
+					<option value="">-- Escolha uma Nota Fiscal --</option>
+				</select>
+			</div>
+
+			<!-- Área para exibir os itens da nota selecionada -->
+			<div id="areaItensNota" style="display:none;">
+				<h4>Produtos desta Nota:</h4>
+				<table class="table" style="width:100%; border-collapse:collapse; margin-top:10px;">
+					<thead>
+						<tr style="background:#f4f4f4; text-align:left;">
+							<th style="padding:8px;"><input type="checkbox" id="checkTodosProdutos"
+									onclick="marcarTodosProdutos(this)"></th>
+							<th style="padding:8px;">Produto</th>
+							<th style="padding:8px;">Qtd Entrada</th>
+							<th style="padding:8px;">Preço Custo</th>
+						</tr>
+					</thead>
+					<tbody id="corpoTabelaItensDevolucao">
+						<!-- Gerado dinamicamente via JS -->
+					</tbody>
+				</table>
+
+				<div style="margin-top:20px; text-align:right;">
+					<button class="btn-roxo" style="padding:10px 20px; cursor:pointer;"
+						onclick="processarLoteSelecionado()">
+						💾 Confirmar Devolução do Lote
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+
+	<!-- 🌟 1. QUADRO DE IMPOSTOS FLUTUANTE E ARRASTÁVEL -->
+	<div id="modalImpostos" class="modal-flutuante"
+		style="display: none; position: fixed; top: 15%; left: 35%; width: 340px;
+		
+		 max-height: 85vh; background: #1e3525; border-radius: 8px; overflow-y: auto; border: 2px solid #e67e22; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+
+		<div id="modalImpostosHeader"
+			style="padding: 15px 20px 5px 20px; cursor: move; background: #16281c; border-bottom: 1px solid #25422e;">
+			<h2 style="margin:0; font-size: 18px; color: #e67e22;">🧾 Impostos e Encargos (Arraste-me)</h2>
+		</div>
+
+		<div style="padding: 20px;">
+			<div class="col" style="margin-bottom:10px;">
+				<label>Base de Cálculo ICMS</label>
+				<input type="number" step="0.01" id="baseCalculoIcms" placeholder="0.00">
+			</div>
+			<div class="col" style="margin-bottom:10px;">
+				<label>Valor ICMS</label>
+				<input type="number" step="0.01" id="valorIcms" placeholder="0.00">
+			</div>
+			<div class="col" style="margin-bottom:10px;">
+				<label>Base de Cálculo ICMS Substituição</label>
+				<input type="number" step="0.01" id="baseCalculoIcmsSt" placeholder="0.00">
+			</div>
+			<div class="col" style="margin-bottom:10px;">
+				<label>Valor ICMS Substituição</label>
+				<input type="number" step="0.01" id="valorIcmsSt" placeholder="0.00">
+			</div>
+			<div class="col" style="margin-bottom:10px;">
+
+				<label>Valor Total dos Produtos</label>
+
+				<input type="number" step="0.01" id="valorTotalProdutos" placeholder="0.00"
+					oninput="calcularTotalNota()">
+
+			</div>
+
+
+			<!-- ============================= -->
+			<!-- MODALIDADE DO FRETE            -->
+			<!-- ============================= -->
+
+			<div class="col" style="margin-bottom:10px;">
+
+				<label>Modalidade do Frete</label>
+
+				<select id="tipoFrete" style="
+			                width:100%;
+			                padding:8px;
+			                border-radius:4px;
+			                border:1px solid #ccc;
+			            ">
+
+					<option value="">Selecione...</option>
+
+					<option value="FOB">
+						FOB - Frete por conta do comprador
+					</option>
+
+					<option value="CIF">
+						CIF - Frete por conta do fornecedor
+					</option>
+
+					<option value="SEM_FRETE">
+						Sem Frete / Retirada
+					</option>
+
+				</select>
+
+			</div>
+
+
+			<!-- ============================= -->
+			<!-- TRANSPORTADORA                 -->
+			<!-- Só aparecerá quando for FOB    -->
+			<!-- ============================= -->
+
+			<div id="blocoTransportadora" class="col" style="margin-bottom:10px; display:none;">
+
+				<label>Transportadora</label>
+
+				<select id="transportadoraId" style="
+			                width:100%;
+			                padding:8px;
+			                border-radius:4px;
+			                border:1px solid #ccc;
+			            ">
+
+					<option value="">
+						Selecione a Transportadora...
+					</option>
+
+				</select>
+
+			</div>
+
+
+			<!-- ============================= -->
+			<!-- VALOR DO FRETE                 -->
+			<!-- ============================= -->
+
+			<div class="col" style="margin-bottom:10px;">
+
+				<label>Valor do Frete</label>
+
+				<input type="number" step="0.01" id="valorFrete" placeholder="0.00" oninput="calcularTotalNota()">
+
+			</div>
+
+
+			<div class="col" style="margin-bottom:10px;">
+
+				<label>Valor do Seguro</label>
+
+				<input type="number" step="0.01" id="valorSeguro" placeholder="0.00" oninput="calcularTotalNota()">
+
+			</div>
+
+			<div class="col" style="margin-bottom:10px;">
+
+				<label>Desconto</label>
+
+				<input type="number" step="0.01" id="valorDesconto" placeholder="0.00" oninput="calcularTotalNota()">
+
+			</div>
+
+
+			<div class="col" style="margin-bottom:10px;">
+
+				<label>Outras Despesas Acessórias</label>
+
+				<input type="number" step="0.01" id="outrasDespesasAcessorias" placeholder="0.00"
+					oninput="calcularTotalNota()">
+
+			</div>
+
+
+			<div class="col" style="margin-bottom:10px;">
+
+				<label>Valor do IPI</label>
+
+				<input type="number" step="0.01" id="valorIpi" placeholder="0.00" oninput="calcularTotalNota()">
+
+			</div>
+
+
+			<div class="col" style="margin-bottom:15px;">
+
+				<label>Valor Total da Nota</label>
+
+				<input type="number" step="0.01" id="valorTotalNota" placeholder="0.00" readonly
+					style="background:#eee; font-weight:bold; color:#333;">
+
+			</div>
+
+
+
+			<button type="button" class="btn-salvar" onclick="salvarImpostos()" style="width: 100%;">Confirmar
+				Impostos</button>
+			<button type="button" onclick="fecharModalImpostos()"
+				style="width:100%; margin-top:8px; padding:10px; background:#7f8c8d; color:white; border:none; border-radius:4px; cursor:pointer;">Fechar</button>
+		</div>
+	</div>
+
+	<!-- 🌟 2. PAINEL GERENCIAL FLUTUANTE E ARRASTÁVEL -->
+	<div id="modalPainelGerencial" class="modal-flutuante"
+		style="display: none; position: fixed; top: 10%; left: 25%; width: 650px; max-height: 85vh; background: #1e3525; border-radius: 8px; overflow-y: auto; border: 2px solid #e67e22; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+
+		<!-- Cabeçalho do Painel -->
+		<div id="modalPainelHeader"
+			style="padding: 15px 20px; cursor: move; background: #16281c; border-bottom: 1px solid #25422e; display: flex; justify-content: space-between; align-items: center;">
+			<h2 style="margin:0; font-size: 18px; color: #e67e22;">🛒 Painel Gerencial de Entradas (Arraste-me)</h2>
+			<button type="button" onclick="fecharPainelGerencialFlutuante()"
+				style="background: #ff4a4a; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold;">X</button>
+		</div>
+
+		<div style="padding: 20px; color: white;">
+			<!-- Filtros de Data -->
+			<div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-end;">
+				<div style="flex: 1;">
+					<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">Data
+						Início:</label>
+					<input type="date" id="filtroDataInicio"
+						style="width:100%; padding: 8px; border-radius:4px; border:1px solid #ccc; color:#333; background:#fff;">
+				</div>
+
+				<div style="flex: 1;">
+					<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">Data Fim:</label>
+					<input type="date" id="filtroDataFim"
+						style="width:100%; padding: 8px; border-radius:4px; border:1px solid #ccc; color:#333; background:#fff;">
+				</div>
+
+				<button type="button" id="btnFiltrarEntradas" onclick="filtrarNotas(event)" class="btn-salvar"
+					style="margin-left: 19px; background: #4af37a; color: #1e3525; padding: 10px 20px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; height: 48px; width: auto; margin-top: 0;">
+					🔍 Filtrar
+				</button>
+			</div>
+
+			<!-- Seletor de Notas Encontradas -->
+			<div style="margin-bottom: 20px;">
+				<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">Selecione a Nota
+					Fiscal no Período:</label>
+				<select id="selectNotaGerencial"
+					style="width: 100%; padding: 10px; border: 2px solid #e67e22; border-radius: 4px; font-weight: bold; color:#333; background:#fff;">
+					<option value="">-- Selecione uma Nota Fiscal --</option>
+				</select>
+			</div>
+
+			<!-- Detalhes Dinâmicos da Nota Selecionada -->
+			<div id="detalhesNotaGerencial"
+				style="display: none; background: #16281c; padding: 15px; border-radius: 6px; border: 1px solid #25422e; margin-top: 15px;">
+				<p style="font-weight: bold; margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #fff;">
+					Fornecedor do Lote: <span id="txtFornecedorNota" style="color: #4af37a;">-</span>
+				</p>
+
+				<!-- Tabela de Produtos do Lote -->
+				<div style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+					<table style="width: 100%; border-collapse: collapse; font-size: 14px; color: white;">
+						<thead>
+							<tr style="background: #25422e; text-align: left;">
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22;">Produto</th>
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22; text-align: center;">Qtd
+								</th>
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22;">Custo Unit.</th>
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22;">Total</th>
+							</tr>
+						</thead>
+						<tbody id="tbodyItensNota"></tbody>
+					</table>
+				</div>
+
+				<!-- Base do Painel Interno -->
+				<div
+					style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #25422e; padding-top: 15px;">
+					<div id="containerAcaoNota"></div>
+					<div style="text-align: right; font-weight: bold; font-size: 16px; color: #4af37a;">
+						TOTAL DO LOTE: R$ <span id="txtTotalNotaBanco">0,00</span>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+
+	<!-- Rodapé Externo com Totalizador Geral da Tela Atual -->
+	<div
+		style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; border-top: 2px solid #e67e22; padding-top: 15px; max-width: 800px; margin-left: auto; margin-right: auto;">
+		<div id="containerAcaoNotaGeral">
+			<!-- Botões globais de ação injetados via JS -->
+		</div>
+		<div style="text-align: right; font-weight: bold; font-size: 18px; color: #4af37a;">
+			TOTAL DA NF ATUAL: R$ <span id="txtTotalNotaGeral">0,00</span>
+		</div>
+	</div>
+
+	<!-- 🌟 O Painel Gerencial corrigido (Fechando nos lugares exatos) -->
+	<div id="modalPainelGerencial" class="modal-flutuante"
+		style="display: none; position: fixed; top: 10%; left: 25%; width: 650px; max-height: 85vh; background: #1e3525; border-radius: 8px; overflow-y: auto; border: 2px solid #e67e22; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+
+		<!-- Cabeçalho Arrastável -->
+		<div id="modalPainelHeader"
+			style="padding: 15px 20px; cursor: move; background: #16281c; border-bottom: 1px solid #25422e; display: flex; justify-content: space-between; align-items: center;">
+			<h2 style="margin:0; font-size: 18px; color: #e67e22; font-family: Arial, sans-serif;">🛒 Painel Gerencial
+				de Entradas</h2>
+			<button type="button" onclick="fecharPainelGerencialFlutuante()"
+				style="background: #ff4a4a; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold;">X</button>
+		</div>
+
+		<div style="padding: 20px; color: white; font-family: Arial, sans-serif;">
+			<!-- Filtros de Data -->
+			<div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-end;">
+				<div style="flex: 1;">
+					<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">Data
+						Início:</label>
+					<input type="date" id="filtroDataInicio"
+						style="width:100%; padding: 8px; border-radius:4px; border:1px solid #ccc; color:#333; background:#fff;">
+				</div>
+				<div style="flex: 1;">
+					<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">Data Fim:</label>
+					<input type="date" id="filtroDataFim"
+						style="width:100%; padding: 8px; border-radius:4px; border:1px solid #ccc; color:#333; background:#fff;">
+				</div>
+				<button type="button" id="btnFiltrarEntradas" onclick="filtrarNotas(event)"
+					style="background:#4af37a; color:#1e3525; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer; height: 35px;">🔍
+					Filtrar</button>
+			</div>
+
+			<!-- Seletor de Notas Encontradas -->
+			<div style="margin-bottom: 20px;">
+				<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">Selecione a Nota
+					Fiscal no Período:</label>
+				<select id="selectNotaGerencial"
+					style="width: 100%; padding: 10px; border: 2px solid #e67e22; border-radius: 4px; font-weight: bold; color:#333; background:#fff;">
+					<option value="">-- Selecione uma Nota Fiscal --</option>
+				</select>
+			</div>
+
+			<!-- Detalhes Dinâmicos da Nota Selecionada -->
+			<div id="detalhesNotaGerencial"
+				style="display: none; background: #16281c; padding: 15px; border-radius: 6px; border: 1px solid #25422e;">
+				<p style="font-weight: bold; margin-top: 0; margin-bottom: 15px; font-size: 16px;">Fornecedor: <span
+						id="txtFornecedorNota" style="color: #4af37a;">-</span></p>
+
+				<div style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+					<table style="width: 100%; border-collapse: collapse; font-size: 14px; color: white;">
+						<thead>
+							<tr style="background: #25422e; text-align: left;">
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22;">Produto</th>
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22; text-align: center;">Qtd
+								</th>
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22;">Custo Unit.</th>
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22;">Total</th>
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22;">Status</th>
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22;">Ação</th>
+								<th style="padding: 10px; border-bottom: 2px solid #e67e22;">Devolução</th>
+							</tr>
+						</thead>
+						<tbody id="tbodyItensNota"></tbody>
+					</table>
+				</div>
+			</div> <!-- fecha detalhesNotaGerencial -->
+		</div> <!-- fecha a div de padding interna -->
+	</div> <!-- 🟩 DIV ENCONTRADA! Agora fecha corretamente o #modalPainelGerencial -->
+
+	<!-- ========================================== -->
+	<!--  FIM DOS ELEMENTOS VISUAIS DA PÁGINA       -->
+	<!-- ========================================== -->
+
+	<!-- Scripts de controle -->
+	<script src="/Entradas/funcoesAuxiliares.js"></script>
+	<script src="/Entradas/entradaProduto.js"></script>
+	<script src="/Entradas/appDevolucao.js?v=1.0"></script>
+
+	<script>
+		// Inicializa o campo de data de recebimento com o dia atual
+		document.addEventListener("DOMContentLoaded", function () {
+			const campoData = document.getElementById('dataRecebimento');
+			if (campoData) {
+				campoData.valueAsDate = new Date();
+			}
+		});
+	</script>
+
+
+</body>
+
+</html><!-- Rodapé Externo com Totalizador Geral da Tela Atual -->

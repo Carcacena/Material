@@ -1,0 +1,397 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<title>CRUD Usuário – Teste Final</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background: linear-gradient(135deg, #1e3c72, #2a5298);
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			margin: 0;
+			color: white;
+		}
+		.container {
+			text-align: center;
+			background: rgba(0, 0, 0, 0.3);
+			padding: 40px;
+			border-radius: 12px;
+			width: 400px;
+			box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+		}
+		button {
+			width: 90%;
+			padding: 10px;
+			margin: 10px 0;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			font-weight: bold;
+			background: #ff9800;
+			color: white;
+		}
+		#userList {
+			max-height: 200px;
+			overflow-y: auto;
+			background: rgba(255, 255, 255, 0.1);
+			margin-top: 20px;
+			border-radius: 5px;
+			text-align: left;
+			padding: 10px;
+		}
+		.user-item {
+			padding: 5px;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+			cursor: pointer;
+		}
+		.user-item.selecionado {
+			background: rgba(255, 255, 0, 0.3);
+		}
+		/* Modal */
+		.modal {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.6);
+			justify-content: center;
+			align-items: center;
+		}
+		.modal-content {
+			background: white;
+			color: black;
+			padding: 20px;
+			border-radius: 10px;
+			width: 300px;
+			text-align: left;
+		}
+		.modal-content label {
+			display: block;
+			margin: 10px 0 5px;
+		}
+		.modal-content input,
+		.modal-content select {
+			width: 100%;
+			padding: 5px;
+			border-radius: 5px;
+			border: 1px solid #ccc;
+			box-sizing: border-box;
+		}
+		.modal-buttons {
+			text-align: right;
+			margin-top: 15px;
+		}
+		.modal-buttons button {
+			width: auto;
+			margin-left: 5px;
+			background: #ff9800;
+			color: white;
+		}
+	</style>
+</head>
+<body>
+
+	<div class="container">
+		<h2>Painel de Usuário – Teste Final</h2>
+		<button id="btnIncluir" onclick="abrirModal('incluir')">➕ Incluir</button>
+		<button id="btnAlterar" onclick="abrirModal('alterar')">✏ Alterar</button>
+		<button id="btnExcluir" onclick="excluirUsuario()">❌ Excluir</button>
+		<button onclick="voltarMenu()">⬅ Voltar ao Menu</button>
+		<div id="userList"></div>
+	</div>
+
+	<div class="modal" id="modal">
+		<div class="modal-content">
+			<form onsubmit="event.preventDefault();">
+				<h3 id="modalTitle"></h3>
+				
+				<label>Login:</label>
+				<input type="text" id="modalLogin">
+				
+				<label>Senha:</label>
+				<input type="password" id="modalSenha" autocomplete="new-password">
+				
+				<label style="display:flex; align-items:center; margin-top:8px; gap:5px;">
+					<input type="checkbox" onclick="mostrarSenha()" style="width:auto;">
+					Ver senha 👁
+				</label>
+				
+				<label>Perfil:</label>
+				<select id="modalPerfil">
+					<option value="usuario">usuario</option>
+					<option value="adm">adm</option>
+				</select>
+				
+				<label>Tipo:</label>
+				<select id="modalTipo">
+					<option value="0">0 = super admin</option>
+					<option value="1">1 = admin</option>
+					<option value="2">2 = usuário</option>
+				</select>
+				
+				<div class="modal-buttons">
+					<button type="button" onclick="salvarUsuario()">Salvar</button>
+					<button type="button" onclick="fecharModal()">Cancelar</button>
+					<button type="button" onclick="logout()">🚪 Voltar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<script>
+	// ================================
+	// BASE URL (LOCAL + NUVEM) E ENDPOINT
+	// ================================
+	const BASE_URL = window.location.origin;
+	const API = `${BASE_URL}/usuario`;
+
+	// ================================
+	// RECUPERAÇÃO SEGURA DO TOKEN
+	// ================================
+	let token = "";
+	try {
+		const tokenStorage = localStorage.getItem("token");
+		if (tokenStorage) {
+			if (tokenStorage.trim().startsWith("ey") || !tokenStorage.includes("{")) {
+				token = tokenStorage.trim();
+			} else {
+				token = JSON.parse(tokenStorage).token;
+			}
+		}
+	} catch (e) {
+		console.error("Erro ao ler o token do localStorage:", e);
+		token = localStorage.getItem("token") || "";
+	}
+
+	// ================================
+	// CONTROLE DE PERMISSÃO (Liberado para testes)
+	// ================================
+	const tipoUsuario = parseInt(sessionStorage.getItem("tipo") || "0");
+
+	function podeEditar(){
+		return tipoUsuario === 0 || tipoUsuario === 1;
+	}
+
+	function podeExcluir(){
+		return tipoUsuario === 0;
+	}
+
+	function podeMover(){
+		return true;
+	}
+
+	function podeIncluir(){
+		return tipoUsuario <= 1;
+	}
+
+	// ================================
+	// VARIÁVEIS GLOBAIS DO CRUD
+	// ================================
+	let usuarios = [];
+	let idSelecionado = null;
+	let operacao = null;
+
+	// ================================
+	// INICIALIZAÇÃO DA PÁGINA
+	// ================================
+	window.onload = function(){
+		if(!podeIncluir()){
+			const btn = document.getElementById("btnIncluir");
+			if(btn) btn.style.display = "none";
+		}
+
+		if(!podeEditar()){
+			const btn = document.getElementById("btnAlterar");
+			if(btn) btn.style.display = "none";
+		}
+
+		if(!podeExcluir()){
+			const btn = document.getElementById("btnExcluir");
+			if(btn) btn.style.display = "none";
+		}
+
+		consultarUsuarios();
+	};
+
+	// ================================
+	// FUNÇÕES UTILITÁRIAS
+	// ================================
+	function mostrarSenha(){
+		const campo = document.getElementById("modalSenha");
+		if(campo.type === "password"){
+			campo.type = "text";
+		} else {
+			campo.type = "password";
+		}
+	}
+
+	function fecharModal() {
+		document.getElementById("modal").style.display = "none";
+	}
+
+	function voltarMenu() {
+		window.location.href = "/menu/menu.html";
+	}
+
+	function logout(){
+		window.location.href = "menu.html";
+	}
+
+	// ================================
+	// CONSULTAR USUÁRIOS
+	// ================================
+	async function consultarUsuarios() {
+		try {
+			const res = await fetch(API, {
+				headers: {
+					"Authorization": "Bearer " + token
+				}
+			});
+
+			if (!res.ok) {
+				throw new Error(`Erro HTTP: ${res.status}`);
+			}
+
+			usuarios = await res.json();
+			const listDiv = document.getElementById("userList");
+			listDiv.innerHTML = "";
+
+			usuarios.forEach(u => {
+				const div = document.createElement("div");
+				div.className = "user-item";
+				div.textContent = `ID: ${u.id} | Login: ${u.login} | Perfil: ${u.perfil} | Tipo: ${u.tipo}`;
+				div.onclick = () => {
+					idSelecionado = u.id;
+					document.querySelectorAll(".user-item").forEach(x => x.classList.remove("selecionado"));
+					div.classList.add("selecionado");
+				};
+				listDiv.appendChild(div);
+			});
+			idSelecionado = null;
+		} catch (err) {
+			alert("Erro ao consultar usuários. Tente refazer o Login."); 
+			console.error(err);
+		}
+	}
+
+	// ================================
+	// ABRIR MODAL
+	// ================================
+	function abrirModal(op) {
+		if (op === "incluir" && !podeIncluir()) {
+			alert("Usuário sem permissão para incluir");
+			return;
+		}
+		if (op === "alterar" && !podeEditar()) {
+			alert("Usuário sem permissão para alterar");
+			return;
+		}
+		if (op === "alterar" && !idSelecionado) {
+			alert("Selecione um usuário na lista primeiro!");
+			return;
+		}
+
+		operacao = op;
+		document.getElementById("modal").style.display = "flex";
+		document.getElementById("modalTitle").textContent = op === "incluir" ? "Incluir Usuário" : "Alterar Usuário";
+
+		if (op === "alterar" && idSelecionado) {
+			const u = usuarios.find(x => x.id === idSelecionado);
+			document.getElementById("modalLogin").value = u.login;
+			document.getElementById("modalSenha").value = "";
+			document.getElementById("modalPerfil").value = u.perfil;
+			document.getElementById("modalTipo").value = u.tipo;
+		} else {
+			document.getElementById("modalLogin").value = "";
+			document.getElementById("modalSenha").value = "";
+			document.getElementById("modalPerfil").value = "usuario";
+			document.getElementById("modalTipo").value = "2";
+		}
+	}
+
+	// ================================
+	// SALVAR USUÁRIO
+	// ================================
+	async function salvarUsuario() {
+		const login = document.getElementById("modalLogin").value.trim();
+		const senha = document.getElementById("modalSenha").value.trim();
+		const perfil = document.getElementById("modalPerfil").value;
+		const tipo = parseInt(document.getElementById("modalTipo").value);
+
+		try {
+			if (operacao === "incluir") {
+				await fetch(API, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": "Bearer " + token
+					},
+					body: JSON.stringify({ login, senha, perfil, tipo })
+				});
+			} else if (operacao === "alterar") {
+				await fetch(`${API}/${idSelecionado}`, {
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": "Bearer " + token
+					},
+					body: JSON.stringify({ login, senha, perfil, tipo })
+				});
+			}
+			fecharModal();
+			consultarUsuarios();
+		} catch (err) {
+			alert("Erro ao salvar usuário");
+			console.error(err);
+		}
+	}
+
+	// ================================
+	// EXCLUIR USUÁRIO
+	// ================================
+	async function excluirUsuario() {
+		if (!podeExcluir()) {
+			alert("Usuário sem permissão para excluir");
+			return;
+		}
+		if (!idSelecionado) {
+			alert("Selecione um usuário");
+			return;
+		}
+		if (idSelecionado === 1 && tipoUsuario !== 0) {
+			alert("Somente administrador raiz pode excluir este ID");
+			return;
+		}
+
+		if (!confirm("Confirma exclusão?")) return;
+
+		try {
+			const response = await fetch(`${API}/${idSelecionado}`, {
+				method: "DELETE",
+				headers: {
+					"Authorization": "Bearer " + token
+				}
+			});
+
+			if (!response.ok) {
+				alert("Erro ao excluir usuário");
+				return;
+			}
+			idSelecionado = null;
+			consultarUsuarios();
+		} catch (err) {
+			alert("Erro ao excluir");
+			console.error(err);
+		}
+	}
+	</script>
+	<script src="/menu/menu.js"></script>
+	
+</body>
+</html>

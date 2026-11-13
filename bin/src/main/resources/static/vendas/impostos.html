@@ -1,0 +1,106 @@
+<!-- 🌟 QUADRO DE IMPOSTOS E IDENTIFICAÇÃO DE CLIENTE FLUTUANTE -->
+<div id="modalImpostos" class="modal-flutuante"
+	style="display: none; position: fixed; top: 10%; left: 35%; width: 340px; max-height: 80vh; background: #1e3525; border-radius: 8px; overflow-y: auto; border: 2px solid #e67e22; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: sans-serif; color: #ffffff;">
+
+	<!-- Cabeçalho Arrastável -->
+	<div id="modalImpostosHeader" style="padding: 15px 20px 10px 20px; cursor: move; background: #16281c; border-bottom: 1px solid #25422e; position: sticky; top: 0; z-index: 10;">
+		<h2 style="margin:0; font-size: 16px; color: #e67e22; display: flex; align-items: center; gap: 8px;">
+			🧾 Impostos e Clientes (Arraste-me)
+		</h2>
+	</div>
+
+	<!-- Formulário com Inputs Fiscais e Seleção de Cliente -->
+	<div style="padding: 15px 20px;">
+		
+		<!-- 🤝 NOVO: Identificação do Cliente direto no Orçamento/Impostos -->
+		<!-- 🤝 Sincronização Perfeita: Gatilha o cruzamento de estados no ato da troca -->
+				<div style="margin-bottom: 15px; border-bottom: 1px dashed #25422e; padding-bottom: 12px;">
+					<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #e67e22; font-weight: bold;">Selecionar Cliente para o Pedido</label>
+					<select id="selectClienteModalImpostos" onchange="window.vincularClienteEDefinirAliquota()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #e67e22; background: #ffffff; color: #333030; font-weight: bold; cursor: pointer;">
+						<option value="">-- Escolha um Cliente --</option>
+					</select>
+				</div>
+				
+
+				<!-- 🚚 NOVO: Caixa de Transportadora integrada (Reaproveitando os Clientes/PJs do sistema) -->
+				<div style="margin-bottom: 15px; border-bottom: 1px dashed #25422e; padding-bottom: 12px;">
+				    <label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Transportadora Responsável pelo Frete</label>
+				    <select id="selectTransportadoraModalImpostos" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030; cursor: pointer;">
+				        <option value="">-- Sem Frete / Retirada no Balcão --</option>
+				    </select>
+				</div>		
+
+		<!-- Bloco ICMS Normal -->
+		<div style="margin-bottom: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Base de Cálculo ICMS</label>
+			<input type="number" step="0.01" id="baseCalculoIcms" placeholder="0.00" oninput="window.calcularImpostoPorAliquota()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030; font-weight: bold;">
+		</div>
+
+		<div style="margin-bottom: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Alíquota ICMS (%)</label>
+			<input type="number" step="0.1" id="aliquotaIcms" placeholder="0.0" oninput="window.calcularImpostoPorAliquota()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030; font-weight: bold;">
+		</div>
+
+		<div style="margin-bottom: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Valor ICMS</label>
+			<input type="number" step="0.01" id="valorIcms" placeholder="0.00" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030; font-weight: bold;">
+		</div>
+
+		<!-- Bloco ICMS Substituição Tributária (ST) -->
+		<div style="margin-bottom: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Base de Cálculo ICMS ST</label>
+			<input type="number" step="0.01" id="baseCalculoIcmsSt" placeholder="0.00" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030;">
+		</div>
+
+		<div style="margin-bottom: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Valor ICMS ST</label>
+			<input type="number" step="0.01" id="valorIcmsSt" placeholder="0.00" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030;">
+		</div>
+
+		<!-- Bloco de Valores Gerais do Pedido -->
+		<div style="margin-bottom: 12px; border-top: 1px dashed #25422e; padding-top: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Valor Total dos Produtos</label>
+			<input type="number" step="0.01" id="valorTotalProdutos" placeholder="0.00" oninput="window.calcularTotalNota()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030; font-weight: bold;">
+		</div>
+
+		<div style="margin-bottom: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Valor do Frete (+)</label>
+			<input type="number" step="0.01" id="valorFrete" placeholder="0.00" oninput="window.calcularTotalNota()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030;">
+		</div>
+
+		<div style="margin-bottom: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Valor do Seguro (+)</label>
+			<input type="number" step="0.01" id="valorSeguro" placeholder="0.00" oninput="window.calcularTotalNota()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030;">
+		</div>
+
+		<div style="margin-bottom: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Desconto (-)</label>
+			<input type="number" step="0.01" id="valorDesconto" placeholder="0.00" oninput="window.calcularTotalNota()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030;">
+		</div>
+
+		<div style="margin-bottom: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Outras Despesas Acessórias (+)</label>
+			<input type="number" step="0.01" id="outrasDespesasAcessorias" placeholder="0.00" oninput="window.calcularTotalNota()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030;">
+		</div>
+
+		<div style="margin-bottom: 12px;">
+			<label style="display: block; font-size: 13px; margin-bottom: 4px; color: #bdc3c7;">Valor do IPI (+)</label>
+			<input type="number" step="0.01" id="valorIpi" placeholder="0.00" oninput="window.calcularTotalNota()" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #2c3e50; background: #ffffff; color: #333030;">
+		</div>
+
+		<!-- Resultado Final Destacado -->
+		<div style="margin-bottom: 15px; border-top: 1px solid #25422e; padding-top: 12px;">
+			<label style="display: block; font-size: 14px; margin-bottom: 4px; color: #00ff00; font-weight: bold;">Valor Total da Nota Fiscal</label>
+			<input type="number" step="0.01" id="valorTotalNota" placeholder="0.00" readonly style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #00ff00; background: #16281c; font-weight: bold; color: #00ff00; font-size: 16px;">
+		</div>
+
+		<!-- Botões de Ação Dinâmicos -->
+		<button type="button" class="btn-salvar" onclick="window.salvarImpostos()" style="width: 100%; padding: 10px; background: #e67e22; color: #ffffff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s;">
+			Confirmar Impostos
+		</button>
+		
+		<button type="button" onclick="window.fecharModalImpostos()" style="width: 100%; margin-top: 8px; padding: 8px; background: #7f8c8d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+			Fechar Janela
+		</button>
+	</div>
+</div>

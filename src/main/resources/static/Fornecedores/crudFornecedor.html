@@ -1,0 +1,481 @@
+<!-- ==========================================
+     PARTE 1: ESTRUTURA INICIAL E ESTILOS (IH)
+     ========================================== -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Gerenciamento de Fornecedores Profissional</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background: linear-gradient(135deg, #1a2a3a, #2980b9);
+			color: white;
+			min-height: 100vh;
+			padding: 30px 20px;
+			margin: 0;
+			user-select: none;
+		}
+
+		.container-sistema {
+			max-width: 1300px;
+			margin: 0 auto;
+			display: flex;
+			gap: 25px;
+			flex-wrap: wrap;
+		}
+
+		.titulo-pagina {
+			width: 100%;
+			margin-bottom: 20px;
+		}
+
+		.coluna-formulario {
+			flex: 1;
+			min-width: 350px;
+		}
+
+		.coluna-tabela {
+			flex: 2;
+			min-width: 600px;
+		}
+
+		.box-custom {
+			background: rgba(0, 0, 0, 0.5);
+			padding: 25px;
+			border-radius: 8px;
+			box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+			box-sizing: border-box;
+		}
+
+		h2,
+		h4 {
+			color: white;
+			margin-top: 0;
+			margin-bottom: 15px;
+		}
+
+		.campo-grupo {
+			margin-bottom: 15px;
+		}
+
+		.linha-campos {
+			display: flex;
+			gap: 15px;
+		}
+
+		.linha-campos .campo-grupo {
+			flex: 1;
+		}
+
+		.form-label {
+			display: block;
+			margin-bottom: 5px;
+			font-size: 14px;
+			font-weight: 500;
+		}
+
+		.form-control {
+			width: 100%;
+			padding: 10px;
+			background: white;
+			color: black;
+			border: 1px solid #ccc;
+			border-radius: 6px;
+			box-sizing: border-box;
+			font-size: 14px;
+		}
+
+		.form-control:focus {
+			outline: none;
+			border-color: #2980b9;
+			box-shadow: 0 0 5px rgba(41, 128, 185, 0.5);
+		}
+
+		.form-control:disabled {
+			background: #e0e0e0;
+			color: #666;
+			cursor: not-allowed;
+		}
+
+		.btn-salvar-form {
+			width: 100%;
+			background: #27ae60;
+			border: none;
+			padding: 12px;
+			font-weight: bold;
+			border-radius: 6px;
+			color: white;
+			cursor: pointer;
+			transition: 0.2s;
+			text-transform: uppercase;
+			font-size: 13px;
+			margin-top: 10px;
+		}
+
+		.btn-salvar-form:hover {
+			filter: brightness(1.1);
+		}
+
+		.tabela-container-scroll {
+			max-height: 450px;
+			overflow-y: auto;
+			border-radius: 4px;
+		}
+
+		.table-custom {
+			width: 100%;
+			border-collapse: collapse;
+			color: white;
+			text-align: left;
+		}
+
+		.table-custom th {
+			background: rgba(0, 0, 0, 0.4);
+			color: #3498db;
+			padding: 12px 10px;
+			border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+			font-size: 14px;
+			white-space: nowrap;
+		}
+
+		.table-custom td {
+			padding: 12px 10px;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			font-size: 14px;
+		}
+
+		.table-custom tbody tr:hover {
+			background: rgba(255, 255, 255, 0.05);
+			cursor: pointer;
+		}
+
+		.table-custom tr.selecionado td {
+			background: rgba(52, 152, 219, 0.3) !important;
+			color: white !important;
+			font-weight: bold;
+			border-top: 1px solid #3498db;
+			border-bottom: 1px solid #3498db;
+		}
+
+		/* 👑 QUADRO VERTICAL FLUTUANTE ARRASTÁVEL */
+		.painel-flutuante {
+			position: fixed;
+			top: 220px;
+			right: 40px;
+			width: 145px;
+			background: rgba(15, 25, 35, 0.95);
+			border: 2px solid #3498db;
+			border-radius: 8px;
+			padding: 12px;
+			box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+			z-index: 2000;
+			box-sizing: border-box;
+		}
+
+		.painel-header {
+			padding-bottom: 8px;
+			cursor: move;
+			text-align: center;
+			color: #3498db;
+			border-bottom: 1px dashed rgba(52, 152, 219, 0.4);
+			margin-bottom: 12px;
+			font-size: 11px;
+			font-weight: bold;
+			text-transform: uppercase;
+			letter-spacing: 1.5px;
+		}
+
+		.painel-corpo {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.btn-menu-vertical {
+			width: 100%;
+			padding: 9px 0;
+			border: none;
+			border-radius: 4px;
+			color: white;
+			font-weight: bold;
+			font-size: 12px;
+			text-transform: uppercase;
+			text-align: center;
+			transition: 0.15s ease-in-out;
+			cursor: pointer;
+		}
+
+		.btn-menu-vertical:hover {
+			transform: scale(1.03);
+			filter: brightness(1.15);
+		}
+
+		.btn-incluir {
+			background: #27ae60;
+		}
+
+		.btn-alterar {
+			background: #2980b9;
+		}
+
+		.btn-excluir {
+			background: #c0392b;
+		}
+
+		.btn-voltar {
+			background: #7f8c8d;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container-sistema">
+		<div class="titulo-pagina">
+			<h2 style="margin: 0;">👥 Gerenciamento de Fornecedor<h2>
+		</div>
+		<!-- ==========================================
+		     PARTE 2: FORMULÁRIO E DROPDOWN DE UFs
+		     ========================================== -->
+		<!-- Formulário de Entrada -->
+		<div class="coluna-formulario">
+			<div class="box-custom">
+				<h4 id="tituloFormulario">Cadastrar Fornecedor</h4>
+				<form id="formFornecedor">
+					<!-- Campo Oculto para ID -->
+					<input type="hidden" id="id">
+
+					<div class="campo-grupo">
+						<label for="nome" class="form-label">Nome / Razão Social</label>
+						<input type="text" class="form-control" id="nome" required maxlength="150"
+							placeholder="Ex: João da Silva">
+					</div>
+
+					<!-- Seleção do Tipo de Pessoa (Física ou Jurídica) -->
+					<div class="campo-grupo">
+						<label class="form-label">Tipo de Fornecedor:</label>
+						<div style="display: flex; gap: 15px; margin-bottom: 10px;">
+							<label>
+								<input type="radio" name="tipoPessoa" value="CPF" checked
+									onclick="ajustarTipoFormulario()"> Física (CPF)
+							</label>
+							<label>
+								<input type="radio" name="tipoPessoa" value="CNPJ" onclick="ajustarTipoFormulario()">
+								Jurídica (CNPJ)
+							</label>
+						</div>
+					</div>
+
+					<!-- Linha do Documento (CPF/CNPJ) -->
+					<div class="campo-grupo">
+						<label id="label-documento" for="documento" class="form-label">CPF (Apenas números)</label>
+						<input type="text" class="form-control" id="documento" required maxlength="14"
+							placeholder="Ex: 000.000.000-00" oninput="aplicarMascaraDocumento(this)">
+					</div>
+
+					<!-- Linha de Contatos -->
+					<div class="linha-campos">
+						<div class="campo-grupo">
+							<label for="email" class="form-label">E-mail</label>
+							<input type="email" class="form-control" id="email" maxlength="100"
+								placeholder="Ex: fornecedor@email.com">
+						</div>
+						<div class="campo-grupo">
+							<label for="telefone" class="form-label">Telefone</label>
+							<input type="text" class="form-control" id="telefone" maxlength="20"
+								placeholder="Ex: (41) 99999-9999">
+						</div>
+					</div>
+
+					<!-- Linha de CEP e UF (Dropdown Oficial) -->
+					<div class="linha-campos"> <!-- 💡 Certifique-se de usar a classe de linha se quiser os dois lado a lado -->
+					    <div class="campo-grupo" style="flex: 2;">
+					        <label for="cep" class="form-label">CEP</label>
+							<input
+							    type="text"
+							    class="form-control"
+							    id="cep"
+							    required
+							    maxlength="10"
+							    placeholder="Ex: 80.000-000"
+							    oninput="aplicarMascaraCEP(this)"
+							>
+					    </div>
+
+					    <div class="campo-grupo" style="flex: 1;">
+					        <label for="uf" class="form-label">UF</label>
+					        <select class="form-control" id="uf" required>
+					            <option value="">--</option>
+					            <option value="AC">AC</option>
+					            <option value="AL">AL</option>
+					            <option value="AM">AM</option>
+					            <option value="AP">AP</option>
+					            <option value="BA">BA</option>
+					            <option value="CE">CE</option>
+					            <option value="DF">DF</option>
+					            <option value="ES">ES</option>
+					            <option value="GO">GO</option>
+					            <option value="MA">MA</option>
+					            <option value="MG">MG</option>
+					            <option value="MS">MS</option>
+					            <option value="MT">MT</option>
+					            <option value="PA">PA</option>
+					            <option value="PB">PB</option>
+					            <option value="PE">PE</option>
+					            <option value="PI">PI</option>
+					            <option value="PR">PR</option>
+					            <option value="RJ">RJ</option>
+					            <option value="RN">RN</option>
+					            <option value="RO">RO</option>
+					            <option value="RR">RR</option>
+					            <option value="RS">RS</option>
+					            <option value="SC">SC</option>
+					            <option value="SE">SE</option>
+					            <option value="SP">SP</option>
+					            <option value="TO">TO</option>
+					        </select>
+					    </div>
+					</div> <!-- 🌟 A tag fechava aqui corretamente agora, sem sobras -->
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+
+					<!-- Linha de Logradouro e Número -->
+					<div class="linha-campos">
+						<div class="campo-grupo" style="flex: 3;">
+							<label for="logradouro" class="form-label">Logradouro / Rua</label>
+							<input type="text" class="form-control" id="logradouro" required maxlength="150"
+								placeholder="Ex: Rua das Flores">
+						</div>
+						<div class="campo-grupo" style="flex: 1;">
+							<label for="numero" class="form-label">Número</label>
+							<input type="text" class="form-control" id="numero" required maxlength="20"
+								placeholder="Ex: 100">
+						</div>
+					</div>
+
+					<div class="campo-grupo">
+						<label for="complemento" class="form-label">Complemento</label>
+						<input type="text" class="form-control" id="complemento" maxlength="100"
+							placeholder="Ex: Apto 301">
+					</div>
+
+					<div class="linha-campos">
+						<div class="campo-grupo">
+							<label for="bairro" class="form-label">Bairro</label>
+							<input type="text" class="form-control" id="bairro" required maxlength="80"
+								placeholder="Ex: Batel">
+						</div>
+						<div class="campo-grupo">
+							<label for="cidade" class="form-label">Cidade</label>
+							<input type="text" class="form-control" id="cidade" required maxlength="100"
+								placeholder="Ex: Curitiba">
+						</div>
+					</div>
+
+					<button type="submit" class="btn-salvar-form" id="btnSalvar">Salvar Fornecedor</button>
+				</form>
+			</div>
+		</div>
+
+		
+		<!-- Listagem de Fornecedores -->
+		<div class="coluna-tabela">
+			<div class="box-custom">
+				<h4>FornecedoresCadastrados</h4>
+				<div class="tabela-container-scroll">
+					<table class="table-custom">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Nome / Razão Social</th>
+								<th>CPF / CNPJ</th>
+								<th>Telefone</th>
+								<th>E-mail</th>
+								<th>CEP</th>
+								<th>UF</th>
+								<th>Logradouro</th>
+								<th>Número</th>
+								<th>Bairro</th>
+								<th>Cidade</th>
+							</tr>
+						</thead>
+						<tbody id="tabelaFornecedores">
+							<!-- Preenchido dinamicamente via appFornecedor.js -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div> <!-- Fechamento da div container-sistema -->
+
+	<!-- 👑 QUADRO VERTICAL FLUTUANTE ARRASTÁVEL -->
+	<div id="meuPainelFlutuante" class="painel-flutuante">
+		<div id="meuPainelHeader" class="painel-header">::: MENU :::</div>
+		<div class="painel-corpo">
+			<button class="btn-menu-vertical btn-incluir"
+				 onclick="acionarIncluir()"><u>I</u>ncluir</button>
+				 
+			<button class="btn-menu-vertical btn-alterar" onclick="acionarAlterar()"><u>A</u>lterar</button>
+			<button class="btn-menu-vertical btn-excluir" onclick="acionarExcluir()"><u>E</u>xcluir</button>
+			<button class="btn-menu-vertical btn-voltar"
+				onclick="window.location.href='/menu/menu.html'"><u>V</u>oltar</button>
+		</div>
+	</div>
+
+	<!-- Código do comportamento de arrastar o painel -->
+	<script>
+		const painel = document.getElementById("meuPainelFlutuante");
+		const header = document.getElementById("meuPainelHeader");
+		let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+		if (header) {header.onmousedown = iniciarArrasto;}
+
+		function iniciarArrasto(e) {
+			e = e || window.event;
+			e.preventDefault();
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			document.onmouseup = pararArrasto;
+			document.onmousemove = arrastandoPainel;
+		}
+
+		function arrastandoPainel(e) {
+			e = e || window.event;
+			e.preventDefault();
+			pos1 = pos3 - e.clientX;
+			pos2 = pos4 - e.clientY;
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			painel.style.top = (painel.offsetTop - pos2) + "px";
+			painel.style.left = (painel.offsetLeft - pos1) + "px";
+			painel.style.right = "auto";
+		}
+
+		function pararArrasto() {
+			document.onmouseup = null;
+			document.onmousemove = null;
+		}
+	</script>
+
+	
+	<!-- Injeção dos scripts da casa -->
+	<!-- 🚀 Bastidores 100% afinados, limpos e corrigidos -->
+	
+	<!-- 🚀 Bastidores 100% afinados, limpos e corrigidos -->
+		<script src="/componentes-js/utils.js"></script>
+		<script src="/Fornecedores/appFornecedor.js"></script> <!-- 🎯 Com 'r', combinando com a pasta física -->
+	
+	
+</body>
+
+</html>

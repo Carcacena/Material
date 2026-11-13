@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Material de Construção - Magia Absoluta</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+	
+	background-color:  #cbd5e1;
+  
+    color: #cbd5e1;
+    padding: 8px 0;
+    font-size: 0.8rem;
+    z-index: 4;
+}
+
+
+
+
+
+
+
+body {
+	font-family: Arial, sans-serif;
+	   margin: 0;
+	   height: 100vh;
+	   overflow: hidden;
+	   color: white;
+	   
+	   background-color: #1e3a5f; /* Azul médio iluminado */
+	   background-repeat: no-repeat;
+	   background-position: center center;
+	   background-attachment: fixed;
+	   background-size: cover;
+	   transition: background-image 0.8s ease-in-out;
+}
+
+/* 🔐 LOGIN */
+.login-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 23, 42, 0.78);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    text-align: center;
+    width: 220px;
+    backdrop-filter: blur(6px);
+    cursor: move;
+    z-index: 5;
+}
+
+.login-box h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #4af37a;
+    letter-spacing: 0.5px;
+}
+
+input {
+    width: 100%;
+    padding: 9px;
+    margin: 6px 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    background: #1e293b;
+    color: #ffffff;
+}
+
+input::placeholder {
+    color: #94a3b8;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: #4CAF50;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: filter 0.2s;
+}
+
+button:hover {
+    filter: brightness(1.1);
+}
+
+/* 🔦 SPOTLIGHT */
+.spotlight {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* 🖼️ SLIDESHOW (CANTO SUPERIOR ESQUERDO) */
+.foto-frame {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    width: 260px;
+    height: 260px;
+    z-index: 3;
+    display: none; /* Só aparece quando houver fotos cadastradas no banco */
+}
+
+.foto-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+    transition: opacity 0.5s ease;
+}
+
+#legenda {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 7px 6px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.72);
+    border-radius: 0 0 12px 12px;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 768px) {
+    .foto-frame {
+        width: 160px;
+        height: 160px;
+        top: 10px;
+        left: 10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="spotlight"></div>
+
+<!-- 🖼️ QUADRO DE IMAGENS DA INTRODUÇÃO (VINDAS DO MYSQL) -->
+<div class="foto-frame" id="quadroSlideshow">
+    <img id="fotoAtiva" src="" alt="Destaque da Loja">
+    <div id="legenda">Carregando...</div>
+</div>
+
+<!-- 🔐 LOGIN -->
+<div class="login-box" id="loginBox">
+    <h3>🏗️ Acesso ao Sistema</h3>
+    <form id="formLogin" autocomplete="off" onsubmit="event.preventDefault(); logar(event);">
+
+        <input
+            type="text"
+            id="login"
+            placeholder="Login"
+            autocomplete="off"
+            required
+        >
+
+        <input
+            type="password"
+            id="senha"
+            placeholder="Senha"
+            autocomplete="new-password"
+            required
+        >
+
+        <button type="submit">
+            Entrar
+        </button>
+
+        <button type="button" onclick="logout()" style="background:#f44336;">
+            Sair
+        </button>
+    </form>
+</div>
+
+<script>
+/* 🔦 SPOTLIGHT */
+const spotlight = document.querySelector(".spotlight");
+
+const isMobile = window.matchMedia("(max-width: 768px)").matches ||
+                 /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+const raio = isMobile ? 420 : 280;
+const escuro = isMobile ? 0.28 : 0.70;
+
+function atualizarSpot(x, y) {
+    spotlight.style.background = `
+        radial-gradient(
+            circle ${raio}px at ${x}px ${y}px,
+            rgba(0,0,0,0) 0px,
+            rgba(0,0,0,0.10) 180px,
+            rgba(0,0,0,${escuro}) 360px,
+            rgba(0,0,0,0.92) 100%
+        )
+    `;
+}
+
+// Inicia o spotlight centralizado antes mesmo do mouse se mover
+atualizarSpot(window.innerWidth / 2, window.innerHeight / 2);
+
+document.addEventListener("mousemove", e => {
+    atualizarSpot(e.clientX, e.clientY);
+});
+
+document.addEventListener("touchmove", e => {
+    const t = e.touches[0];
+    atualizarSpot(t.clientX, t.clientY);
+});
+
+/* 🎬 SLIDESHOW DINÂMICO CONECTADO AO BANCO (imagem_introducao) */
+let fotosIntroducao = [];
+let indiceAtual = 0;
+
+async function iniciarSlideshowIntroducao() {
+    let apiUrl = window.location.origin;
+    if (apiUrl.includes("localhost:") && !apiUrl.includes(":8080")) {
+        apiUrl = "http://localhost:8080";
+    }
+
+    try {
+        const resposta = await fetch(`${apiUrl}/api/midia/introducao`);
+        if (!resposta.ok) return;
+
+        fotosIntroducao = await resposta.json();
+
+        if (fotosIntroducao.length > 0) {
+            const quadro = document.getElementById("quadroSlideshow");
+            const img = document.getElementById("fotoAtiva");
+            const leg = document.getElementById("legenda");
+
+            // Define a primeira foto como fundo da loja (ou você pode fixar uma URL específica aqui)
+            document.body.style.backgroundImage = `url("${fotosIntroducao[0].caminho}")`;
+
+            // Exibe a primeira foto no quadro flutuante
+            img.src = fotosIntroducao[0].caminho;
+            leg.innerText = fotosIntroducao[0].titulo || fotosIntroducao[0].nomeArquivo;
+            quadro.style.display = "block";
+
+            // Se houver mais de 1 foto, alterna automaticamente a cada 4 segundos
+			if (fotosIntroducao.length > 1) {
+			               setInterval(() => {
+			                   img.style.opacity = 0;
+			                   setTimeout(() => {
+			                       indiceAtual = (indiceAtual + 1) % fotosIntroducao.length;
+			                       img.src = fotosIntroducao[indiceAtual].caminho;
+			                       leg.innerText = fotosIntroducao[indiceAtual].titulo || fotosIntroducao[indiceAtual].nomeArquivo;
+			                       
+			                       // 🖼️ Opcional: Descomente a linha abaixo se quiser que o fundo grande também mude junto!
+			                       // document.body.style.backgroundImage = `url("${fotosIntroducao[indiceAtual].caminho}")`;
+			                       
+			                       img.style.opacity = 1;
+			                   }, 400);
+			               }, 4000);
+			           }
+        }
+    } catch (erro) {
+        console.error("Erro ao carregar imagens da introdução:", erro);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", iniciarSlideshowIntroducao);
+
+/* 📦 LOGIN DRAG (CAIXA ARRASTÁVEL) */
+const box = document.getElementById("loginBox");
+let offsetX = 0;
+let offsetY = 0;
+let isDown = false;
+
+box.addEventListener("mousedown", (e) => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
+    isDown = true;
+    offsetX = e.clientX - box.offsetLeft;
+    offsetY = e.clientY - box.offsetTop;
+    box.style.transform = "none";
+});
+
+document.addEventListener("mouseup", () => {
+    isDown = false;
+});
+
+document.addEventListener("mousemove", (e) => {
+    if (!isDown) return;
+    box.style.left = (e.clientX - offsetX) + "px";
+    box.style.top = (e.clientY - offsetY) + "px";
+});
+
+/* 🚪 LIMPAR SESSÃO / SAIR */
+function logout() {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("tipo");
+    window.location.href = "/Login/login.html";
+}
+</script>
+
+<footer>
+    Contato WhatsApp: 41-998959399<br>
+    Sistema Material de Construção - Magia Absoluta 🏗️
+</footer>
+
+<script src="/Login/appLogin.js"></script>
+
+
+</body>
+</html>

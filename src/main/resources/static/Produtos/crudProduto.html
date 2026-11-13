@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Gerenciamento de Produtos</title>
+
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background: linear-gradient(135deg, #2c3e50, #4caf50);
+			color: white;
+			min-height: 100vh;
+			padding: 30px 20px;
+			margin: 0;
+			user-select: none;
+		}
+
+		.box-custom {
+			background: rgba(0, 0, 0, 0.45);
+			padding: 25px;
+			border-radius: 8px;
+			box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+		}
+
+		h2,
+		h4 {
+			color: white;
+			margin-bottom: 15px;
+		}
+
+		.form-control,
+		.form-select {
+			background: rgba(255, 255, 255, 0.1);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			color: white;
+		}
+
+		.form-control:focus,
+		.form-select:focus {
+			background: rgba(255, 255, 255, 0.2);
+			color: white;
+			border-color: #ff9800;
+
+			box-shadow: none;
+		}
+
+		.form-select option {
+			background: #2c3e50;
+			color: white;
+		}
+
+		/* Estilização da Tabela Horizontal Baseada no Modelo de Clientes */
+		.table-custom {
+			color: white !important;
+			background: transparent !important;
+		}
+
+		.table-custom th {
+			background: rgba(0, 0, 0, 0.6) !important;
+			color: #ff9800 !important;
+			font-weight: bold;
+			border-bottom: 2px solid #ff9800 !important;
+			text-transform: uppercase;
+			font-size: 12px;
+			padding: 12px;
+		}
+
+		.table-custom td {
+			background: rgba(0, 0, 0, 0.25) !important;
+			color: white !important;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+			padding: 12px;
+			vertical-align: middle;
+		}
+
+		.table-custom tr:hover td {
+			background: rgba(255, 255, 255, 0.08) !important;
+			cursor: pointer;
+		}
+
+		.table-custom tr.selecionado td {
+			background: rgba(255, 152, 0, 0.25) !important;
+			border-bottom: 1px solid #ff9800 !important;
+			font-weight: bold;
+		}
+
+		/* Painel Flutuante do Menu */
+		/* --- CONFIGURAÇÃO DO MENU FLUTUANTE LATERAL REFINADO --- */
+		.painel-flutuante {
+			position: fixed !important;
+			right: 20px !important;
+			/* Fixa a 20px de distância da borda direita */
+			top: 50% !important;
+			/* Move para a metade da altura da tela */
+			transform: translateY(-50%);
+			/* Centraliza verticalmente de forma perfeita */
+			z-index: 1000;
+			/* Garante que ele fique acima de fundos, mas sem cobrir tabelas */
+			width: 170px;
+			/* Define uma largura ideal para os botões */
+			background: #1e272e;
+			/* Cor escura combinando com o tema do sistema */
+			border-radius: 8px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+			overflow: hidden;
+		}
+
+		.painel-header {
+			background: #11171a;
+			padding: 8px;
+			text-align: center;
+			font-size: 11px;
+			font-weight: bold;
+			letter-spacing: 1px;
+			color: #ffb74d;
+			/* Cor laranja de destaque do sistema */
+			border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+			cursor: move;
+			/* Mantém o indicador visual de que ele pode ser arrastado se tiver JS */
+		}
+
+		.painel-corpo {
+			padding: 8px;
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			/* Espaçamento simétrico entre os botões */
+		}
+
+		/* Estilização padronizada para os botões internos do menu */
+		.btn-menu-vertical {
+			width: 100%;
+			padding: 8px 10px;
+			font-size: 12px;
+			font-weight: bold;
+			text-transform: uppercase;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			text-decoration: none;
+			/* Garante que a tag <a> não venha com sublinhado */
+			transition: all 0.2s ease;
+		}
+
+		.btn-menu-vertical:hover {
+			filter: brightness(1.15);
+			transform: translateX(-2px);
+			/* Efeito sutil ao passar o mouse, empurrando para a esquerda */
+		}
+
+		.btn-incluir {
+			background: #27ae60;
+		}
+
+		.btn-alterar {
+			background: #2980b9;
+		}
+
+		.btn-excluir {
+			background: #c0392b;
+		}
+
+		/* Estilo do botão de gravar com a cor lilás */
+		.btn-gravar {
+			background: #9b59b6 !important;
+			color: white !important;
+			border: none !important;
+		}
+
+		.btn-gravar:hover {
+			background: #8e44ad !important;
+			/* Um tom de lilás ligeiramente mais escuro para o efeito de passar o mouse */
+		}
+
+
+		.btn-voltar {
+			background: #7f8c8d;
+			text-decoration: none;
+			display: block;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container-fluid" style="max-width: 1400px; margin: 0 auto;">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h2 class="m-0">🌿 Gerenciamento de Produtos</h2>
+		</div>
+
+		<!-- GRID PRINCIPAL: Coloca o formulário e a árvore na mesma linha horizontal -->
+		<div class="row g-4" style="display: flex; flex-direction: row; width: 100%; gap: 20px; align-items: start;">
+
+			<!-- COLUNA DA ESQUERDA: Formulário de Cadastro Compacto -->
+			<div class="col-xl-4 col-lg-5" style="min-width: 350px;">
+				<div class="box-custom">
+					<h4 id="tituloFormulario">Cadastrar Produto</h4>
+					<form id="formProduto">
+						<input type="hidden" id="produtoId">
+
+						<!-- 0. Código de Barras -->
+						<div class="mb-3">
+							<label for="codigoBarras" class="form-label" style="font-weight: bold;">Código de
+								Barras</label>
+							<input type="text" class="form-control" id="codigoBarras"
+								placeholder="Passe o leitor ou digite o código" style="padding: 10px;">
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label">Origem do Cadastro</label>
+							<select class="form-select" id="origemCadastro" onchange="alternarBloqueioCampos()"
+								style="padding: 10px;">
+								<option value="COM_NF">Entrada por Nota Fiscal (Bloqueia Preços)</option>
+								<option value="SEM_NF">Produto Artesanal / Sem NF (Libera Preços)</option>
+							</select>
+						</div>
+
+						<!-- 1. Nome do Produto -->
+						<div class="mb-3">
+							<label for="nomeProduto" class="form-label" style="font-weight: bold;">Nome do
+								Produto</label>
+							<input type="text" class="form-control" id="nomeProduto" required
+								placeholder="Ex: Tijolo Baiano" style="padding: 10px;">
+						</div>
+
+						<!-- 2. Fornecedor com Botão Rápido -->
+						<div class="mb-3">
+							<label for="selecionaFornecedor" class="form-label"
+								style="font-weight: bold;">Fornecedor</label>
+							<div class="d-flex gap-2">
+								<select class="form-select" id="selecionaFornecedor" required style="padding: 10px;">
+									<option value="">Selecione...</option>
+								</select>
+								<button type="button" class="btn btn-primary fw-bold"
+									onclick="alert('Funcionalidade modal de Fornecedor será integrada a seguir')"
+									style="padding: 10px;">[+]</button>
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label">Categoria / Setor</label>
+							<div style="display: flex; gap: 8px; align-items: center;">
+								<select id="selectCategoria" class="form-select" style="flex: 1;">
+									<option value="">Carregando categorias...</option>
+								</select>
+								<button type="button" class="btn"
+									style="background: #ff9800; color: black; font-weight: bold; padding: 6px 12px; border-radius: 4px; border: none;"
+									onclick="abrirModalRapidoCategoria()">[ + ]</button>
+							</div>
+						</div>
+
+
+						<!-- 🛸 MODAL RÁPIDO: Cadastro Instantâneo de Categorias -->
+						<div id="modalRapidoCategoria"
+							style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center;">
+							<div class="box-custom"
+								style="width: 320px; border: 1px solid #ff9800; padding: 20px; background: #2c3e50; border-radius: 8px;">
+								<h5 style="color: #ff9800; margin-top: 0;">⚡ Nova Categoria</h5>
+								<div class="mb-3">
+									<label class="form-label" style="font-size: 12px;">Nome do Setor</label>
+									<input type="text" id="inputNovaCategoriaNome" class="form-control"
+										placeholder="Ex: ELÉTRICA, TINTAS">
+								</div>
+								<div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 15px;">
+									<button type="button" class="btn"
+										style="background: #7f8c8d; color: white; padding: 4px 10px; border: none; border-radius: 4px; font-size: 12px;"
+										onclick="fecharModalRapidoCategoria()">Cancelar</button>
+									<button type="button" class="btn"
+										style="background: #27ae60; color: white; padding: 4px 10px; border: none; border-radius: 4px; font-size: 12px; font-weight: bold;"
+										onclick="salvarCategoriaInstantanea()">Salvar</button>
+								</div>
+							</div>
+						</div>
+
+
+						<!-- 3. Tipo Venda e Validade -->
+						<div class="row g-2 mb-3">
+							<div class="col-6">
+								<label for="tipoProduto" class="form-label" style="font-weight: bold;">Tipo
+									Venda</label>
+								<select class="form-select" id="tipoProduto" style="padding: 10px;">
+									<option value="false">Unidade</option>
+									<option value="true">A Granel</option>
+								</select>
+							</div>
+
+
+						</div>
+						<!-- Campo Validade (Permanece sempre visível) -->
+						<div class="campo-grupo">
+							<label>Validade</label>
+							<input type="date" id="validade">
+						</div>
+				</div>
+				<!-- 4. Preço Custo e Preço Venda -->
+				<div class="row g-2 mb-3">
+					<div class="col-6">
+						<label for="precoCusto" class="form-label" style="font-weight: bold;">Preço
+							Custo</label>
+						<input type="number" step="0.01" class="form-control" id="precoCusto" required
+							placeholder="0.00" style="padding: 10px;" oninput="calcularMargem()">
+					</div>
+					<div class="col-6">
+						<label for="precoVenda" class="form-label" style="font-weight: bold;">Preço
+							Venda</label>
+						<input type="number" step="0.01" class="form-control" id="precoVenda" required
+							placeholder="0.00" style="padding: 10px;" oninput="calcularMargem()">
+					</div>
+				</div>
+
+				<div class="mb-3 p-2 font-weight-bold"
+					style="background: rgba(255,152,0,0.1); border-radius: 4px; text-align: center; font-size: 14px;">
+					Margem de Lucro Atual: <span id="valorMargem"
+						style="color: #5eff5e; font-size: 16px; font-weight: bold;">0.00</span>%
+				</div>
+
+				<!-- 6. Controle de Estoques Unificado -->
+				<div class="row g-2 mb-3">
+					<div class="col-6">
+						<label for="qteEntrada" class="form-label" style="font-weight: bold;">Qtd
+							Entrada</label>
+						<input type="number" class="form-control" id="qteEntrada" required placeholder="0"
+							style="padding: 10px;">
+					</div>
+					<div class="col-6">
+						<label for="estoqueAtual" class="form-label" style="font-weight: bold;">Estoque
+							Atual</label>
+						<input type="number" class="form-control" id="estoqueAtual" required placeholder="0"
+							style="padding: 10px;">
+					</div>
+				</div>
+
+				<button type="submit" id="btnSalvar" class="btn btn-warning w-100 mt-2 fw-bold text-dark"
+					style="display:none; padding: 12px;">Confirmar Operação</button>
+				</form>
+			</div>
+		</div>
+
+		<!-- Coluna Direita: Tabela Larga Horizontal -->
+		<div class="col-xl-8 col-lg-7">
+			<div class="box-custom h-100">
+				<h4>📦 Catálogo de Produtos por Fornecedor</h4>
+				<div class="table-responsive" style="max-height: 650px; overflow-y: auto; padding-right: 5px;">
+					<!-- Cabeçalho da grade horizontal -->
+					<div class="d-flex fw-bold text-uppercase p-2 mb-2"
+						style="background: rgba(0, 0, 0, 0.6); color: #ff9800; font-size: 11px; border-bottom: 2px solid #ff9800; letter-spacing: 1px;">
+						<div style="flex: 2;">📦 Nome / Descrição [Código Barras]</div>
+						<div style="flex: 1; text-align: right; padding-right: 15px;">Estoque Atual</div>
+					</div>
+
+					<!-- Container da Árvore -->
+					<div id="containerFornecedoresProdutos">
+						<!-- Injetado dinamicamente via JavaScript -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<!-- Menu Flutuante Lateral de Operações (::: MENU :::) -->
+	<div class="painel-flutuante" id="meuPainelFlutuante">
+		<div class="painel-header" id="meuPainelHeader">::: MENU :::</div>
+		<div class="painel-corpo">
+			<button class="btn-menu-vertical btn-incluir" onclick="acionarIncluir()">Incluir</button>
+			<button class="btn-menu-vertical btn-alterar" onclick="acionarAlterar()">Alterar</button>
+			<button class="btn-menu-vertical btn-excluir" onclick="acionarExcluir()">Excluir</button>
+			<button class="btn-menu-vertical btn-gravar" onclick="document.getElementById('btnSalvar').click()">Gravar
+				Produto</button>
+			<a class="btn-menu-vertical btn-voltar text-center lh-lg" href="/menu/menu.html">Voltar</a>
+		</div>
+	</div>
+
+	<!-- Script de Arrasto do Menu Flutuante -->
+	<script>
+		const painel = document.getElementById("meuPainelFlutuante");
+		const header = document.getElementById("meuPainelHeader");
+		let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+		if (header) {
+			header.onmousedown = iniciarArrasto;
+		} else if (painel) {
+			painel.onmousedown = iniciarArrasto;
+		}
+
+		function iniciarArrasto(e) {
+			e = e || window.event;
+			e.preventDefault();
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			document.onmouseup = pararArrasto;
+			document.onmousemove = arrastandoPainel;
+		}
+
+		function arrastandoPainel(e) {
+			e = e || window.event;
+			e.preventDefault();
+			pos1 = pos3 - e.clientX;
+			pos2 = pos4 - e.clientY;
+			pos3 = e.clientX;
+			pos4 = e.clientY;
+			painel.style.top = (painel.offsetTop - pos2) + "px";
+			painel.style.left = (painel.offsetLeft - pos1) + "px";
+			painel.style.right = "auto";
+		}
+
+		function pararArrasto() {
+			document.onmouseup = null;
+			document.onmousemove = null;
+		}
+
+		function aplicarRegraOrigemCadastro() {
+			// 1. Pega o select de Origem (tenta pelos IDs mais comuns ou pelo primeiro select com texto "Nota Fiscal")
+			const selectOrigem = document.getElementById("origemCadastro") ||
+				Array.from(document.querySelectorAll("select")).find(s => s.innerText.includes("Nota Fiscal"));
+
+			if (!selectOrigem) return;
+
+			const textoOpcao = selectOrigem.options[selectOrigem.selectedIndex]?.text.toUpperCase() || "";
+			const ehNotaFiscal = textoOpcao.includes("NOTA FISCAL");
+
+			// 2. Varre TODOS os inputs do formulário para não deixar nenhum de fora por causa de nome de ID
+			const todosInputs = document.querySelectorAll("form input, .card input, body input");
+
+			todosInputs.forEach(campo => {
+				// Ignora campos que devem continuar livres (Código de Barras, Nome do Produto, Validade, Pesquisa)
+				if (campo.type === "date" || campo.type === "hidden" || campo.type === "search") return;
+				const idOuNome = (campo.id + " " + campo.name).toLowerCase();
+				if (idOuNome.includes("codigo") || idOuNome.includes("barras") || idOuNome.includes("nome") || idOuNome.includes("busca")) {
+					return;
+				}
+
+				if (ehNotaFiscal) {
+					// Se o input for type="number", TEM QUE ser "0" (com vírgula "0,00" o navegador apaga!)
+					if (campo.type === "number") {
+						campo.value = "0";
+					} else {
+						campo.value = "0,00";
+					}
+					campo.readOnly = true;
+					campo.required = false;
+					campo.style.opacity = "0.75";
+				} else {
+					// Modo Artesanal: libera tudo para digitação
+					campo.readOnly = false;
+					campo.required = true;
+					campo.style.opacity = "1";
+				}
+			});
+		}
+
+		// Dispara ao abrir a tela
+		document.addEventListener("DOMContentLoaded", () => {
+			const selectOrigem = document.getElementById("origemCadastro") ||
+				Array.from(document.querySelectorAll("select")).find(s => s.innerText.includes("Nota Fiscal"));
+			if (selectOrigem) {
+				selectOrigem.addEventListener("change", aplicarRegraOrigemCadastro);
+				aplicarRegraOrigemCadastro();
+			}
+		});
+
+
+
+
+
+	</script>
+
+	<!-- Conexão direta com o motor lógico unificado -->
+	<script src="/Produtos/appProduto.js"></script>
+</body>
+
+</html>

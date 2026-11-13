@@ -1,0 +1,200 @@
+<!-- ================================================================= -->
+<!-- /static/vendas/Financeiro/financeiro.html — MESA ESCURA INTEGRADA -->
+<!-- ================================================================= -->
+<div id="container-fechamento-pedido">
+	<div class="modal fade" id="modalFecharPedido" tabindex="-1" aria-hidden="false"
+		style="display: none; position: fixed; z-index: 9999; top: 3%; left: 50%; transform: translateX(-50%);">
+
+		<style>
+					#container-fechamento-pedido .modal-dialog {
+						margin: 0 auto;
+						max-width: 440px; /* Largura ideal para a grade do balcão */
+						width: 96%;
+					}
+
+					/* 🎨 TONALIDADE INTEGRADA COM A TELA: Escuro Corporativo Confortável */
+					#container-fechamento-pedido .modal-content-ia {
+						background: #1e2d3b !important; /* Casamento perfeito com o fundo escuro */
+						border: 2px solid #ff9800; /* Borda laranja icônica da mesa */
+						border-radius: 12px;
+						box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+						overflow: hidden;
+					}
+
+					/* Inputs integrados com fundo escuro sutil e texto branco nítido */
+					#container-fechamento-pedido .ia-input-sm {
+						background: #14202c !important;
+						border: 1px solid rgba(255, 255, 255, 0.15) !important;
+						color: #ffffff !important;
+						border-radius: 8px;
+						padding: 6px 12px;
+						font-size: 13px;
+						height: 38px;
+						font-weight: bold;
+					}
+
+					#container-fechamento-pedido .ia-input-sm:focus {
+						border-color: #ff9800 !important;
+						box-shadow: 0 0 8px rgba(255, 152, 0, 0.4) !important;
+						outline: none;
+					}
+
+					#container-fechamento-pedido .secao-oculta {
+						display: none !important;
+					}
+
+					#container-fechamento-pedido .progress-bar-ia {
+						height: 3px;
+						width: 100%;
+						background: #39d875;
+						box-shadow: 0 0 8px #39d875;
+						transition: width 0.3s ease, background 0.3s ease;
+					}
+
+					/* Inputs de data da tabela com alto contraste e leitura rápida */
+					#container-fechamento-pedido .classe-data-parcela {
+						background: #14202c !important;
+						border: 1px solid #ff9800 !important;
+						color: #ff9800 !important;
+						font-weight: 800;
+						font-family: monospace;
+						text-align: center;
+						font-size: 13px;
+						height: 34px;
+						border-radius: 6px;
+					}
+				</style>
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content modal-content-ia">
+
+				<!-- CABEÇALHO INTEGRADO -->
+				<div id="modalFecharPedidoHeader" class="modal-header text-white"
+					style="border-bottom: 1px dashed rgba(255, 152, 0, 0.3); background: rgba(0,0,0,0.15); padding: 12px 16px; cursor: move; display: flex; align-items: center;">
+					<h6 class="modal-title font-monospace" style="color: #ffffff; font-weight: 700; margin:0; font-size: 14px; letter-spacing: 0.5px;">
+						💰 MESA DE NEGOCIAÇÃO - FECHAMENTO
+					</h6>
+					<button id="btnMinMaxFinanceiro" type="button" onclick="alternarFinanceiro()"
+						style="background: transparent; border: none; color: white; font-size: 18px; font-weight: bold; cursor: pointer; margin-left: auto; margin-right: 10px;" title="Minimizar">
+						➖
+					</button>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="transform: scale(0.8); opacity: 0.7;"></button>
+				</div>
+
+				<div style="width: 100%; background: rgba(255,255,255,0.05); height: 3px;">
+					<div id="barraProgresso" class="progress-bar-ia"></div>
+				</div>
+
+				<div class="modal-body p-3 text-white" style="max-height: 80vh; overflow-y: auto;">
+
+					<!-- SELEÇÃO PRINCIPAL DE PAGAMENTO -->
+					<div class="mb-3">
+						<label class="form-label mb-1" style="color: rgb(222, 221, 218); font-size: 11px; font-weight: bold; text-transform: uppercase;">Meio de Recebimento</label>
+						<select id="selectPagamentoModal" class="form-select ia-input-sm" style="cursor: pointer;">
+							<option value="DINHEIRO">💸 Dinheiro à Vista</option>
+							<option value="PIX">⚡ Transferência PIX</option>
+							<option value="DEBITO">💳 Cartão de Débito</option>
+							<option value="CREDITO">💳 Cartão de Crédito</option>
+							<option value="CREDIARIO">📓 No Caderno (Conta Corrente)</option>
+						</select>
+					</div>
+
+					<!-- BLOCO DE CONFIGURAÇÃO DE FATURAMENTO -->
+					<div id="blocoCartaoFaturamento" class="secao-oculta mb-3"
+						style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 152, 0, 0.2);">
+						
+						<div class="row g-2">
+							<div class="col-6">
+								<label class="form-label mb-0" style="color: #a4b0be; font-size: 10px; font-weight: bold;">Bandeira</label>
+								<select id="selectBandeira" class="form-select ia-input-sm">
+									<option value="VISA">VISA</option>
+									<option value="MASTERCARD">MASTERCARD</option>
+									<option value="ELO">ELO</option>
+									<option value="AMEX">AMEX</option>
+								</select>
+							</div>
+
+							<div id="containerSelectParcelas" class="col-6">
+								<label class="form-label mb-0" style="color: #a4b0be; font-size: 10px; font-weight: bold;">Nº Parcelas</label>
+								<select id="selectParcelas" class="form-select ia-input-sm">
+									<option value="1">1x (À Vista)</option>
+									<option value="2">2x</option>
+									<option value="3" selected>3x</option>
+									<option value="4">4x</option>
+									<option value="5">5x</option>
+									<option value="6">6x</option>
+									<option value="12">12x</option>
+								</select>
+							</div>
+
+							<div id="containerInputInpc" class="col-6">
+								<label class="form-label mb-0" style="color: #a4b0be; font-size: 10px; font-weight: bold;">INPC Anual (%)</label>
+								<input type="number" id="inputInpcAnual" class="form-control ia-input-sm" value="5.64" step="0.01">
+							</div>
+
+							<div class="col-6">
+								<label class="form-label mb-0" style="color: #a4b0be; font-size: 10px; font-weight: bold;">Final Cartão</label>
+								<input type="text" id="inputFinalCartao" class="form-control ia-input-sm" placeholder="1234" value="1234" maxlength="4">
+							</div>
+
+							<div id="containerDataVencimentoMaster" class="col-12">
+								<label class="form-label mb-0" style="color: rgb(222, 221, 218); font-size: 10px; font-weight: bold;">📅 Sugestão do 1º Vencimento</label>
+								<input type="date" id="inputDataPrimeiroVencimento" class="form-control ia-input-sm">
+							</div>
+
+							<div class="col-6">
+								<label class="form-label mb-0" style="color: #a4b0be; font-size: 10px; font-weight: bold;">Autorização</label>
+								<input type="text" id="inputAutorizacao" class="form-control ia-input-sm" placeholder="Código">
+							</div>
+
+							<div class="col-6">
+								<label class="form-label mb-0" style="color: #a4b0be; font-size: 10px; font-weight: bold;">Identificador (NSU)</label>
+								<input type="text" id="inputNsu" class="form-control ia-input-sm" placeholder="Número NSU">
+							</div>
+
+							<!-- GRID DE CALENDÁRIOS DA MESA DE NEGOCIAÇÃO -->
+							<div id="containerTabelaDinamica" class="col-12 mt-3 secao-oculta">
+								<div style="font-size: 11px; color: #58b9ff; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; letter-spacing: 0.5px;">
+									📅 Ajuste de Vencimentos Individuais da Mesa
+								</div>
+								<div style="max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.25); border-radius: 8px; padding: 6px; border: 1px solid rgba(255,255,255,0.05);">
+									<table class="table table-sm table-borderless text-white mb-0" style="font-size: 13px;">
+										<thead>
+											<tr style="color: #ff9800; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 11px; text-transform: uppercase;">
+												<th style="width: 15%;">Parc.</th>
+												<th style="width: 50%;">Calendário Livre</th>
+												<th style="width: 35%; text-align: right; padding-right: 5px;">Valor</th>
+											</tr>
+										</thead>
+										<tbody id="tabelaParcelasDinamica">
+											<!-- Injetado dinamicamente com destaque -->
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- EXIBIÇÃO DO VALOR LÍQUIDO RECALCULADO (INTEGRADO DE ALTO CONTRASTE) -->
+					<div style="background: rgba(0,0,0,0.25); border: 1px dashed rgba(255, 152, 0, 0.4); border-radius: 10px; padding: 12px; text-align: center; margin-bottom: 15px;">
+						<span style="font-size: 11px; color: #a4b0be; text-transform: uppercase; font-weight: 600; display:block; margin-bottom: 2px;">Valor Líquido a Pagar:</span>
+						<strong id="totalModalDisplay" style="font-size: 34px; color: #5eff5e; font-family: monospace; text-shadow: 0 0 10px rgba(94, 255, 94, 0.2);">R$ 0,00</strong>
+						<div id="txtParcelamentoDisplay" style="font-size: 13px; color: #ff9800; font-family: monospace; font-weight: bold; margin-top: 3px;"></div>
+					</div>
+
+					<!-- ⚙️ ALINHAMENTO HORIZONTAL EM BLOCO: ORDEM E PRESENÇA COMERCIAL -->
+					<div class="d-flex flex-row gap-2 w-100">
+						<!-- 🧮 1. Botão Calcular (Laranja/Vermelho Vibrante - Altura 42px) -->
+						<button type="button" class="btn text-white fw-bold flex-fill" onclick="window.processarFluxoNegociacaoBalcao()" 
+							style="background: #e67e22; border: 1px solid #d35400; padding: 10px; font-size: 14px; border-radius: 8px; height: 42px; box-shadow: 0 4px 10px rgba(230, 126, 34, 0.25); transition: all 0.2s;">
+							🧮 Calcular
+						</button>
+						
+						<!-- 🤝 2. Botão Confirmar (Verde Caixa Consolidado - Altura 42px) -->
+						<button type="button" class="btn text-white fw-bold flex-fill" onclick="confirmarPagamentoFinanceiro()" 
+							style="background: #2e7d32; border: 1px solid #1b5e20; padding: 10px; font-size: 14px; border-radius: 8px; height: 42px; box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3); transition: all 0.2s;">
+							🤝 Confirmar
+						</button>
+					</div>
+						
+						<!-- ❌ 3. Botão Voltar (Cinza Sutil de Fundo) -->
+						<button type="button" class="btn text-white w-100" data-bs-dismiss="modal" 
