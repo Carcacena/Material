@@ -16,25 +16,34 @@ footer {
     left: 0;
     width: 100%;
     text-align: center;
-    background-color: #cbd5e1;
-    color: #0f172a;
+	
+	background-color:  #cbd5e1;
+  
+    color: #cbd5e1;
     padding: 8px 0;
     font-size: 0.8rem;
     z-index: 4;
 }
 
+
+
+
+
+
+
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    height: 100vh;
-    overflow: hidden;
-    color: white;
-    background-color: #1e3a5f; /* Azul médio iluminado */
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-attachment: fixed;
-    background-size: cover;
-    transition: background-image 0.8s ease-in-out;
+	font-family: Arial, sans-serif;
+	   margin: 0;
+	   height: 100vh;
+	   overflow: hidden;
+	   color: white;
+	   
+	   background-color: #1e3a5f; /* Azul médio iluminado */
+	   background-repeat: no-repeat;
+	   background-position: center center;
+	   background-attachment: fixed;
+	   background-size: cover;
+	   transition: background-image 0.8s ease-in-out;
 }
 
 /* 🔐 LOGIN */
@@ -48,7 +57,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.12);
     text-align: center;
-    width: 260px;
+    width: 220px;
     backdrop-filter: blur(6px);
     cursor: move;
     z-index: 5;
@@ -152,11 +161,6 @@ button:hover {
 
 <body>
 
-<!-- 🚧 AVISO DE CONSTRUÇÃO NO TOPO -->
-<div style="position: fixed; top: 18px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.92); border: 2px solid #ff9800; color: #ff9800; padding: 10px 28px; border-radius: 8px; font-family: monospace; font-weight: bold; font-size: 15px; letter-spacing: 1px; box-shadow: 0 6px 20px rgba(0,0,0,0.75); z-index: 20; white-space: nowrap;">
-    🚧 SISTEMA EM FASE DE CONSTRUÇÃO 🚧
-</div>
-
 <div class="spotlight"></div>
 
 <!-- 🖼️ QUADRO DE IMAGENS DA INTRODUÇÃO (VINDAS DO MYSQL) -->
@@ -169,14 +173,33 @@ button:hover {
 <div class="login-box" id="loginBox">
     <h3>🏗️ Acesso ao Sistema</h3>
     <form id="formLogin" autocomplete="off" onsubmit="event.preventDefault(); logar(event);">
-        <input type="text" id="login" placeholder="Login" autocomplete="off" required>
-        <input type="password" id="senha" placeholder="Senha" autocomplete="new-password" required>
-        <button type="submit">Entrar</button>
-        <button type="button" onclick="logout()" style="background:#f44336;">Sair</button>
+
+        <input
+            type="text"
+            id="login"
+            placeholder="Login"
+            autocomplete="off"
+            required
+        >
+
+        <input
+            type="password"
+            id="senha"
+            placeholder="Senha"
+            autocomplete="new-password"
+            required
+        >
+
+        <button type="submit">
+            Entrar
+        </button>
+
+        <button type="button" onclick="logout()" style="background:#f44336;">
+            Sair
+        </button>
     </form>
 </div>
 
-<script>
 <script>
 /* 🔦 SPOTLIGHT */
 const spotlight = document.querySelector(".spotlight");
