@@ -5,6 +5,8 @@ import com.material.model.Entrada;
 import com.material.model.Fornecedor;
 import com.material.repository.FornecedorRepository;
 import com.material.service.EntradaService;
+import com.material.service.LogSistemaService;
+
 import jakarta.validation.Valid;
 
 import org.jspecify.annotations.Nullable;
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-
+import org.springframework.security.core.Authentication;
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/api/entradas")
@@ -24,6 +26,9 @@ public class EntradaController {
 
     @Autowired
     private EntradaService entradaService;
+
+	@Autowired
+	private LogSistemaService logSistemaService;
 
     @Autowired
     private FornecedorRepository fornecedorRepository;
@@ -35,26 +40,78 @@ public class EntradaController {
     }
 
     @PostMapping
-    public ResponseEntity<?> criarEntrada(@Valid @RequestBody EntradaRequestDTO entradaRequestDTO) {
+    public ResponseEntity<?> criarEntrada(
+            @Valid @RequestBody EntradaRequestDTO entradaRequestDTO,
+            Authentication authentication) {
+
         try {
             Entrada novaEntrada = entradaService.registrarEntrada(entradaRequestDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(novaEntrada);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno ao processar a entrada de estoque.");
-        }
-    }
 
-    @PutMapping("/devolver-nota/{numeroNota}")
-    public ResponseEntity<?> devolverNota(@PathVariable String numeroNota) {
-        try {
-            Entrada entradaDevolvida = entradaService.devolverNota(numeroNota);
-            return ResponseEntity.ok(entradaDevolvida);
+            logSistemaService.registrar(
+                    authentication.getName(),
+                    "ENTRADA",
+                    "Entrada registrada - NF " + entradaRequestDTO.getNumeroNota(),
+                    true
+                   
+            );
+            
+           
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(novaEntrada);
+
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro interno ao processar a entrada de estoque.");
         }
     }
+   // @PutMapping("/devolver-nota/{numeroNota}")
+  //  public ResponseEntity<?> devolverNota(@PathVariable String numeroNota) {
+  //      try {
+   //     	   logSistemaService.registrar(
+  //                     authentication.getName(),
+  //                     "ENTRADA",
+  //                     "Entrada registrada - NF " + entradaRequestDTO.getNumeroNota(),
+  //                     true
+  //         
+  //          Entrada entradaDevolvida = entradaService.devolverNota(numeroNota);
+  //          return ResponseEntity.ok(entradaDevolvida);
+  //      } catch (RuntimeException e) {
+  //          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+  //      }
+  //  }
+    
+    @PutMapping("/devolver-nota/{numeroNota}")
+    public ResponseEntity<?> devolverNota(
+            @PathVariable String numeroNota,
+            Authentication authentication) {
+
+        try {
+
+            Entrada entradaDevolvida = entradaService.devolverNota(numeroNota);
+
+            logSistemaService.registrar(
+                    authentication.getName(),
+                    "DEVOLUCAO_ENTRADA",
+                    "Devolução da entrada - NF " + numeroNota,
+                    true
+            );
+
+            return ResponseEntity.ok(entradaDevolvida);
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
+    }
+    
+    
 
     @GetMapping("/ativas-resumo")
     public ResponseEntity<?> listarNotasAtivasParaEstorno() {
@@ -95,13 +152,35 @@ public class EntradaController {
    
     // ↩️ 3. Rota de estorno por ID seguro disparado de dentro do Painel Gerencial
     @PostMapping("/estornar/{id}")
-    public ResponseEntity<?> estornarNotaPorId(@PathVariable Long id) {
+    public ResponseEntity<?> estornarNotaPorId(
+            @PathVariable Long id,
+            Authentication authentication) {
+
         try {
+
             Entrada entradaEstornada = entradaService.estornarEntrada(id);
+
+            logSistemaService.registrar(
+                    authentication.getName(),
+                    "DEVOLUCAO_ENTRADA",
+                    "Devolução da entrada - NF " + entradaEstornada.getNumeroNota(),
+                    true
+            );
+
             return ResponseEntity.ok(entradaEstornada);
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erro ao processar estorno: " + e.getMessage());
+
+            return ResponseEntity.badRequest()
+                    .body("Erro ao processar estorno: " + e.getMessage());
         }
     }
+	public LogSistemaService getLogSistemaService() {
+		return logSistemaService;
+	}
+
+	public void setLogSistemaService(LogSistemaService logSistemaService) {
+		this.logSistemaService = logSistemaService;
+	}
 
 }
