@@ -2,6 +2,25 @@
 // 💊 MÓDULO REGULATÓRIO FARMACÊUTICO (ANVISA / SNGPC) - appFarmacia.js
 // =========================================================================
 
+// 🎨 ASSINATURA VISUAL DAS CATEGORIAS FIXAS DO SISTEMA (PROTEGIDAS CONTRA EDIÇÃO/EXCLUSÃO)
+const MAPA_CATEGORIAS_FIXAS = {
+    "AGRICULTURA FAMILIAR": "#4af37a", // Verde Campo
+    "CERÂMICA":             "#ff9800", // Laranja Terracota
+    "FARMÁCIA":             "#ff4d4d", // Vermelho Cruz / Saúde
+    "JURÍDICO":             "#facc15", // Dourado Justiça
+    "ODONTOLOGIA":          "#38bdf8", // Azul Clínico
+    "PERFUME":              "#e879f9", // Magenta / Lilás Fragrância
+    "PSICÓLOGO":            "#a78bfa", // Violeta Mente
+    "VETERINÁRIOS":         "#2dd4bf"  // Verde-Água Pet / Agro
+};
+
+function obterCorCategoriaFixa(nomeCategoria) {
+    if (!nomeCategoria) return null;
+    return MAPA_CATEGORIAS_FIXAS[nomeCategoria.trim().toUpperCase()] || null;
+}
+
+
+
 window.ehCategoriaFarmacia = function () {
     const select = document.getElementById("selectCategoria");
     if (!select || select.selectedIndex < 0) return false;
@@ -17,6 +36,7 @@ window.ehCategoriaFarmacia = function () {
 window.verificarPainelFarmacia = function () {
     const painel = document.getElementById("blocoDadosFarmacia");
     const campoValidade = document.getElementById("validade");
+    const select = document.getElementById("selectCategoria");
     if (!painel) return;
 
     const ativar = ehCategoriaFarmacia();
@@ -28,9 +48,9 @@ window.verificarPainelFarmacia = function () {
     todosCamposFarmacia.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.disabled = !ativar; // Desabilita de verdade quando oculto
+            el.disabled = !ativar;
             el.readOnly = false;
-            el.required = ativar && obrigatorios.includes(id); // Garante required = false no pmc e quando oculto
+            el.required = ativar && obrigatorios.includes(id);
             el.style.opacity = ativar ? "1" : "0.6";
             el.style.pointerEvents = ativar ? "auto" : "none";
         }
@@ -39,6 +59,13 @@ window.verificarPainelFarmacia = function () {
     if (campoValidade) {
         campoValidade.required = ativar;
         if (ativar) campoValidade.disabled = false;
+    }
+
+    // 🎨 Pinta o texto do select fechado com a cor da categoria fixa escolhida
+    if (select && select.selectedIndex >= 0 && typeof obterCorCategoriaFixa === "function") {
+        const textoSelecionado = select.options[select.selectedIndex].text;
+        select.style.color = obterCorCategoriaFixa(textoSelecionado) || "#ffffff";
+        select.style.fontWeight = obterCorCategoriaFixa(textoSelecionado) ? "bold" : "normal";
     }
 };
 

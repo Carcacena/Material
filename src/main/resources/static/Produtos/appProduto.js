@@ -293,7 +293,46 @@ window.carregarCategoriasNoSelect = async function(categoriaIdSelecionada = null
 };
 
 
+// 🎨 PINTURA AUTOMÁTICA EM CORES ALTERNADAS PARA AS CATEGORIAS FIXAS
+(function iniciarPinturaCategoriasFixas() {
+    const CORES_CATEGORIAS = {
+        "AGRICULTURA FAMILIAR": "#4af37a", // Verde
+        "CERÂMICA":             "#ff9800", // Laranja
+        "FARMÁCIA":             "#ff4d4d", // Vermelho
+        "JURÍDICO":             "#facc15", // Dourado
+        "ODONTOLOGIA":          "#38bdf8", // Azul Claro
+        "PERFUME":              "#e879f9", // Magenta
+        "PSICÓLOGO":            "#a78bfa", // Violeta
+        "VETERINÁRIOS":         "#2dd4bf"  // Verde-Água
+    };
 
+    function aplicarCoresNoSelect() {
+        const select = document.getElementById("selectCategoria");
+        if (!select) return;
+
+        Array.from(select.options).forEach(opt => {
+            const nome = opt.textContent.trim().toUpperCase();
+            if (CORES_CATEGORIAS[nome]) {
+                opt.style.color = CORES_CATEGORIAS[nome];
+                opt.style.fontWeight = "bold";
+            }
+        });
+
+        const ativa = select.options[select.selectedIndex]?.textContent.trim().toUpperCase();
+        select.style.color = CORES_CATEGORIAS[ativa] || "#ffffff";
+        select.style.fontWeight = CORES_CATEGORIAS[ativa] ? "bold" : "normal";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const select = document.getElementById("selectCategoria");
+        if (!select) return;
+
+        select.addEventListener("change", aplicarCoresNoSelect);
+        const obs = new MutationObserver(aplicarCoresNoSelect);
+        obs.observe(select, { childList: true });
+        aplicarCoresNoSelect();
+    });
+})();
 
 
 
