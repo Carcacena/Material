@@ -79,6 +79,17 @@ public class Produto {
         LocalDate hoje = LocalDate.now();
         return !dataValidade.isBefore(hoje) && dataValidade.isBefore(hoje.plusDays(31));
     }
+    
+    @OneToOne(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ProdutoFarmacia dadosFarmacia;
+
+    public ProdutoFarmacia getDadosFarmacia() { return dadosFarmacia; }
+    public void setDadosFarmacia(ProdutoFarmacia dadosFarmacia) {
+        this.dadosFarmacia = dadosFarmacia;
+        if (dadosFarmacia != null) {
+            dadosFarmacia.setProduto(this);
+        }
+    }
 
     // ======================
     // GETTERS E SETTERS

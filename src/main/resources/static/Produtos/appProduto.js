@@ -33,11 +33,11 @@ if (!token) {
     window.location.href = "/Login/login.html";
 }
 
-// 🌐 DISPARA O CARREGAMENTO QUANDO A TELA ABRE
+
 // 🌐 DISPARA O CARREGAMENTO QUANDO A TELA ABRE
 document.addEventListener("DOMContentLoaded", () => {
     carregarFornecedores();
-	
+
     carregarCategoriasNoSelect(); // 📂 INJETADO: Popula a lista de setores ao abrir
     carregarProdutos();
     document.getElementById("formProduto").addEventListener("submit", cadastrarProduto);
@@ -47,25 +47,25 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!produtoSelecionadoId) {
             document.getElementById("estoqueAtual").value = document.getElementById("qteEntrada").value;
         }
-		
-		// Substitua pelo nome exato da sua função que bloqueia/preenche os zeros
-		   if (typeof atualizarCamposOrigem === "function") {
-		       atualizarCamposOrigem();
-		   }	
-		
+
+        // Substitua pelo nome exato da sua função que bloqueia/preenche os zeros
+        if (typeof atualizarCamposOrigem === "function") {
+            atualizarCamposOrigem();
+        }
+
     });
 
 
-	// 🔌 Captura o Enter automático do leitor de código de barras no input dedicado
-	   const campoBarras = document.getElementById("codigoBarras");
-	   if (campoBarras) {
-	       campoBarras.addEventListener("keydown", (e) => {
-	           if (e.key === "Enter") {
-	               e.preventDefault(); // Evita submeter o formulário antes da hora
-	               buscarPorCodigoBarras(e.target.value);
-	           }
-	       });
-	   }
+    // 🔌 Captura o Enter automático do leitor de código de barras no input dedicado
+    const campoBarras = document.getElementById("codigoBarras");
+    if (campoBarras) {
+        campoBarras.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault(); // Evita submeter o formulário antes da hora
+                buscarPorCodigoBarras(e.target.value);
+            }
+        });
+    }
 
     bloquearFormulario(true);
 });
@@ -79,12 +79,12 @@ async function carregarCategoriasNoSelect(categoriaIdSelecionada = null) {
             method: "GET",
             headers: { "Authorization": `Bearer ${token}` }
         });
-        
+
         if (resposta.ok) {
             const categorias = await resposta.json();
             const select = document.getElementById("selectCategoria");
             if (!select) return;
-            
+
             select.innerHTML = '<option value="">Selecione...</option>';
             categorias.forEach(cat => {
                 const opcao = document.createElement("option");
@@ -101,7 +101,7 @@ async function carregarCategoriasNoSelect(categoriaIdSelecionada = null) {
     }
 }
 
-window.abrirModalRapidoCategoria = function () {
+window.abrirModalRapidoCategoria = function() {
     const modal = document.getElementById("modalRapidoCategoria");
     const select = document.getElementById("selectCategoria");
     const inputNome = document.getElementById("inputNovaCategoriaNome");
@@ -153,16 +153,33 @@ window.salvarCategoriaInstantanea = function () {
         window.contadorIdTemp = -1;
     }
 
+    // 🔒 TRAVA 1: Se estiver tentando editar uma categoria que já é fixa na memória, bloqueia
+    if (idEdicao) {
+        const itemOriginal = window.categoriasMemoria.find(c => Number(c.id) === idEdicao);
+        if (itemOriginal && window.ehCategoriaFixa && window.ehCategoriaFixa(itemOriginal.nome)) {
+            alert(`🔒 A categoria "${itemOriginal.nome}" é fixa do sistema e não pode ser alterada.`);
+            return;
+        }
+    }
+
+    // 🔒 TRAVA 2: Impede cadastrar manualmente uma nova categoria com nome reservado do sistema
+    if (window.ehCategoriaFixa && window.ehCategoriaFixa(nomeTexto)) {
+        alert(`🔒 "${nomeTexto}" é uma categoria fixa reservada do sistema e não pode ser criada ou alterada.`);
+        inputNome.focus();
+        return;
+    }
+
     // Procura se já existe na memória (seja ORIGINAL do banco ou NOVA criada agora)
-    const existente = window.categoriasMemoria.find(c => 
-        c.status !== "EXCLUIDA" && 
-        c.nome.trim().toUpperCase() === nomeTexto && 
+    const existente = window.categoriasMemoria.find(c =>
+        c.status !== "EXCLUIDA" &&
+        c.nome.trim().toUpperCase() === nomeTexto &&
         Number(c.id) !== idEdicao
     );
 
     if (existente) {
         // Em vez de duplicar, apenas seleciona a que já está na memória e fecha
         renderizarSelectCategorias(existente.id);
+        if (typeof verificarPainelFarmacia === "function") verificarPainelFarmacia();
         fecharModalRapidoCategoria();
         return;
     }
@@ -186,11 +203,27 @@ window.salvarCategoriaInstantanea = function () {
     }
 
     renderizarSelectCategorias(idSelecionarDepois);
+    if (typeof verificarPainelFarmacia === "function") verificarPainelFarmacia();
     fecharModalRapidoCategoria();
 };
-window.excluirCategoriaSelecionada = async function() {
-    const idEdicao = document.getElementById("categoriaEdicaoId").value;
+
+window.excluirCategoriaSelecionada = async function () {
+    const idEdicao = document.getElementById("categoriaEdicaoId")?.value;
     if (!idEdicao) return;
+
+    // 🔒 TRAVA 3: Verifica na memória ou no select se o ID pertence a uma categoria fixa
+    const itemNaMemoria = Array.isArray(window.categoriasMemoria)
+        ? window.categoriasMemoria.find(c => Number(c.id) === Number(idEdicao))
+        : null;
+
+    const selectCat = document.getElementById("selectCategoria");
+    const textoSelect = selectCat?.options[selectCat.selectedIndex]?.text || "";
+    const nomeVerificar = itemNaMemoria ? itemNaMemoria.nome : textoSelect;
+
+    if (window.ehCategoriaFixa && window.ehCategoriaFixa(nomeVerificar)) {
+        alert(`🔒 A categoria "${nomeVerificar}" faz parte do sistema e não pode ser excluída.`);
+        return;
+    }
 
     if (!confirm("Tem certeza que deseja excluir esta categoria?")) return;
 
@@ -211,10 +244,11 @@ window.excluirCategoriaSelecionada = async function() {
     }
 };
 
+
 // ======================================================
 // 🎨 RENDERIZADOR DO SELECT DE CATEGORIAS (MEMÓRIA -> TELA)
 // ======================================================
-window.renderizarSelectCategorias = function (idParaSelecionar = null) {
+window.renderizarSelectCategorias = function(idParaSelecionar = null) {
     const select = document.getElementById("selectCategoria");
     if (!select) return;
 
@@ -237,7 +271,7 @@ window.renderizarSelectCategorias = function (idParaSelecionar = null) {
 };
 
 // Atualiza a função inicial para abastecer sempre window.categoriasMemoria
-window.carregarCategoriasNoSelect = async function (categoriaIdSelecionada = null) {
+window.carregarCategoriasNoSelect = async function(categoriaIdSelecionada = null) {
     try {
         const resposta = await fetch(`${API_URL}/api/categorias`, {
             method: "GET",
@@ -316,7 +350,7 @@ function alternarBloqueioCampos() {
 // 🎯 TRAVA DE SEGURANÇA ADICIONAL NO SUBMIT DO FORMULÁRIO
 document.getElementById("formProduto")?.addEventListener("submit", function(e) {
     const origem = document.getElementById("origemCadastro").value;
-    
+
     if (origem === "SEM_NF") {
         const custo = parseFloat(document.getElementById("precoCusto")?.value) || 0;
         const venda = parseFloat(document.getElementById("precoVenda")?.value) || 0;
@@ -592,20 +626,27 @@ async function cadastrarProduto(event) {
             return;
         }
 
-        // 📦 PASSO 2: Monta o objeto do Produto usando o idCategoriaReal
-        const produtoDados = {
-            nome: document.getElementById("nomeProduto").value,
-            codigoBarras: document.getElementById("codigoBarras").value.trim() || null,
-            aGranel: document.getElementById("tipoProduto").value === "true",
-            precoCusto: parseFloat(document.getElementById("precoCusto").value) || 0,
-            precoVenda: parseFloat(document.getElementById("precoVenda").value) || 0,
-            qteEntrada: parseInt(document.getElementById("qteEntrada").value) || 0,
-            estoqueAtual: parseInt(document.getElementById("estoqueAtual").value) || 0,
-            
-            // 🔗 Vínculos estruturados exigidos pelo Hibernate no Spring Boot
-            fornecedor: { id: parseInt(idFornecedor, 10) },
-            categoria: { id: parseInt(idCategoriaReal, 10) }
-        };
+		// 📦 PASSO 2: Monta o objeto do Produto usando o idCategoriaReal
+		        const qtdInformada = parseInt(document.getElementById("qteEntrada")?.value) || 0;
+
+		        const produtoDados = {
+		            nome: document.getElementById("nomeProduto").value,
+		            codigoBarras: document.getElementById("codigoBarras").value.trim() || null,
+		            aGranel: document.getElementById("tipoProduto").value === "true",
+		            precoCusto: parseFloat(document.getElementById("precoCusto")?.value) || 0,
+		            precoVenda: parseFloat(document.getElementById("precoVenda")?.value) || 0,
+		            dataValidade: document.getElementById("validade")?.value || null,
+		            qteEntrada: qtdInformada,
+		            estoqueAtual: parseInt(document.getElementById("estoqueAtual")?.value) || qtdInformada,
+		            
+		            // 🔗 Vínculos estruturados exigidos pelo Hibernate no Spring Boot
+		            fornecedor: { id: parseInt(idFornecedor, 10) },
+		            categoria: { id: parseInt(idCategoriaReal, 10) },
+
+		            // 💊 Injeta dados Anvisa se a categoria for REMÉDIOS
+		            ...(typeof obterPayloadFarmacia === "function" ? obterPayloadFarmacia() : {})
+		        };
+
 
         const url = produtoSelecionadoId ? `${API_URL}/produtos/${produtoSelecionadoId}` : `${API_URL}/produtos`;
         const metodo = produtoSelecionadoId ? "PUT" : "POST";
@@ -623,10 +664,10 @@ async function cadastrarProduto(event) {
             alert(produtoSelecionadoId ? "Produto alterado!" : "Produto cadastrado!");
             document.getElementById("formProduto").reset();
             document.getElementById("valorMargem").textContent = "0.00";
-            
+
             // 🔄 Recarrega a memória de categorias limpa direto do banco e reseta a seleção
             await carregarCategoriasNoSelect("");
-            
+
             produtoSelecionadoId = null;
             bloquearFormulario(true);
             carregarProdutos();
@@ -728,7 +769,7 @@ function buscarPorCodigoBarras(codigo) {
 // ======================================================
 
 // 1. Abrir e fechar o painel pelo botão ⚙️ AÇÕES ou pelo X
-window.togglePainelProdutoDirect = function () {
+window.togglePainelProdutoDirect = function() {
     const painel = document.getElementById("painelProduto");
     if (!painel) return;
 
@@ -740,7 +781,7 @@ window.togglePainelProdutoDirect = function () {
 };
 
 // 2. Função Cancelar (Limpa o formulário e trava os campos novamente)
-window.acionarCancelar = function () {
+window.acionarCancelar = function() {
     const form = document.getElementById("formProduto");
     if (form) form.reset();
 
@@ -770,17 +811,17 @@ window.acionarCancelar = function () {
 
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
-    cabecalho.onmousedown = function (e) {
+    cabecalho.onmousedown = function(e) {
         e.preventDefault();
         pos3 = e.clientX;
         pos4 = e.clientY;
 
-        document.onmouseup = function () {
+        document.onmouseup = function() {
             document.onmouseup = null;
             document.onmousemove = null;
         };
 
-        document.onmousemove = function (e) {
+        document.onmousemove = function(e) {
             e.preventDefault();
             pos1 = pos3 - e.clientX;
             pos2 = pos4 - e.clientY;
@@ -794,7 +835,7 @@ window.acionarCancelar = function () {
 })();
 
 // 4. Atalhos de Teclado do CRUD (F2, F3, F10, Esc, Delete)
-document.addEventListener("keydown", function (e) {
+document.addEventListener("keydown", function(e) {
     // F2 -> Incluir
     if (e.key === "F2") {
         e.preventDefault();
@@ -830,8 +871,8 @@ async function sincronizarCategoriasComBanco() {
     let idCategoriaEscolhida = select ? Number(select.value) : null;
 
     // Pega a lista em memória (seja via variável local ou window)
-    const listaMem = (typeof categoriasMemoria !== "undefined" && categoriasMemoria.length > 0) 
-        ? categoriasMemoria 
+    const listaMem = (typeof categoriasMemoria !== "undefined" && categoriasMemoria.length > 0)
+        ? categoriasMemoria
         : (window.categoriasMemoria || []);
 
     // A) Processa as EXCLUIDAS

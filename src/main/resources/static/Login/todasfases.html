@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<!-- ===================================================================== -->
+<!-- FASE 1: CONFIGURAÇÃO E APARÊNCIA (HEAD + CSS)                         -->
+<!-- Aqui definimos o título da aba e o visual de cada bloco da tela.      -->
+<!-- ===================================================================== -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Material de Construção - Magia Absoluta</title>
+
+    <style>
+        /* Regra geral: garante que bordas e espaçamentos não aumentem o tamanho das caixas */
+        * { 
+            box-sizing: border-box; 
+        }
+
+        /* Estilo do corpo da página (Fundo azul escuro e texto branco) */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+            background-color: #1e3a5f;
+        }
+
+        /* Caixa de Login centralizada na tela */
+        .login-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.85);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+            text-align: center;
+            width: 260px;
+            backdrop-filter: blur(6px);
+        }
+
+        .login-box h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #4af37a;
+            letter-spacing: 0.5px;
+        }
+
+        /* Campos de digitação (Usuário e Senha) */
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            background: #1e293b;
+            color: #ffffff;
+        }
+
+        input::placeholder { 
+            color: #94a3b8; 
+        }
+
+        /* Botão de Entrar */
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #4CAF50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: filter 0.2s;
+        }
+
+        button:hover { 
+            filter: brightness(1.15); 
+        }
+
+        /* Quadro de Slideshow no canto superior esquerdo */
+        .foto-frame {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 240px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .aviso-teste {
+            font-size: 11px;
+            color: #facc15;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        #legenda {
+            font-size: 14px;
+            color: #e2e8f0;
+            margin-top: 6px;
+        }
+
+        /* Rodapé fixo na parte inferior */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            background-color: #0f172a;
+            color: #94a3b8;
+            padding: 8px 0;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+
+<!-- ===================================================================== -->
+<!-- FASE 2: O ESQUELETO VISÍVEL (BODY + HTML)                             -->
+<!-- Tudo o que aparece na tela fica dentro da tag <body>.                 -->
+<!-- ===================================================================== -->
+<body>
+
+    <!-- Bloco 1: Quadro de Avisos / Slideshow -->
+    <div class="foto-frame" id="quadroSlideshow">
+        <div class="aviso-teste">⚠️ EM TESTE</div>
+        <div id="legenda">Carregando ofertas...</div>
+    </div>
+
+    <!-- Bloco 2: Caixa de Login -->
+    <div class="login-box">
+        <h3>🔐 MAGIA ABSOLUTA</h3>
+        <input type="text" id="usuario" placeholder="Usuário (digite: admin)">
+        <input type="password" id="senha" placeholder="Senha (digite: 1234)">
+        <button onclick="fazerLogin()">ENTRAR</button>
+    </div>
+
+    <!-- Bloco 3: Rodapé -->
+    <footer>
+        Sistema Material de Construção - Magia Absoluta © 2026
+    </footer>
+
+
+    <!-- ================================================================= -->
+    <!-- FASE 3: INTELIGÊNCIA E INTERATIVIDADE (JAVASCRIPT)                -->
+    <!-- Faz o botão funcionar e atualiza os textos automaticamente.       -->
+    <!-- ================================================================= -->
+    <script>
+        // Ação 1: Verifica usuário e senha ao clicar no botão ENTRAR
+        function fazerLogin() {
+            const user = document.getElementById('usuario').value;
+            const pass = document.getElementById('senha').value;
+
+            if (user === "admin" && pass === "1234") {
+                alert("✅ Login aprovado! Bem-vindo, " + user + ".");
+            } else {
+                alert("❌ Usuário ou senha incorretos. Tente admin / 1234.");
+            }
+        }
+
+        // Ação 2: Lista de ofertas que mudam sozinhas no canto superior esquerdo
+        const ofertas = [
+            "🧱 Cimento 50kg em Promoção!",
+            "🎨 Tintas Acrílicas com 20% OFF",
+            "🚚 Entrega Rápida na Região"
+        ];
+        
+        let indice = 0;
+
+        // Troca o texto a cada 3 segundos (3000 milissegundos)
+        setInterval(() => {
+            document.getElementById('legenda').innerText = ofertas[indice];
+            indice = (indice + 1) % ofertas.length;
+        }, 3000);
+    </script>
+
+</body>
+</html>

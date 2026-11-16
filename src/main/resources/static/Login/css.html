@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Material de Construção - Magia Absoluta</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+            background-color: #1e3a5f;
+        }
+        /* LOGIN */
+        .login-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.78);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+            text-align: center;
+            width: 240px;
+            backdrop-filter: blur(6px);
+        }
+        .login-box h3 { margin: 0 0 12px 0; font-size: 14px; color: #4af37a; }
+        input {
+            width: 100%;
+            padding: 9px;
+            margin: 6px 0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            background: #1e293b;
+            color: #ffffff;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #4CAF50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+        button:hover { filter: brightness(1.1); }
+        
+        /* SLIDESHOW */
+        .foto-frame {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        .aviso-teste { font-size: 12px; color: #facc15; font-weight: bold; }
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background-color: #0f172a;
+            color: #94a3b8;
+            padding: 8px 0;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+	<!-- Adicione este bloco logo antes de fechar o </body> na Fase 2 -->
+	    <script>
+	        // 1. Função simples para validar o login
+	        function fazerLogin() {
+	            const user = document.getElementById('usuario').value;
+	            const pass = document.getElementById('senha').value;
+
+	            if (user === "admin" && pass === "1234") {
+	                alert("Bem-vindo ao sistema, " + user + "!");
+	            } else {
+	                alert("Usuário ou senha incorretos! (Tente: admin / 1234)");
+	            }
+	        }
+
+	        // 2. Simulação de troca de legenda no Slideshow
+	        const avisos = ["Cimento em Promoção!", "Tintas com 20% OFF", "Entrega Rápida"];
+	        let indice = 0;
+
+	        setInterval(() => {
+	            document.getElementById('legenda').innerText = avisos[indice];
+	            indice = (indice + 1) % avisos.length;
+	        }, 3000); // Troca o texto a cada 3 segundos
+	    </script>
+    <div class="foto-frame" id="quadroSlideshow">
+        <div class="aviso-teste">⚠️ EM TESTE</div>
+        <img id="fotoAtiva" src="" alt="Destaque da Loja">
+        <div id="legenda">Aguardando fotos...</div>
+    </div>
+
+    <div class="login-box">
+        <h3>MAGIA ABSOLUTA</h3>
+        <input type="text" id="usuario" placeholder="Usuário">
+        <input type="password" id="senha" placeholder="Senha">
+        <button onclick="fazerLogin()">ENTRAR</button>
+    </div>
+
+    <footer>Sistema Material de Construção</footer>
+
+</body>
+</html>

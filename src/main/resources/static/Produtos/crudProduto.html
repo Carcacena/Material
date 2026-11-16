@@ -189,7 +189,8 @@
 		</div>
 
 		<!-- GRID PRINCIPAL -->
-		<div class="row g-4" style="display: flex; flex-direction: row; flex-wrap: wrap; width: 100%; gap: 20px; align-items: start;">
+		<div class="row g-4"
+			style="display: flex; flex-direction: row; flex-wrap: wrap; width: 100%; gap: 20px; align-items: start;">
 
 			<!-- COLUNA 1: Formulário de Cadastro Principal -->
 			<div style="width: 380px; flex-shrink: 0;">
@@ -200,7 +201,8 @@
 
 						<!-- 0. Código de Barras -->
 						<div class="mb-3">
-							<label for="codigoBarras" class="form-label" style="font-weight: bold;">Código de Barras</label>
+							<label for="codigoBarras" class="form-label" style="font-weight: bold;">Código de
+								Barras</label>
 							<input type="text" class="form-control" id="codigoBarras"
 								placeholder="Passe o leitor ou digite o código" style="padding: 10px;">
 						</div>
@@ -217,16 +219,19 @@
 
 						<!-- 1. Nome do Produto -->
 						<div class="mb-3">
-							<label for="nomeProduto" class="form-label" style="font-weight: bold;">Nome do Produto</label>
+							<label for="nomeProduto" class="form-label" style="font-weight: bold;">Nome do
+								Produto</label>
 							<input type="text" class="form-control" id="nomeProduto" required
 								placeholder="Ex: Tijolo Baiano" style="padding: 10px;">
 						</div>
 
 						<!-- 2. Fornecedor -->
 						<div class="mb-3">
-							<label for="selecionaFornecedor" class="form-label" style="font-weight: bold;">Fornecedor</label>
+							<label for="selecionaFornecedor" class="form-label"
+								style="font-weight: bold;">Fornecedor</label>
 							<div class="d-flex gap-2">
-								<select class="form-select" id="selecionaFornecedor" required style="padding: 10px; flex: 1;">
+								<select class="form-select" id="selecionaFornecedor" required
+									style="padding: 10px; flex: 1;">
 									<option value="">Selecione...</option>
 								</select>
 								<button type="button" class="btn btn-primary fw-bold"
@@ -239,7 +244,8 @@
 						<div class="mb-3">
 							<label class="form-label" style="font-weight: bold;">Categoria / Setor</label>
 							<div style="display: flex; gap: 8px; align-items: center;">
-								<select id="selectCategoria" class="form-select" style="flex: 1; padding: 10px;">
+								<select id="selectCategoria" class="form-select" style="flex: 1; padding: 10px;"
+									onchange="if(typeof verificarPainelFarmacia==='function') verificarPainelFarmacia()">
 									<option value="">Carregando categorias...</option>
 								</select>
 								<button type="button" class="btn"
@@ -251,7 +257,8 @@
 						<!-- 3. Tipo Venda e Validade -->
 						<div style="display: flex; gap: 10px; margin-bottom: 10px;">
 							<div style="flex: 1;">
-								<label for="tipoProduto" class="form-label" style="font-weight: bold;">Tipo Venda</label>
+								<label for="tipoProduto" class="form-label" style="font-weight: bold;">Tipo
+									Venda</label>
 								<select class="form-select" id="tipoProduto" style="padding: 10px; width: 100%;">
 									<option value="false">Unidade</option>
 									<option value="true">A Granel</option>
@@ -259,7 +266,8 @@
 							</div>
 							<div style="flex: 1;">
 								<label for="validade" class="form-label" style="font-weight: bold;">Validade</label>
-								<input type="date" class="form-control" id="validade" style="padding: 10px; width: 100%;">
+								<input type="date" class="form-control" id="validade"
+									style="padding: 10px; width: 100%;">
 							</div>
 						</div>
 
@@ -268,31 +276,34 @@
 					</form>
 				</div>
 			</div>
-
 			<!-- COLUNA 2: CAIXA HORIZONTAL ARTESANAL (Ao lado direito da caixa escura principal) -->
 			<div id="blocoValoresArtesanal" style="display: none; flex: 1; min-width: 400px; max-width: 560px;">
 				<div class="box-custom" style="border: 1px solid rgba(255, 152, 0, 0.5);">
-					<h4 style="color: #ff9800; font-size: 16px; border-bottom: 1px dashed rgba(255,152,0,0.4); padding-bottom: 8px;">
+					<h4
+						style="color: #ff9800; font-size: 16px; border-bottom: 1px dashed rgba(255,152,0,0.4); padding-bottom: 8px;">
 						💰 Valores & Entrada Inicial (Artesanal)
 					</h4>
 
 					<div style="display: flex; flex-direction: row; gap: 12px; margin-bottom: 15px;">
 						<div style="flex: 1;">
-							<label for="precoCusto" class="form-label" style="font-weight: bold; font-size: 13px;">Preço Custo</label>
+							<label for="precoCusto" class="form-label" style="font-weight: bold; font-size: 13px;">Preço
+								Custo</label>
 							<input type="number" step="0.01" class="form-control" id="precoCusto" form="formProduto"
 								placeholder="0.00" style="padding: 10px; width: 100%;" oninput="calcularMargem()">
 						</div>
 
 						<div style="flex: 1;">
-							<label for="precoVenda" class="form-label" style="font-weight: bold; font-size: 13px;">Preço Venda</label>
+							<label for="precoVenda" class="form-label" style="font-weight: bold; font-size: 13px;">Preço
+								Venda</label>
 							<input type="number" step="0.01" class="form-control" id="precoVenda" form="formProduto"
 								placeholder="0.00" style="padding: 10px; width: 100%;" oninput="calcularMargem()">
 						</div>
 
 						<div style="flex: 1;">
-							<label for="qteEntrada" class="form-label" style="font-weight: bold; font-size: 13px;">Qtd Entrada</label>
-							<input type="number" class="form-control" id="qteEntrada" form="formProduto"
-								placeholder="0" style="padding: 10px; width: 100%;">
+							<label for="qteEntrada" class="form-label" style="font-weight: bold; font-size: 13px;">Qtd
+								Entrada</label>
+							<input type="number" class="form-control" id="qteEntrada" form="formProduto" placeholder="0"
+								style="padding: 10px; width: 100%;">
 						</div>
 
 						<!-- Estoque Atual oculto visualmente, mantendo o ID intacto para o JS -->
@@ -308,126 +319,160 @@
 					</div>
 				</div>
 			</div>
+
+	
+			<!-- COLUNA 3: CAIXA HORIZONTAL FARMÁCIA (Aparece automaticamente na categoria REMEDIO) -->
+			<div id="blocoDadosFarmacia" style="display: none; flex: 1; min-width: 440px; max-width: 640px;">
+				<div class="box-custom" style="border: 1px solid rgba(56, 189, 248, 0.6);">
+					<h4
+						style="color: #38bdf8; font-size: 16px; border-bottom: 1px dashed rgba(56,189,248,0.4); padding-bottom: 8px;">
+						💊 Dados Regulatórios (Anvisa / SNGPC)
+					</h4>
+
+					<div style="display: flex; flex-direction: row; gap: 10px; margin-bottom: 12px;">
+						<div style="flex: 2;">
+							<label for="principioAtivo" class="form-label"
+								style="font-weight: bold; font-size: 13px;">Princípio Ativo (DCB)</label>
+							<input type="text" class="form-control" id="principioAtivo" form="formProduto"
+								placeholder="Ex: Ezetimiba + Sinvastatina" style="padding: 9px; width: 100%;">
+						</div>
+						<div style="flex: 1;">
+							<label for="registroMs" class="form-label"
+								style="font-weight: bold; font-size: 13px;">Registro MS</label>
+							<input type="text" class="form-control" id="registroMs" form="formProduto"
+								placeholder="13 dígitos" style="padding: 9px; width: 100%;">
+						</div>
+					</div>
+
+					<div style="display: flex; flex-direction: row; gap: 10px;">
+						<div style="flex: 1;">
+							<label for="tipoTarja" class="form-label" style="font-weight: bold; font-size: 13px;">Tipo
+								de Receita / Tarja</label>
+							<select class="form-select" id="tipoTarja" form="formProduto"
+								style="padding: 9px; width: 100%;">
+								<option value="MIP">Venda Livre (MIP)</option>
+								<option value="VERMELHA">Tarja Vermelha (Sem Retenção)</option>
+								<option value="RETENCAO">Tarja Vermelha (Com Retenção)</option>
+								<option value="PRETA">Tarja Preta / Psicotrópico</option>
+							</select>
+						</div>
+						<div style="flex: 1;">
+							<label for="lote" class="form-label"
+								style="font-weight: bold; font-size: 13px;">Lote</label>
+							<input type="text" class="form-control" id="lote" form="formProduto"
+								placeholder="Ex: L2026A" style="padding: 9px; width: 100%;">
+						</div>
+						<div style="flex: 1;">
+							<label for="pmc" class="form-label" style="font-weight: bold; font-size: 13px;">PMC (Teto
+								R$)</label>
+							<input type="number" step="0.01" class="form-control" id="pmc" form="formProduto"
+								placeholder="0.00" style="padding: 9px; width: 100%;">
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<!-- 🛸 PAINEL FLUTUANTE EXCLUSIVO: CRUD DE CATEGORIA EM MEMÓRIA -->
 			<div id="modalRapidoCategoria"
-			    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 3000; align-items: center; justify-content: center;">
-			    <div style="width: 280px; background: #1e272e; border: 2px solid #ff9800; border-radius: 8px; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-			        
-			        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255, 152, 0, 0.4); padding-bottom: 8px; margin-bottom: 12px;">
-			            <span id="tituloModalCategoria" style="color: #ff9800; font-weight: bold; font-family: monospace; font-size: 13px;">::: CRUD CATEGORIA :::</span>
-			            <button type="button" onclick="fecharModalRapidoCategoria()" style="background: #e74c3c; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; padding: 3px 8px;">X</button>
-			        </div>
+				style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 3000; align-items: center; justify-content: center;">
+				<div
+					style="width: 280px; background: #1e272e; border: 2px solid #ff9800; border-radius: 8px; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
 
-			        <input type="hidden" id="categoriaEdicaoId">
-
-			        <div style="margin-bottom: 12px;">
-			            <label style="font-size: 11px; color: #ffb74d; font-weight: bold; display: block; margin-bottom: 4px;">NOME DO SETOR / CATEGORIA:</label>
-			            <input type="text" id="inputNovaCategoriaNome" class="form-control" placeholder="Ex: ELÉTRICA, TINTAS" style="padding: 8px; font-size: 13px;">
-			        </div>
-
-			        <div style="display: flex; flex-direction: column; gap: 7px;">
-			            <button type="button" onclick="prepararNovaCategoria()" style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #9b59b6; color: #ffffff;">
-			                Nova Categoria
-			            </button>
-			            <button type="button" onclick="salvarCategoriaInstantanea()" style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #ffffff; color: #1e272e;">
-			                Confirmar na Memória
-			            </button>
-			            <button type="button" id="btnExcluirCategoria" onclick="excluirCategoriaSelecionada()" style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #9b59b6; color: #ffffff;">
-			                Excluir Categoria
-			            </button>
-			            <button type="button" onclick="fecharModalRapidoCategoria()" style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #ffffff; color: #1e272e;">
-			                Fechar
-			            </button>
-			        </div>
-			    </div>
-			</div>
-				
-				
-				
-				
-				
-				
-				<!-- 6. Controle de Estoques Unificado -->
-				<div class="row g-2 mb-3">
-					<div class="col-6">
-						<label for="qteEntrada" class="form-label" style="font-weight: bold;">Qtd
-							Entrada</label>
-						<input type="number" class="form-control" id="qteEntrada" required placeholder="0"
-							style="padding: 10px;">
-					</div>
-					<div class="col-6">
-						<label for="estoqueAtual" class="form-label" style="font-weight: bold;">Estoque
-							Atual</label>
-						<input type="number" class="form-control" id="estoqueAtual" required placeholder="0"
-							style="padding: 10px;">
-					</div>
-				</div>
-
-				<button type="submit" id="btnSalvar" class="btn btn-warning w-100 mt-2 fw-bold text-dark"
-					style="display:none; padding: 12px;">Confirmar Operação</button>
-				</form>
-			</div>
-		</div>
-
-		<!-- Coluna Direita: Tabela Larga Horizontal -->
-		<div class="col-xl-8 col-lg-7">
-			<div class="box-custom h-100">
-				<h4>📦 Catálogo de Produtos por Fornecedor</h4>
-				<div class="table-responsive" style="max-height: 650px; overflow-y: auto; padding-right: 5px;">
-					<!-- Cabeçalho da grade horizontal -->
-					<div class="d-flex fw-bold text-uppercase p-2 mb-2"
-						style="background: rgba(0, 0, 0, 0.6); color: #ff9800; font-size: 11px; border-bottom: 2px solid #ff9800; letter-spacing: 1px;">
-						<div style="flex: 2;">📦 Nome / Descrição [Código Barras]</div>
-						<div style="flex: 1; text-align: right; padding-right: 15px;">Estoque Atual</div>
+					<div
+						style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255, 152, 0, 0.4); padding-bottom: 8px; margin-bottom: 12px;">
+						<span id="tituloModalCategoria"
+							style="color: #ff9800; font-weight: bold; font-family: monospace; font-size: 13px;">::: CRUD
+							CATEGORIA :::</span>
+						<button type="button" onclick="fecharModalRapidoCategoria()"
+							style="background: #e74c3c; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; padding: 3px 8px;">X</button>
 					</div>
 
-					<!-- Container da Árvore -->
-					<div id="containerFornecedoresProdutos">
-						<!-- Injetado dinamicamente via JavaScript -->
+					<input type="hidden" id="categoriaEdicaoId">
+
+					<div style="margin-bottom: 12px;">
+						<label
+							style="font-size: 11px; color: #ffb74d; font-weight: bold; display: block; margin-bottom: 4px;">NOME
+							DO SETOR / CATEGORIA:</label>
+						<input type="text" id="inputNovaCategoriaNome" class="form-control"
+							placeholder="Ex: ELÉTRICA, TINTAS" style="padding: 8px; font-size: 13px;">
+					</div>
+
+					<div style="display: flex; flex-direction: column; gap: 7px;">
+						<button type="button" onclick="prepararNovaCategoria()"
+							style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #9b59b6; color: #ffffff;">
+							Nova Categoria
+						</button>
+						<button type="button" onclick="salvarCategoriaInstantanea()"
+							style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #ffffff; color: #1e272e;">
+							Confirmar na Memória
+						</button>
+						<button type="button" id="btnExcluirCategoria" onclick="excluirCategoriaSelecionada()"
+							style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #9b59b6; color: #ffffff;">
+							Excluir Categoria
+						</button>
+						<button type="button" onclick="fecharModalRapidoCategoria()"
+							style="width: 100%; padding: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; background: #ffffff; color: #1e272e;">
+							Fechar
+						</button>
 					</div>
 				</div>
 			</div>
-		</div>
-	</div>
-	</div>
 
-	<!-- Menu Flutuante Lateral de Operações (::: MENU :::) -->
-	<div class="painel-flutuante" id="meuPainelFlutuante">
-		<div class="painel-header" id="meuPainelHeader">::: MENU :::</div>
-		<div class="painel-corpo">
-			<button class="btn-menu-vertical btn-incluir" onclick="acionarIncluir()">Incluir</button>
-			<button class="btn-menu-vertical btn-alterar" onclick="acionarAlterar()">Alterar</button>
-			<button class="btn-menu-vertical btn-excluir" onclick="acionarExcluir()">Excluir</button>
-			<button class="btn-menu-vertical btn-gravar" onclick="document.getElementById('btnSalvar').click()">Gravar
-				Produto</button>
-			<a class="btn-menu-vertical btn-voltar text-center lh-lg" href="/menu/menu.html">Voltar</a>
-		</div>
-	</div>
+			<!-- Coluna Direita: Tabela Larga Horizontal -->
+			<div class="col-xl-8 col-lg-7" style="width: 100%;">
+				<div class="box-custom h-100">
+					<h4>📦 Catálogo de Produtos por Fornecedor</h4>
+					<div class="table-responsive" style="max-height: 650px; overflow-y: auto; padding-right: 5px;">
+						<!-- Cabeçalho da grade horizontal -->
+						<div class="d-flex fw-bold text-uppercase p-2 mb-2"
+							style="background: rgba(0, 0, 0, 0.6); color: #ff9800; font-size: 11px; border-bottom: 2px solid #ff9800; letter-spacing: 1px;">
+							<div style="flex: 2;">📦 Nome / Descrição [Código Barras]</div>
+							<div style="flex: 1; text-align: right; padding-right: 15px;">Estoque Atual</div>
+						</div>
+
+						<!-- Container da Árvore -->
+						<div id="containerFornecedoresProdutos">
+							<!-- Injetado dinamicamente via JavaScript -->
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div> <!-- Fecha GRID PRINCIPAL (.row.g-4) -->
+	</div> <!-- Fecha .container-fluid -->
+	
+	
 	
 	<!-- ⚙️ BOTÃO FIXO NA TELA -->
-		<button id="btnAbrirPainelProduto" type="button" onclick="togglePainelProdutoDirect()"
-			style="position: fixed; top: 90px; right: 25px; z-index: 1999; background: #ff9800; color: #111; border: none; border-radius: 6px; padding: 8px 13px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-			⚙️ AÇÕES
-		</button>
+	<button id="btnAbrirPainelProduto" type="button" onclick="togglePainelProdutoDirect()"
+		style="position: fixed; top: 90px; right: 25px; z-index: 1999; background: #ff9800; color: #111; border: none; border-radius: 6px; padding: 8px 13px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+		⚙️ AÇÕES
+	</button>
 
-		<div id="painelProduto" class="painel-flutuante" style="display: none;">
-			<div id="painelProdutoHeader" class="painel-header">
-				<span style="color: #ff9800; font-weight: bold; font-family: monospace;">::: CRUD PRODUTO :::</span>
-				<button type="button" onclick="togglePainelProdutoDirect()"
-					style="background: #e74c3c; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; padding: 4px 8px; line-height: 1;">
-					X
-				</button>
-			</div>
-
-			<div class="painel-corpo">
-				<button type="button" id="btnMenuIncluir" class="btn-menu-vertical" onclick="acionarIncluir()">Incluir (F2)</button>
-				<button type="button" id="btnMenuAlterar" class="btn-menu-vertical" onclick="acionarAlterar()">Alterar (F3)</button>
-				<button type="button" id="btnMenuExcluir" class="btn-menu-vertical" onclick="acionarExcluir()">Excluir (Del)</button>
-				<button type="button" id="btnMenuGravar" class="btn-menu-vertical" onclick="document.getElementById('btnSalvar').click()">Gravar Produto (F10)</button>
-				<button type="button" id="btnMenuCancelar" class="btn-menu-vertical" onclick="acionarCancelar()">Cancelar (Esc)</button>
-				<button type="button" id="btnMenuVoltar" class="btn-menu-vertical" onclick="window.location.href='/menu/menu.html'"><u>V</u>oltar</button>
-			</div>
+	<div id="painelProduto" class="painel-flutuante" style="display: none;">
+		<div id="painelProdutoHeader" class="painel-header">
+			<span style="color: #ff9800; font-weight: bold; font-family: monospace;">::: CRUD PRODUTO :::</span>
+			<button type="button" onclick="togglePainelProdutoDirect()"
+				style="background: #e74c3c; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; padding: 4px 8px; line-height: 1;">
+				X
+			</button>
 		</div>
+
+		<div class="painel-corpo">
+			<button type="button" id="btnMenuIncluir" class="btn-menu-vertical" onclick="acionarIncluir()">Incluir
+				(F2)</button>
+			<button type="button" id="btnMenuAlterar" class="btn-menu-vertical" onclick="acionarAlterar()">Alterar
+				(F3)</button>
+			<button type="button" id="btnMenuExcluir" class="btn-menu-vertical" onclick="acionarExcluir()">Excluir
+				(Del)</button>
+			<button type="button" id="btnMenuGravar" class="btn-menu-vertical"
+				onclick="document.getElementById('btnSalvar').click()">Gravar Produto (F10)</button>
+			<button type="button" id="btnMenuCancelar" class="btn-menu-vertical" onclick="acionarCancelar()">Cancelar
+				(Esc)</button>
+			<button type="button" id="btnMenuVoltar" class="btn-menu-vertical"
+				onclick="window.location.href='/menu/menu.html'"><u>V</u>oltar</button>
+		</div>
+	</div>
 
 	<!-- Script de Arrasto do Menu Flutuante -->
 	<script>
@@ -524,7 +569,9 @@
 	</script>
 
 	<!-- Conexão direta com o motor lógico unificado -->
+	<script src="appFarmacia.js"></script>
 	<script src="/Produtos/appProduto.js"></script>
+
 </body>
 
 </html>

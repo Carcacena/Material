@@ -1,0 +1,2 @@
+INSERT IGNORE INTO categoria_produto (nome) 
+VALUES ('AGRICULTURA FAMILIAR');
