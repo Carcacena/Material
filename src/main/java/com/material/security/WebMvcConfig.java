@@ -30,7 +30,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addViewController("/")
                 .setViewName("forward:/Login/login.html");
     }
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
@@ -41,7 +40,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/imagem_introducao/**")
                 .addResourceLocations(
-                        "file:" + base + "/imagem_introducao/"
+                        java.nio.file.Paths.get(base, "imagem_introducao").toUri().toString()
+                );
+
+        registry.addResourceHandler("/imagem_produto/**")
+                .addResourceLocations(
+                        java.nio.file.Paths.get(base, "imagem_produto").toUri().toString()
                 );
     }
 }

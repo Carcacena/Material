@@ -96,7 +96,10 @@ public class SecurityConfig {
                    ).permitAll() 
                
                // 🌟 3. Rotas públicas do sistema e pastas de recursos estáticos (HTML/JS/CSS)
-               .requestMatchers("/api/midia/**", "/imagem_introducao/**").permitAll()
+              // .requestMatchers("/api/midia/**", "/imagem_introducao/**").permitAll()
+              
+               
+               .requestMatchers("/api/midia/**", "/imagem_introducao/**", "/imagem_produto/**").permitAll()
                .requestMatchers("/carrinho/public/pedido/**").permitAll() // Exceção do PDF público
                .requestMatchers(
                        "/menu/**", // Pasta com HTML e JS do menu integrados

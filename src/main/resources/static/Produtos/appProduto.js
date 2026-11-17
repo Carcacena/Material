@@ -637,8 +637,7 @@ async function acionarExcluir() {
         }
     }
 }
-
-// 💾 SALVAR / ALTERAR PRODUTO (Com Sincronização de Categorias em Memória)
+// 💾 SALVAR / ALTERAR PRODUTO (Com Sincronização de Categorias em Memória + Foto)
 async function cadastrarProduto(event) {
     event.preventDefault();
 
@@ -665,27 +664,26 @@ async function cadastrarProduto(event) {
             return;
         }
 
-		// 📦 PASSO 2: Monta o objeto do Produto usando o idCategoriaReal
-		        const qtdInformada = parseInt(document.getElementById("qteEntrada")?.value) || 0;
+        // 📦 PASSO 2: Monta o objeto do Produto usando o idCategoriaReal
+        const qtdInformada = parseInt(document.getElementById("qteEntrada")?.value) || 0;
 
-		        const produtoDados = {
-		            nome: document.getElementById("nomeProduto").value,
-		            codigoBarras: document.getElementById("codigoBarras").value.trim() || null,
-		            aGranel: document.getElementById("tipoProduto").value === "true",
-		            precoCusto: parseFloat(document.getElementById("precoCusto")?.value) || 0,
-		            precoVenda: parseFloat(document.getElementById("precoVenda")?.value) || 0,
-		            dataValidade: document.getElementById("validade")?.value || null,
-		            qteEntrada: qtdInformada,
-		            estoqueAtual: parseInt(document.getElementById("estoqueAtual")?.value) || qtdInformada,
-		            
-		            // 🔗 Vínculos estruturados exigidos pelo Hibernate no Spring Boot
-		            fornecedor: { id: parseInt(idFornecedor, 10) },
-		            categoria: { id: parseInt(idCategoriaReal, 10) },
+        const produtoDados = {
+            nome: document.getElementById("nomeProduto").value,
+            codigoBarras: document.getElementById("codigoBarras").value.trim() || null,
+            aGranel: document.getElementById("tipoProduto").value === "true",
+            precoCusto: parseFloat(document.getElementById("precoCusto")?.value) || 0,
+            precoVenda: parseFloat(document.getElementById("precoVenda")?.value) || 0,
+            dataValidade: document.getElementById("validade")?.value || null,
+            qteEntrada: qtdInformada,
+            estoqueAtual: parseInt(document.getElementById("estoqueAtual")?.value) || qtdInformada,
 
-		            // 💊 Injeta dados Anvisa se a categoria for REMÉDIOS
-		            ...(typeof obterPayloadFarmacia === "function" ? obterPayloadFarmacia() : {})
-		        };
+            // 🔗 Vínculos estruturados exigidos pelo Hibernate no Spring Boot
+            fornecedor: { id: parseInt(idFornecedor, 10) },
+            categoria: { id: parseInt(idCategoriaReal, 10) },
 
+            // 💊 Injeta dados Anvisa se a categoria for REMÉDIOS
+            ...(typeof obterPayloadFarmacia === "function" ? obterPayloadFarmacia() : {})
+        };
 
         const url = produtoSelecionadoId ? `${API_URL}/produtos/${produtoSelecionadoId}` : `${API_URL}/produtos`;
         const metodo = produtoSelecionadoId ? "PUT" : "POST";
@@ -700,9 +698,40 @@ async function cadastrarProduto(event) {
         });
 
         if (response.ok) {
+            // 1. Tenta obter o ID do produto recém-salvo
+            const produtoSalvo = await response.json().catch(() => null);
+            let idFinalProduto = produtoSelecionadoId || (produtoSalvo && produtoSalvo.id);
+
+            // 🛡️ Plano B: Se o back-end retornou corpo vazio no POST, busca o último ID gravado no banco
+            if (!idFinalProduto && typeof arquivoFotoPendente !== "undefined" && arquivoFotoPendente) {
+                try {
+                    const respLista = await fetch(`${API_URL}/produtos`, {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    if (respLista.ok) {
+                        const todos = await respLista.json();
+                        if (Array.isArray(todos) && todos.length > 0) {
+                            idFinalProduto = Math.max(...todos.map(p => Number(p.id)));
+                        }
+                    }
+                } catch (e) {
+                    console.error("Erro ao localizar ID do produto recém-cadastrado:", e);
+                }
+            }
+
+            // 2. Envia a foto pendente para o servidor e grava na tabela imagem_produto
+            if (typeof arquivoFotoPendente !== "undefined" && arquivoFotoPendente && idFinalProduto) {
+                await enviarArquivoFotoParaServidor(idFinalProduto, arquivoFotoPendente);
+            }
+
             alert(produtoSelecionadoId ? "Produto alterado!" : "Produto cadastrado!");
             document.getElementById("formProduto").reset();
             document.getElementById("valorMargem").textContent = "0.00";
+
+            // 3. Limpa a vitrine da foto após concluir
+            if (typeof limparVitrineFoto === "function") {
+                limparVitrineFoto();
+            }
 
             // 🔄 Recarrega a memória de categorias limpa direto do banco e reseta a seleção
             await carregarCategoriasNoSelect("");
@@ -958,7 +987,262 @@ async function sincronizarCategoriasComBanco() {
 
     return idCategoriaEscolhida;
 }
+// ======================================================
+// 📷 VITRINE / FOTO DO PRODUTO (PERFUME NO BALCÃO)
+// ======================================================
+let arquivoFotoPendente = null;
 
+async function carregarFotoProduto(produtoId) {
+    const img = document.getElementById("imgPreviewProduto");
+    const textoSemFoto = document.getElementById("textoSemFoto");
+    const status = document.getElementById("statusFotoProduto");
 
+    if (!img || !textoSemFoto) return;
 
+    if (!produtoId) {
+        limparVitrineFoto();
+        return;
+    }
 
+    try {
+        const resp = await fetch(`${API_URL}/api/midia/produto/${produtoId}`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (resp.ok) {
+            const dados = await resp.json();
+            if (dados.url) {
+                img.src = `${API_URL}${dados.url}?t=${Date.now()}`;
+                img.style.display = "block";
+                textoSemFoto.style.display = "none";
+                if (status) status.textContent = "Foto carregada do catálogo";
+                return;
+            }
+        }
+        limparVitrineFoto("Este produto ainda não possui foto.");
+    } catch (e) {
+        console.error("Erro ao buscar foto do produto:", e);
+        limparVitrineFoto();
+    }
+}
+
+window.preVisualizarEEnviarFoto = async function () {
+    const input = document.getElementById("inputFotoProduto");
+    const img = document.getElementById("imgPreviewProduto");
+    const textoSemFoto = document.getElementById("textoSemFoto");
+    const status = document.getElementById("statusFotoProduto");
+
+    if (!input || !input.files || input.files.length === 0) return;
+
+	const arquivo = input.files.item(0);
+	   if (!arquivo) return;
+  
+    const leitor = new FileReader();
+    leitor.onload = (e) => {
+        img.src = e.target.result;
+        img.style.display = "block";
+        textoSemFoto.style.display = "none";
+    };
+    leitor.readAsDataURL(arquivo);
+
+    const idAtual = produtoSelecionadoId || document.getElementById("produtoId")?.value;
+
+    if (!idAtual) {
+        arquivoFotoPendente = arquivo;
+        if (status) status.textContent = "📌 Foto pronta! Será salva ao gravar o produto.";
+        input.value = "";
+        return;
+    }
+
+    await enviarArquivoFotoParaServidor(idAtual, arquivo);
+    input.value = "";
+};
+
+async function enviarArquivoFotoParaServidor(produtoId, arquivo) {
+    const status = document.getElementById("statusFotoProduto");
+    if (status) status.textContent = "⏳ Enviando foto para o servidor...";
+
+    try {
+        const formData = new FormData();
+        formData.append("arquivo", arquivo);
+
+        const resp = await fetch(`${API_URL}/api/midia/produto/${produtoId}`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` },
+            body: formData
+        });
+
+        const resultado = await resp.json();
+        if (resp.ok) {
+            arquivoFotoPendente = null;
+            if (status) status.textContent = "✅ " + (resultado.mensagem || "Foto salva!");
+        } else {
+            if (status) status.textContent = "❌ " + (resultado.erro || "Erro ao salvar foto");
+        }
+    } catch (erro) {
+        console.error("Erro no upload da foto:", erro);
+        if (status) status.textContent = "❌ Falha de conexão ao enviar foto.";
+    }
+}
+
+function limparVitrineFoto(mensagem = "Selecione um produto no catálogo abaixo ou anexe uma foto") {
+    arquivoFotoPendente = null;
+    const img = document.getElementById("imgPreviewProduto");
+    const textoSemFoto = document.getElementById("textoSemFoto");
+    const status = document.getElementById("statusFotoProduto");
+
+    if (img) {
+        img.src = "";
+        img.style.display = "none";
+    }
+    if (textoSemFoto) {
+        textoSemFoto.textContent = mensagem;
+        textoSemFoto.style.display = "block";
+    }
+    if (status) status.textContent = "";
+}
+
+// ======================================================
+// 🔍 CONSULTA RÁPIDA EM ÁRVORE POR CATEGORIA + FOTOS
+// ======================================================
+window.abrirConsultaVitrine = function () {
+    const modal = document.getElementById("modalConsultaVitrine");
+    const input = document.getElementById("inputFiltroVitrine");
+    if (!modal) return;
+
+    if (input) input.value = "";
+    modal.style.display = "flex";
+    renderizarArvoreVitrine("");
+    if (input) input.focus();
+};
+
+window.fecharConsultaVitrine = function () {
+    const modal = document.getElementById("modalConsultaVitrine");
+    if (modal) modal.style.display = "none";
+};
+
+window.filtrarArvoreVitrine = function () {
+    const termo = document.getElementById("inputFiltroVitrine")?.value || "";
+    renderizarArvoreVitrine(termo);
+};
+
+function renderizarArvoreVitrine(filtroTexto) {
+    const corpo = document.getElementById("corpoArvoreVitrine");
+    if (!corpo) return;
+
+    const termo = filtroTexto.trim().toLowerCase();
+    const produtos = Array.isArray(listaProdutosGeral) ? listaProdutosGeral : [];
+
+    // Filtra por nome do produto ou nome da categoria
+    const filtrados = produtos.filter(p => {
+        const nomeProd = (p.nome || "").toLowerCase();
+        const nomeCat = (p.categoria && p.categoria.nome ? p.categoria.nome : "SEM CATEGORIA").toLowerCase();
+        return !termo || nomeProd.includes(termo) || nomeCat.includes(termo);
+    });
+
+    if (filtrados.length === 0) {
+        corpo.innerHTML = `<p style="color: #9eb3a4; text-align: center; padding: 30px;">Nenhum produto encontrado para "${filtroTexto}".</p>`;
+        return;
+    }
+
+    // Agrupa por Categoria
+    const porCategoria = {};
+    filtrados.forEach(p => {
+        const catNome = (p.categoria && p.categoria.nome ? p.categoria.nome : "SEM CATEGORIA").toUpperCase();
+        if (!porCategoria[catNome]) porCategoria[catNome] = [];
+        porCategoria[catNome].push(p);
+    });
+
+    const categoriasOrdenadas = Object.keys(porCategoria).sort((a, b) => a.localeCompare(b, "pt-BR"));
+    corpo.innerHTML = "";
+
+    categoriasOrdenadas.forEach(catNome => {
+        const itens = porCategoria[catNome];
+
+        // Bloco da Categoria (Árvore)
+        const blocoCat = document.createElement("div");
+        blocoCat.style.marginBottom = "18px";
+        blocoCat.style.border = "1px solid #2c4a36";
+        blocoCat.style.borderRadius = "8px";
+        blocoCat.style.overflow = "hidden";
+
+        const headerCat = document.createElement("div");
+        headerCat.style.background = "#1e3525";
+        headerCat.style.padding = "10px 15px";
+        headerCat.style.cursor = "pointer";
+        headerCat.style.display = "flex";
+        headerCat.style.justifyContent = "space-between";
+        headerCat.style.alignItems = "center";
+        headerCat.innerHTML = `
+            <span style="color: #facc15; font-weight: bold; font-size: 15px;">📁 ${catNome}</span>
+            <span style="color: #4af37a; font-size: 13px;">(${itens.length} ${itens.length === 1 ? "item" : "itens"})</span>
+        `;
+
+        // Grade de Cards com Foto
+        const gradeCards = document.createElement("div");
+        gradeCards.style.display = "grid";
+        gradeCards.style.gridTemplateColumns = "repeat(auto-fill, minmax(220px, 1fr))";
+        gradeCards.style.gap = "14px";
+        gradeCards.style.padding = "14px";
+        gradeCards.style.background = "#101c15";
+        // Se digitou filtro, já abre expandido; se não, abre CICLISMO ou deixa clicável
+        gradeCards.style.display = (termo || categoriasOrdenadas.length === 1) ? "grid" : "grid";
+
+        headerCat.addEventListener("click", () => {
+            gradeCards.style.display = gradeCards.style.display === "none" ? "grid" : "none";
+        });
+
+        itens.forEach(prod => {
+            const precoVenda = prod.precoVenda ? `R$ ${Number(prod.precoVenda).toFixed(2)}` : "R$ 0,00";
+            const card = document.createElement("div");
+            card.style.background = "#18291f";
+            card.style.border = "1px solid #2e4d39";
+            card.style.borderRadius = "8px";
+            card.style.padding = "10px";
+            card.style.display = "flex";
+            card.style.flexDirection = "column";
+            card.style.alignItems = "center";
+            card.style.textAlign = "center";
+
+            card.innerHTML = `
+                <div style="width: 100%; height: 150px; background: #0c140f; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px;">
+                    <img id="vitrine-img-${prod.id}" src="" alt="${prod.nome}" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
+                    <span id="vitrine-semfoto-${prod.id}" style="color: #6c8575; font-size: 12px;">Sem foto</span>
+                </div>
+                <div style="color: #ffffff; font-weight: bold; font-size: 14px; margin-bottom: 6px; min-height: 36px;">
+                    ${prod.nome}
+                </div>
+                <div style="color: #4af37a; font-weight: bold; font-size: 18px; margin-bottom: 4px;">
+                    ${precoVenda}
+                </div>
+                <div style="color: #9eb3a4; font-size: 12px;">
+                    Disponível: <strong style="color: #38bdf8;">${prod.estoqueAtual} Un.</strong>
+                </div>
+            `;
+
+            gradeCards.appendChild(card);
+
+            // Busca a foto do produto de forma assíncrona
+            fetch(`${API_URL}/api/midia/produto/${prod.id}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+            .then(r => r.ok ? r.json() : null)
+            .then(dados => {
+                if (dados && dados.url) {
+                    const imgEl = document.getElementById(`vitrine-img-${prod.id}`);
+                    const txtEl = document.getElementById(`vitrine-semfoto-${prod.id}`);
+                    if (imgEl) {
+                        imgEl.src = `${API_URL}${dados.url}`;
+                        imgEl.style.display = "block";
+                    }
+                    if (txtEl) txtEl.style.display = "none";
+                }
+            })
+            .catch(() => {});
+        });
+
+        blocoCat.appendChild(headerCat);
+        blocoCat.appendChild(gradeCards);
+        corpo.appendChild(blocoCat);
+    });
+}

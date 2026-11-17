@@ -10,8 +10,21 @@ const MAPA_CATEGORIAS_FIXAS = {
     "JURÍDICO":             "#facc15", // Dourado Justiça
     "ODONTOLOGIA":          "#38bdf8", // Azul Clínico
     "PERFUME":              "#e879f9", // Magenta / Lilás Fragrância
-    "PSICÓLOGO":            "#a78bfa", // Violeta Mente
-    "VETERINÁRIOS":         "#2dd4bf"  // Verde-Água Pet / Agro
+    "ELETRICOS": 			"#E1BEE7", // Lilás Suave (Lavanda)
+    "VETERINÁRIOS":         "#2dd4bf",  // Verde-Água Pet / Agro
+	"FERRAMENTAS":          "#facc15", // Dourado Justiça
+	"RESTAURAANTE":         "#4A148C", // Roxo Profundo
+	"LIMPEZA":              "#FF9800", // Laranja Vibrante
+	"PISOS E AZULEJOS":     "#BA68C8 "  , // lilás médio
+	
+	
+	
+	
+  
+	
+	
+	
+	
 };
 
 function obterCorCategoriaFixa(nomeCategoria) {
