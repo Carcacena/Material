@@ -320,34 +320,34 @@
 				</div>
 			</div>
 			<!-- COLUNA 2: Vitrine / Foto do Produto (Perfume no Balcão) -->
-						<div style="width: 340px; flex-shrink: 0;">
-							<div class="box-custom" style="text-align: center;">
-								<h4 style="margin-bottom: 12px;">📷 Vitrine do Produto</h4>
+			<div style="width: 340px; flex-shrink: 0;">
+				<div class="box-custom" style="text-align: center;">
+					<h4 style="margin-bottom: 12px;">📷 Vitrine do Produto</h4>
 
-								<div id="boxPreviewProduto"
-									style="width: 100%; height: 260px; border: 2px dashed #4a6b53; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0,0,0,0.25); margin-bottom: 12px;">
-									<img id="imgPreviewProduto" src="" alt="Foto do Produto"
-										style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
-									<span id="textoSemFoto" style="color: #9eb3a4; font-size: 14px; padding: 15px;">
-										Selecione um produto no catálogo abaixo ou anexe uma foto
-									</span>
-								</div>
+					<div id="boxPreviewProduto"
+						style="width: 100%; height: 260px; border: 2px dashed #4a6b53; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0,0,0,0.25); margin-bottom: 12px;">
+						<img id="imgPreviewProduto" src="" alt="Foto do Produto"
+							style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
+						<span id="textoSemFoto" style="color: #9eb3a4; font-size: 14px; padding: 15px;">
+							Selecione um produto no catálogo abaixo ou anexe uma foto
+						</span>
+					</div>
 
-								<input type="file" id="inputFotoProduto" accept="image/png, image/jpeg, image/webp"
-									style="display: none;" onchange="preVisualizarEEnviarFoto()">
+					<input type="file" id="inputFotoProduto" accept="image/png, image/jpeg, image/webp"
+						style="display: none;" onchange="preVisualizarEEnviarFoto()">
 
-								<button type="button" id="btnAnexarFoto" class="btn fw-bold"
-									style="width: 100%; background: #2e7d32; color: white; padding: 10px; border-radius: 5px; border: none;"
-									onclick="document.getElementById('inputFotoProduto').click()">
-									📁 Anexar / Trocar Foto
-								</button>
-								<small id="statusFotoProduto" style="display: block; margin-top: 8px; color: #b0bec5;"></small>
-							</div>
-						</div>
-			
-			
-			
-	
+					<button type="button" id="btnAnexarFoto" class="btn fw-bold"
+						style="width: 100%; background: #2e7d32; color: white; padding: 10px; border-radius: 5px; border: none;"
+						onclick="document.getElementById('inputFotoProduto').click()">
+						📁 Anexar / Trocar Foto
+					</button>
+					<small id="statusFotoProduto" style="display: block; margin-top: 8px; color: #b0bec5;"></small>
+				</div>
+			</div>
+
+
+
+
 			<!-- COLUNA 3: CAIXA HORIZONTAL FARMÁCIA (Aparece automaticamente na categoria REMEDIO) -->
 			<div id="blocoDadosFarmacia" style="display: none; flex: 1; min-width: 440px; max-width: 640px;">
 				<div class="box-custom" style="border: 1px solid rgba(56, 189, 248, 0.6);">
@@ -465,38 +465,89 @@
 				</div>
 			</div>
 			<!-- 🔍 MODAL JOGO RÁPIDO: CONSULTA VITRINE POR CATEGORIA -->
-				<div id="modalConsultaVitrine"
-					style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 3000; justify-content: center; align-items: center; padding: 20px;">
-					<div style="background: #16261c; border: 2px solid #2e7d32; border-radius: 10px; width: 100%; max-width: 1050px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
-						
-						<!-- Cabeçalho -->
-						<div style="background: #1e3525; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2e7d32;">
-							<h4 style="margin: 0; color: #4af37a;">🔍 Vitrine Rápida por Categoria / Setor</h4>
-							<button type="button" onclick="fecharConsultaVitrine()"
-								style="background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold; cursor: pointer;">
-								X Fechar
-							</button>
-						</div>
+			<div id="modalConsultaVitrine"
+				style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 3000; justify-content: center; align-items: center; padding: 20px;">
+				<div
+					style="background: #16261c; border: 2px solid #2e7d32; border-radius: 10px; width: 100%; max-width: 1050px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
 
-						<!-- Filtro Rápido -->
-						<div style="padding: 12px 20px; background: #121f17; border-bottom: 1px solid #243b2c;">
-							<input type="text" id="inputFiltroVitrine" onkeyup="filtrarArvoreVitrine()"
-								placeholder="Digite a categoria ou produto (Ex: Ciclismo, Bike, Monark)..."
-								style="width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid #3c6348; background: #0d1711; color: white; font-size: 15px;">
-						</div>
+					<!-- Cabeçalho -->
+					<div
+						style="background: #1e3525; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2e7d32;">
+						<h4 style="margin: 0; color: #4af37a;">🔍 Vitrine Rápida por Categoria / Setor</h4>
+						<button type="button" onclick="fecharConsultaVitrine()"
+							style="background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold; cursor: pointer;">
+							X Fechar
+						</button>
+					</div>
 
-						<!-- Corpo da Árvore -->
-						<div id="corpoArvoreVitrine" style="padding: 18px 20px; overflow-y: auto; flex: 1;">
-							Carregando vitrine...
-						</div>
+					<!-- Filtro Rápido -->
+					<div style="padding: 12px 20px; background: #121f17; border-bottom: 1px solid #243b2c;">
+						<input type="text" id="inputFiltroVitrine" onkeyup="filtrarArvoreVitrine()"
+							placeholder="Digite a categoria ou produto (Ex: Ciclismo, Bike, Monark)..."
+							style="width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid #3c6348; background: #0d1711; color: white; font-size: 15px;">
+					</div>
+
+					<!-- Corpo da Árvore -->
+					<div id="corpoArvoreVitrine" style="padding: 18px 20px; overflow-y: auto; flex: 1;">
+						Carregando vitrine...
 					</div>
 				</div>
+			</div>
+			
+			
+			<!-- 🏷️ MODAL APV: ALTERAÇÃO DE PREÇO DE VENDA (COM TRAVA DE CUSTO E ESTOQUE) -->
+			<div id="modalApvPreco"
+				style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3100; justify-content: center; align-items: center; padding: 20px;">
+				<div style="background: #16261c; border: 2px solid #f59e0b; border-radius: 10px; width: 100%; max-width: 1050px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.7);">
+					
+					<div style="background: #233328; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f59e0b;">
+						<h4 style="margin: 0; color: #facc15;">🏷️ APV - Alteração de Preço de Venda</h4>
+						<button type="button" onclick="fecharModalApv()"
+							style="background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold; cursor: pointer;">
+							X Fechar
+						</button>
+					</div>
+
+					<div style="padding: 12px 20px; background: #121f17; border-bottom: 1px solid #243b2c; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+						<div style="flex: 1; min-width: 210px;">
+							<label style="display: block; font-size: 11px; color: #facc15; margin-bottom: 4px; font-weight: bold;">1. Nº Autorização Diretoria</label>
+							<input type="text" id="inputDocApv"
+								placeholder="Ex: 1871 ou APV-001/2026"
+								style="width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid #f59e0b; background: #0d1711; color: #facc15; font-weight: bold;">
+						</div>
+							
+						
+					</div>
+
+					<div style="padding: 15px 20px; overflow-y: auto; flex: 1;">
+						<table style="width: 100%; border-collapse: collapse; color: white; font-size: 14px;">
+							<thead>
+								<tr style="border-bottom: 2px solid #2e4d39; color: #9eb3a4; text-align: left;">
+									<th style="padding: 8px;">Produto</th>
+									<th style="padding: 8px; text-align: center;">Custo (Fixo)</th>
+									<th style="padding: 8px; text-align: center;">Preço Atual</th>
+									<th style="padding: 8px; text-align: center;">Novo Preço (R$)</th>
+								</tr>
+							</thead>
+							<tbody id="tbodyApvProdutos"></tbody>
+						</table>
+					</div>
+
+					<div style="background: #121f17; padding: 12px 20px; border-top: 1px solid #243b2c; display: flex; justify-content: space-between; align-items: center;">
+						<small style="color: #9eb3a4;">* Custo e estoque permanecem bloqueados. Preencha apenas os itens que terão reajuste.</small>
+						<button type="button" id="btnProcessarApv" onclick="processarApvPrecos()"
+							style="background: #2e7d32; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-weight: bold; cursor: pointer; font-size: 14px;">
+							✅ Processar APV
+						</button>
+					</div>
+				</div>
+			</div>
 
 		</div> <!-- Fecha GRID PRINCIPAL (.row.g-4) -->
 	</div> <!-- Fecha .container-fluid -->
-	
-	
-	
+
+
+
 	<!-- ⚙️ BOTÃO FIXO NA TELA -->
 	<button id="btnAbrirPainelProduto" type="button" onclick="togglePainelProdutoDirect()"
 		style="position: fixed; top: 90px; right: 25px; z-index: 1999; background: #ff9800; color: #111; border: none; border-radius: 6px; padding: 8px 13px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
@@ -523,9 +574,13 @@
 				onclick="document.getElementById('btnSalvar').click()">Gravar Produto (F10)</button>
 			<button type="button" id="btnMenuCancelar" class="btn-menu-vertical" onclick="acionarCancelar()">Cancelar
 				(Esc)</button>
-				<button type="button" id="btnMenuConsulta" class="btn-menu-vertical"
-								style="background: #00897b; color: white;"
-								onclick="abrirConsultaVitrine()">Consulta (F4)</button>	
+			<button type="button" id="btnMenuConsulta" class="btn-menu-vertical"
+				style="background: #00897b; color: white;" onclick="abrirConsultaVitrine()">Consulta (F4)</button>
+
+			<button type="button" id="btnMenuApv" class="btn-menu-vertical"
+				style="background: #f59e0b; color: #111; font-weight: bold;" onclick="abrirModalApv()">APV - Preço
+				Venda</button>
+
 			<button type="button" id="btnMenuVoltar" class="btn-menu-vertical"
 				onclick="window.location.href='/menu/menu.html'"><u>V</u>oltar</button>
 		</div>
@@ -583,12 +638,12 @@
 			const todosInputs = document.querySelectorAll("form input, .card input, body input");
 
 			todosInputs.forEach(campo => {
-							// Ignora campos que devem continuar livres (Arquivo/Foto, Data, Hidden, Pesquisa)
-							if (campo.type === "file" || campo.type === "date" || campo.type === "hidden" || campo.type === "search") return;
-							const idOuNome = (campo.id + " " + campo.name).toLowerCase();
-							if (idOuNome.includes("codigo") || idOuNome.includes("barras") || idOuNome.includes("nome") || idOuNome.includes("busca")) {
-								return;
-							}
+				// Ignora campos que devem continuar livres (Arquivo/Foto, Data, Hidden, Pesquisa)
+				if (campo.type === "file" || campo.type === "date" || campo.type === "hidden" || campo.type === "search") return;
+				const idOuNome = (campo.id + " " + campo.name).toLowerCase();
+				if (idOuNome.includes("codigo") || idOuNome.includes("barras") || idOuNome.includes("nome") || idOuNome.includes("busca")) {
+					return;
+				}
 				if (ehNotaFiscal) {
 					// Se o input for type="number", TEM QUE ser "0" (com vírgula "0,00" o navegador apaga!)
 					if (campo.type === "number") {

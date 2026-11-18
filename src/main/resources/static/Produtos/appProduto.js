@@ -791,11 +791,25 @@ function carregarProdutoNoFormulario(p) {
         elemento.parentElement.style.display = "block";
     }
 
+    if (typeof carregarFotoProduto === "function") {
+        carregarFotoProduto(p.id);
+    }
+
     produtoSelecionadoId = p.id;
     document.getElementById("produtoId").value = p.id;
     document.getElementById("codigoBarras").value = p.codigoBarras || "";
     document.getElementById("nomeProduto").value = p.nome;
     document.getElementById("selecionaFornecedor").value = p.fornecedor ? p.fornecedor.id : "";
+
+    // 📂 Preenche a Categoria/Setor e atualiza o painel de Farmácia se necessário
+    const selectCat = document.getElementById("selectCategoria");
+    if (selectCat) {
+        selectCat.value = p.categoria ? p.categoria.id : "";
+        if (typeof verificarPainelFarmacia === "function") {
+            verificarPainelFarmacia();
+        }
+    }
+
     document.getElementById("tipoProduto").value = String(p.aGranel);
     document.getElementById("dataValidade").value = p.dataValidade || "";
     document.getElementById("precoCusto").value = p.precoCusto;
@@ -1246,3 +1260,183 @@ function renderizarArvoreVitrine(filtroTexto) {
         corpo.appendChild(blocoCat);
     });
 }
+// ======================================================
+// 🏷️ APV - ALTERAÇÃO DE PREÇO DE VENDA (COM TRAVA DE CUSTO)
+// ======================================================
+let novosPrecosApv = {};
+
+window.abrirModalApv = function () {
+    const modal = document.getElementById("modalApvPreco");
+    if (!modal) return;
+
+    novosPrecosApv = {};
+    const inputDoc = document.getElementById("inputDocApv");
+    const inputFiltro = document.getElementById("inputFiltroApv");
+
+    if (inputDoc) {
+        inputDoc.disabled = false;
+        inputDoc.readOnly = false;
+        inputDoc.value = "";
+    }
+    if (inputFiltro) {
+        inputFiltro.disabled = false;
+        inputFiltro.readOnly = false;
+        inputFiltro.value = "";
+    }
+
+    modal.style.display = "flex";
+    renderizarListaApv();
+    if (inputDoc) inputDoc.focus();
+};
+
+window.fecharModalApv = function () {
+    const modal = document.getElementById("modalApvPreco");
+    if (modal) modal.style.display = "none";
+};
+
+window.registrarDigitacaoApv = function (produtoId, valorStr) {
+    const val = parseFloat(valorStr);
+    if (!isNaN(val) && val > 0) {
+        novosPrecosApv[produtoId] = val;
+    } else {
+        delete novosPrecosApv[produtoId];
+    }
+};
+
+window.renderizarListaApv = function () {
+    const tbody = document.getElementById("tbodyApvProdutos");
+    if (!tbody) return;
+
+    const termo = (document.getElementById("inputFiltroApv")?.value || "").trim().toLowerCase();
+    const produtos = Array.isArray(listaProdutosGeral) ? listaProdutosGeral : [];
+
+    const filtrados = produtos.filter(p => {
+        const nome = (p.nome || "").toLowerCase();
+        const barras = (p.codigoBarras || "").toLowerCase();
+        return !termo || nome.includes(termo) || barras.includes(termo);
+    });
+
+    tbody.innerHTML = "";
+
+    if (filtrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#9eb3a4;">Nenhum produto encontrado.</td></tr>`;
+        return;
+    }
+
+    filtrados.forEach(p => {
+        const custo = Number(p.precoCusto || 0);
+        const vendaAtual = Number(p.precoVenda || 0);
+        const valorDigitado = novosPrecosApv[p.id] !== undefined ? novosPrecosApv[p.id] : "";
+
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #22382a";
+        tr.innerHTML = `
+            <td style="padding: 10px 8px;">
+                <strong>${p.nome}</strong>
+                <div style="font-size: 11px; color: #9eb3a4;">Cód: ${p.codigoBarras || "S/N"} | Estoque: ${p.estoqueAtual} Un.</div>
+            </td>
+            <td style="padding: 10px 8px; text-align: center; color: #ffaa66;">R$ ${custo.toFixed(2)}</td>
+            <td style="padding: 10px 8px; text-align: center; color: #4af37a; font-weight: bold;">R$ ${vendaAtual.toFixed(2)}</td>
+            <td style="padding: 10px 8px; text-align: center;">
+                <input type="number" step="0.01" min="0.01"
+                    value="${valorDigitado}"
+                    placeholder="0,00"
+                    oninput="registrarDigitacaoApv(${p.id}, this.value)"
+                    style="width: 120px; padding: 6px 8px; border-radius: 5px; border: 1px solid #f59e0b; background: #0c140f; color: #facc15; font-weight: bold; text-align: right;">
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+};
+
+window.processarApvPrecos = async function () {
+    const inputDoc = document.getElementById("inputDocApv");
+    const docDiretoria = (inputDoc?.value || "").trim().toUpperCase();
+
+    // 1. Validação obrigatória do número da APV
+    if (!docDiretoria) {
+        alert("⚠️ Atenção: Informe o Número da APV / Autorização antes de processar.");
+        if (inputDoc) inputDoc.focus();
+        return;
+    }
+
+    // 2. Verifica se algum preço foi digitado
+    const idsAlterados = Object.keys(novosPrecosApv).map(Number);
+    if (idsAlterados.length === 0) {
+        alert("Informe pelo menos um Novo Preço de Venda antes de processar o APV.");
+        return;
+    }
+
+    // 3. Trava de segurança: Novo preço não pode ser menor que o custo
+    for (const id of idsAlterados) {
+        const prod = listaProdutosGeral.find(p => Number(p.id) === id);
+        if (prod && novosPrecosApv[id] < Number(prod.precoCusto || 0)) {
+            alert(`❌ Bloqueado: O novo preço de "${prod.nome}" (R$ ${novosPrecosApv[id].toFixed(2)}) não pode ser menor que o Custo (R$ ${Number(prod.precoCusto).toFixed(2)}).`);
+            return;
+        }
+    }
+
+    if (!confirm(`Confirma o processamento da APV [ ${docDiretoria} ] para ${idsAlterados.length} produto(s)?`)) {
+        return;
+    }
+
+    const btn = document.getElementById("btnProcessarApv");
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = "⏳ Processando APV...";
+    }
+
+    let sucessos = 0;
+
+    try {
+        for (const id of idsAlterados) {
+            const prod = listaProdutosGeral.find(p => Number(p.id) === id);
+            if (!prod) continue;
+
+            const dtoAtualizado = {
+                nome: prod.nome,
+                codigoBarras: prod.codigoBarras || null,
+                aGranel: Boolean(prod.aGranel),
+                precoCusto: prod.precoCusto,
+                precoVenda: novosPrecosApv[id],
+                documentoApv: docDiretoria,
+                dataValidade: prod.dataValidade || null,
+                qteEntrada: prod.qteEntrada,
+                estoqueAtual: prod.estoqueAtual,
+                fornecedor: prod.fornecedor ? { id: prod.fornecedor.id } : null,
+                categoria: prod.categoria ? { id: prod.categoria.id } : null,
+                ...(prod.dadosFarmacia || {})
+            };
+
+            const resp = await fetch(`${API_URL}/produtos/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(dtoAtualizado)
+            });
+
+            if (resp.ok) {
+                sucessos++;
+            }
+        }
+
+        alert(`✅ APV [ ${docDiretoria} ] processada com sucesso!\n${sucessos} produto(s) tiveram o Preço de Venda atualizado.`);
+        fecharModalApv();
+        await carregarProdutos();
+    } catch (e) {
+        console.error("Erro ao processar APV:", e);
+        alert("Erro de comunicação ao processar o APV.");
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = "✅ Processar APV";
+        }
+    }
+};
+
+
+
+
+

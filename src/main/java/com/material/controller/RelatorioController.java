@@ -77,7 +77,7 @@ public class RelatorioController {
 
 		try {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			Document document = new Document(PageSize.A4, 20, 20, 20, 20);
+			Document document = new Document(PageSize.A4,  10, 10, 10, 10);
 			PdfWriter.getInstance(document, out);
 
 			document.open();
@@ -95,10 +95,11 @@ public class RelatorioController {
 			// 🎯 MUDANÇA AQUI: Tabela Invisível de 1 coluna para travar o alinhamento em
 			// 100%
 
-			PdfPTable table = new PdfPTable(new float[] { 10f, 40f, 15f, 15f, 20f });
+			PdfPTable table = new PdfPTable(new float[] { 10f, 40f, 15f, 15f, 20f, 15f });
 			table.setWidthPercentage(100);
 
-			String[] headers = { "ID", "PRODUTO", "SALDO ESTOQUE", "PREÇO CUSTO", "VALOR TOTAL" };
+			String[] headers = 
+				{ "ID", "PRODUTO", "ESTOQUE", "CUSTO", "VENDA", "VLR.TOTAL" };
 
 			for (int i = 0; i < headers.length; i++) {
 				PdfPCell cell = new PdfPCell(new Phrase(headers[i], fontHeader));
@@ -129,9 +130,17 @@ public class RelatorioController {
 				table.addCell(cQtde);
 
 				BigDecimal custo = p.getPrecoCusto() != null ? p.getPrecoCusto() : BigDecimal.ZERO;
-				PdfPCell cCusto = new PdfPCell(new Phrase("R$ " + String.format("%.2f", custo), fontCorpo));
+				PdfPCell cCusto = new PdfPCell
+						(new Phrase("R$ " + String.format("%.2f", custo), fontCorpo));
 				configurarBordaFina(cCusto, Element.ALIGN_RIGHT, borderCol);
 				table.addCell(cCusto);
+				
+				BigDecimal venda = p.getPrecoVenda() != null ? p.getPrecoVenda() : BigDecimal.ZERO;
+				PdfPCell cVenda = new PdfPCell
+						(new Phrase("R$ " + String.format("%.2f", venda), fontCorpo));
+				configurarBordaFina(cVenda, Element.ALIGN_RIGHT, borderCol);
+				table.addCell(cVenda);
+			
 
 				BigDecimal totalItem = qtde.multiply(custo);
 				valorPatrimonialTotal = valorPatrimonialTotal.add(totalItem);
